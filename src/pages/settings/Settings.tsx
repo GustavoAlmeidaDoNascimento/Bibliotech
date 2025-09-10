@@ -46,9 +46,10 @@ const Settings = () => {
     if (!currentUser) return null;
     
     const db = getFirestore();
-    const collections = ['books', 'students', 'loans', 'staff', 'staffLoans'];
-    const allData: Record<string, any[]> = {};
+    const collections = ['books', 'students', 'loans', 'staff', 'staffLoans', 'tags'];
+    const allData: Record<string, any> = {};
     
+    // Buscar todas as coleções normais
     for (const collectionName of collections) {
       const collectionRef = collection(db, `users/${currentUser.uid}/${collectionName}`);
       const querySnapshot = await getDocs(query(collectionRef));
@@ -57,6 +58,20 @@ const Settings = () => {
         id: doc.id,
         ...doc.data()
       }));
+    }
+    
+    // Buscar configurações (buscar toda a coleção settings)
+    try {
+      const settingsCollectionRef = collection(db, `users/${currentUser.uid}/settings`);
+      const settingsSnapshot = await getDocs(query(settingsCollectionRef));
+      
+      allData.settings = settingsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.warn('Erro ao buscar configurações para backup:', error);
+      allData.settings = [];
     }
     
     return allData;
@@ -73,12 +88,33 @@ const Settings = () => {
         throw new Error('Não foi possível obter os dados para backup');
       }
       
+      // Contar total de registros para mostrar pro usuário
+      let totalRecords = 0;
+      const collections = ['books', 'students', 'loans', 'staff', 'staffLoans', 'tags', 'settings'];
+      collections.forEach(col => {
+        if (data[col]) {
+          totalRecords += data[col].length;
+        }
+      });
+      
       // coloco algumas infos extras no backup
       const backupData = {
-        version: '1.0',
+        version: '2.0', // Versão atualizada com mais coleções
         timestamp: new Date().toISOString(),
         userId: currentUser?.uid,
-        data
+        userEmail: currentUser?.email,
+        totalRecords,
+        collections: collections.filter(col => data[col] && data[col].length > 0),
+        data,
+        metadata: {
+          books: data.books?.length || 0,
+          students: data.students?.length || 0,
+          loans: data.loans?.length || 0,
+          staff: data.staff?.length || 0,
+          staffLoans: data.staffLoans?.length || 0,
+          tags: data.tags?.length || 0,
+          settings: data.settings?.length || 0
+        }
       };
       
       // converte pra JSON e cria um blob
@@ -89,13 +125,15 @@ const Settings = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `biblioteca_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      link.download = `bibliotech_backup_completo_${timestamp}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       
       setMessage({ 
-        text: 'Backup realizado com sucesso! O arquivo foi baixado.', 
+        text: `Backup completo realizado com sucesso! ${totalRecords} registros salvos. O arquivo foi baixado.`, 
         isError: false 
       });
     } catch (error) {
@@ -118,47 +156,88 @@ const Settings = () => {
     
     try {
       setRestoreFromFileLoading(true);
-      setMessage({ text: '', isError: false });
+      setMessage({ text: 'Processando arquivo de backup...', isError: false });
       
       // lê o arquivo como texto
       const text = await file.text();
       const backupData = JSON.parse(text);
       
-      // vê se o arquivo é válido
+      // Validação mais robusta do arquivo de backup
       if (!backupData.data || !backupData.version) {
         throw new Error('Formato de arquivo de backup inválido');
       }
       
+      // Verificar se é um backup do Bibliotech
+      if (!backupData.userId && !backupData.data.books && !backupData.data.students) {
+        throw new Error('Este arquivo não parece ser um backup válido do Bibliotech');
+      }
+      
+      setMessage({ text: 'Arquivo válido! Limpando dados existentes...', isError: false });
+      
       // agora vamos restaurar
       const db = getFirestore();
-      const collections = ['books', 'students', 'loans', 'staff', 'staffLoans'];
+      const collections = ['books', 'students', 'loans', 'staff', 'staffLoans', 'tags', 'settings'];
       
       // primeiro limpo tudo
       await restoreAllData();
       
+      setMessage({ text: 'Restaurando dados do backup...', isError: false });
+      
+      let restoredCount = 0;
+      
       // depois restauro os dados do backup
       for (const collectionName of collections) {
-        if (Array.isArray(backupData.data[collectionName])) {
+        if (Array.isArray(backupData.data[collectionName]) && backupData.data[collectionName].length > 0) {
           const collectionData = backupData.data[collectionName];
           
           for (const item of collectionData) {
             const { id, ...data } = item;
-            await setDoc(
-              doc(db, `users/${currentUser.uid}/${collectionName}/${id}`),
-              data
-            );
+            
+            // Para settings, preciso tratar de forma especial porque usa estrutura diferente
+            if (collectionName === 'settings') {
+              await setDoc(
+                doc(db, `users/${currentUser.uid}/settings/${id}`),
+                data
+              );
+            } else {
+              await setDoc(
+                doc(db, `users/${currentUser.uid}/${collectionName}/${id}`),
+                data
+              );
+            }
+            restoredCount++;
           }
         }
       }
       
+      // Informar detalhes do que foi restaurado
+      const metadata = backupData.metadata;
+      let detailMessage = `Restauração completa! ${restoredCount} registros restaurados.`;
+      
+      if (metadata) {
+        const details = [];
+        if (metadata.books > 0) details.push(`${metadata.books} livros`);
+        if (metadata.students > 0) details.push(`${metadata.students} alunos`);
+        if (metadata.loans > 0) details.push(`${metadata.loans} empréstimos`);
+        if (metadata.staff > 0) details.push(`${metadata.staff} funcionários`);
+        if (metadata.staffLoans > 0) details.push(`${metadata.staffLoans} empréstimos de funcionários`);
+        if (metadata.tags > 0) details.push(`${metadata.tags} tags/gêneros`);
+        if (metadata.settings > 0) details.push(`${metadata.settings} configurações`);
+        
+        if (details.length > 0) {
+          detailMessage += ` Restaurado: ${details.join(', ')}.`;
+        }
+      }
+      
       setMessage({ 
-        text: 'Dados restaurados com sucesso a partir do arquivo de backup!', 
+        text: detailMessage, 
         isError: false 
       });
     } catch (error) {
       console.error('Erro ao restaurar dados do arquivo:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       setMessage({ 
-        text: 'Erro ao restaurar dados do arquivo. Verifique se o arquivo é válido.', 
+        text: `Erro ao restaurar dados: ${errorMessage}. Verifique se o arquivo é válido.`, 
         isError: true 
       });
     } finally {
@@ -181,7 +260,7 @@ const Settings = () => {
     if (!currentUser) return;
     
     const db = getFirestore();
-    const collections = ['books', 'students', 'loans', 'staff', 'staffLoans'];
+    const collections = ['books', 'students', 'loans', 'staff', 'staffLoans', 'tags', 'settings'];
     
     for (const collectionName of collections) {
       const collectionRef = collection(db, `users/${currentUser.uid}/${collectionName}`);
@@ -489,10 +568,11 @@ const Settings = () => {
           <h3>Backup e Restauração</h3>
           
           <div className={styles.backupSection}>
-            <h4>Backup de Dados</h4>
+            <h4>Backup Completo de Dados</h4>
             <p>
-              Faça o backup de todos os dados da sua biblioteca. O arquivo pode ser usado
-              para restaurar os dados posteriormente.
+              Faça o backup completo de <strong>todos</strong> os dados da sua biblioteca, incluindo:
+              livros, alunos, funcionários, empréstimos, histórico, tags/gêneros personalizados,
+              configurações e preferências. O arquivo pode ser usado para restaurar 100% dos seus dados.
             </p>
             
             <button 
@@ -500,13 +580,14 @@ const Settings = () => {
               onClick={handleBackupData}
               disabled={backupLoading}
             >
-              {backupLoading ? 'Gerando backup...' : 'Fazer Backup dos Dados'}
+              {backupLoading ? 'Gerando backup completo...' : 'Fazer Backup Completo'}
             </button>
             
             <h4>Restaurar a partir de Backup</h4>
             <p>
-              Restaure os dados da biblioteca a partir de um arquivo de backup.
-              Seus dados atuais serão substituídos.
+              <strong>Restauração completa:</strong> Todos os dados atuais serão substituídos pelos
+              dados do backup. Isso inclui livros, alunos, empréstimos, histórico, tags e configurações.
+              A restauração é 100% completa.
             </p>
             
             <input 
@@ -549,7 +630,7 @@ const Settings = () => {
               Restaurar Todos os Dados
             </button>
             <p className={styles.helpText}>
-              Esta ação apagará todos os livros, alunos, empréstimos e outros registros do sistema.
+              Esta ação apagará todos os livros, alunos, funcionários, empréstimos, histórico, tags/gêneros e configurações do sistema.
             </p>
           </div>
         </div>
@@ -580,7 +661,8 @@ const Settings = () => {
             
             <p className={styles.warningText}>
               <strong>Atenção:</strong> Esta ação apagará <strong>permanentemente</strong> todos os
-              registros da sua biblioteca, incluindo livros, alunos e histórico de empréstimos.
+              registros da sua biblioteca, incluindo livros, alunos, funcionários, empréstimos,
+              histórico completo, tags/gêneros personalizados e configurações.
               Esta ação é irreversível!
             </p>
             
