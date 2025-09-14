@@ -1,0 +1,367 @@
+.container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Botão principal de filtro */
+.filterButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #6b7280;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.filterButton:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.filterButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.filterButton.active {
+  border-color: #4a90e2;
+  background: #eff6ff;
+  color: #4a90e2;
+}
+
+.filterButton.expanded {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 1px #4a90e2;
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.activeIndicator {
+  font-size: 0.75rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Botão de limpar */
+.clearButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.clearButton:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+.clearButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.clearIcon {
+  width: 12px;
+  height: 12px;
+}
+
+/* Painel de filtro expandido */
+.filterPanel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  min-width: 320px;
+  max-width: calc(100vw - 2rem);
+  width: 90%;
+  max-width: 400px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+/* Animações */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Backdrop para modal */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9998;
+  animation: backdropFadeIn 0.2s ease-out;
+}
+
+/* Título do modal */
+.modalTitle {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 1rem;
+}
+
+.dateInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.inputGroup label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.inputGroup input {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: #fafafa;
+}
+
+.inputGroup input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.inputGroup input:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.applyButton {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  background: #4a90e2;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.applyButton:hover:not(:disabled) {
+  background: #357abd;
+}
+
+.applyButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  padding: 0.75rem 2rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #6b7280;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.cancelButton:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    position: relative;
+  }
+  
+  .filterButton {
+    max-width: 140px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    min-height: 44px; /* Área de toque recomendada */
+  }
+  
+  .icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .activeIndicator {
+    font-size: 0.8rem;
+  }
+  
+  .clearButton {
+    width: 32px;
+    height: 32px;
+    margin-left: 0.5rem;
+  }
+  
+  .clearIcon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .dateInputs {
+    gap: 0.75rem;
+  }
+  
+  .inputGroup label {
+    font-size: 0.9rem;
+  }
+  
+  .inputGroup input {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    min-height: 44px;
+  }
+  
+  .applyButton,
+  .cancelButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  
+  .filterButton {
+    max-width: 160px;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.9rem;
+    min-height: 48px; /* Ainda maior para celulares */
+    border-radius: 8px;
+  }
+  
+  .icon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .activeIndicator {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  
+  .clearButton {
+    width: 36px;
+    height: 36px;
+    margin-left: 0.75rem;
+  }
+  
+  .clearIcon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .dateInputs {
+    gap: 1rem;
+  }
+  
+  .inputGroup {
+    gap: 0.5rem;
+  }
+  
+  .inputGroup label {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .inputGroup input {
+    padding: 0.75rem;
+    font-size: 1rem;
+    min-height: 48px;
+    border-radius: 8px;
+    border-width: 2px;
+  }
+  
+  .actions {
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  
+  .applyButton,
+  .cancelButton {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    min-height: 48px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+}

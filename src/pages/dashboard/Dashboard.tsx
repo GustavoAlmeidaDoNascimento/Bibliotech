@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardCache } from '../../hooks/useDashboardCache';
 import { useCacheInvalidation } from '../../hooks/useCacheInvalidation';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
+import EmbeddedDateFilter from '../../components/ui/EmbeddedDateFilter';
 
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import {
@@ -20,7 +21,7 @@ import {
   PointElement,
   LineElement
 } from 'chart.js';
-import { subMonths, startOfMonth, endOfMonth, format } from 'date-fns';
+import { subMonths, startOfMonth, endOfMonth, format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import styles from './Dashboard.module.css';
 
@@ -147,6 +148,21 @@ const Dashboard = () => {
   const [initialLoading, setInitialLoading] = useState(!cache.hasCache);
   const [backgroundLoading, setBackgroundLoading] = useState(false);
   
+  // Estados para filtros de data dos rankings
+  const [studentRankingFilter, setStudentRankingFilter] = useState({
+    active: false,
+    startDate: '',
+    endDate: '',
+    loading: false
+  });
+  
+  const [classroomRankingFilter, setClassroomRankingFilter] = useState({
+    active: false,
+    startDate: '',
+    endDate: '',
+    loading: false
+  });
+  
   // Estados para estatísticas principais
   const [activeLoansCount, setActiveLoansCount] = useState(cache.cachedData?.activeLoansCount || 0);
   const [overdueLoansCount, setOverdueLoansCount] = useState(cache.cachedData?.overdueLoansCount || 0);
@@ -175,7 +191,170 @@ const Dashboard = () => {
     rates: []
   });
 
-  const fetchDashboardData = useCallback(async (forceRefresh = false) => {
+  // Função para aplicar filtro no ranking de estudantes
+  const applyStudentRankingFilter = useCallback(async (startDate: string, endDate: string) => {
+    setStudentRankingFilter(prev => ({ ...prev, loading: true }));
+    
+    try {
+      // Reprocessar apenas os dados dos estudantes com filtro
+      const loansRef = collection(db, `users/${currentUser?.uid}/loans`);
+      const loansSnapshot = await getDocs(loansRef);
+      const loans = loansSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          borrowDate: data.borrowDate?.toDate ? data.borrowDate.toDate() : data.borrowDate,
+          returnDate: data.returnDate?.toDate ? data.returnDate.toDate() : data.returnDate,
+        } as Loan;
+      });
+
+      const studentsRef = collection(db, `users/${currentUser?.uid}/students`);
+      const studentsSnapshot = await getDocs(studentsRef);
+      const students = studentsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Student[];
+
+      const filterStartDate = startOfDay(parseISO(startDate));
+      const filterEndDate = endOfDay(parseISO(endDate));
+      
+      processTopStudents(loans, students, filterStartDate, filterEndDate);
+      
+      setStudentRankingFilter({
+        active: true,
+        startDate,
+        endDate,
+        loading: false
+      });
+    } catch (error) {
+      console.error('Erro ao aplicar filtro no ranking de estudantes:', error);
+      setStudentRankingFilter(prev => ({ ...prev, loading: false }));
+    }
+  }, [currentUser?.uid]);
+
+  // Função para limpar filtro do ranking de estudantes
+  const clearStudentRankingFilter = useCallback(async () => {
+    setStudentRankingFilter(prev => ({ ...prev, loading: true }));
+    
+    try {
+      // Reprocessar dados sem filtro
+      const loansRef = collection(db, `users/${currentUser?.uid}/loans`);
+      const loansSnapshot = await getDocs(loansRef);
+      const loans = loansSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          borrowDate: data.borrowDate?.toDate ? data.borrowDate.toDate() : data.borrowDate,
+          returnDate: data.returnDate?.toDate ? data.returnDate.toDate() : data.returnDate,
+        } as Loan;
+      });
+
+      const studentsRef = collection(db, `users/${currentUser?.uid}/students`);
+      const studentsSnapshot = await getDocs(studentsRef);
+      const students = studentsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Student[];
+      
+      processTopStudents(loans, students);
+      
+      setStudentRankingFilter({
+        active: false,
+        startDate: '',
+        endDate: '',
+        loading: false
+      });
+    } catch (error) {
+      console.error('Erro ao limpar filtro do ranking de estudantes:', error);
+      setStudentRankingFilter(prev => ({ ...prev, loading: false }));
+    }
+  }, [currentUser?.uid]);
+
+  // Função para aplicar filtro no ranking de turmas
+  const applyClassroomRankingFilter = useCallback(async (startDate: string, endDate: string) => {
+    setClassroomRankingFilter(prev => ({ ...prev, loading: true }));
+    
+    try {
+      // Reprocessar apenas os dados das turmas com filtro
+      const loansRef = collection(db, `users/${currentUser?.uid}/loans`);
+      const loansSnapshot = await getDocs(loansRef);
+      const loans = loansSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          borrowDate: data.borrowDate?.toDate ? data.borrowDate.toDate() : data.borrowDate,
+          returnDate: data.returnDate?.toDate ? data.returnDate.toDate() : data.returnDate,
+        } as Loan;
+      });
+
+      const studentsRef = collection(db, `users/${currentUser?.uid}/students`);
+      const studentsSnapshot = await getDocs(studentsRef);
+      const students = studentsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Student[];
+
+      const filterStartDate = startOfDay(parseISO(startDate));
+      const filterEndDate = endOfDay(parseISO(endDate));
+      
+      processClassroomPerformance(loans, students, filterStartDate, filterEndDate);
+      
+      setClassroomRankingFilter({
+        active: true,
+        startDate,
+        endDate,
+        loading: false
+      });
+    } catch (error) {
+      console.error('Erro ao aplicar filtro no ranking de turmas:', error);
+      setClassroomRankingFilter(prev => ({ ...prev, loading: false }));
+    }
+  }, [currentUser?.uid]);
+
+  // Função para limpar filtro do ranking de turmas
+  const clearClassroomRankingFilter = useCallback(async () => {
+    setClassroomRankingFilter(prev => ({ ...prev, loading: true }));
+    
+    try {
+      // Reprocessar dados sem filtro
+      const loansRef = collection(db, `users/${currentUser?.uid}/loans`);
+      const loansSnapshot = await getDocs(loansRef);
+      const loans = loansSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          borrowDate: data.borrowDate?.toDate ? data.borrowDate.toDate() : data.borrowDate,
+          returnDate: data.returnDate?.toDate ? data.returnDate.toDate() : data.returnDate,
+        } as Loan;
+      });
+
+      const studentsRef = collection(db, `users/${currentUser?.uid}/students`);
+      const studentsSnapshot = await getDocs(studentsRef);
+      const students = studentsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Student[];
+      
+      processClassroomPerformance(loans, students);
+      
+      setClassroomRankingFilter({
+        active: false,
+        startDate: '',
+        endDate: '',
+        loading: false
+      });
+    } catch (error) {
+      console.error('Erro ao limpar filtro do ranking de turmas:', error);
+      setClassroomRankingFilter(prev => ({ ...prev, loading: false }));
+    }
+  }, [currentUser?.uid]);
+
+  const fetchDashboardData = useCallback(async (options: { forceRefresh?: boolean; startDate?: Date; endDate?: Date } = {}) => {
+    const { forceRefresh = false, startDate: filterStartDate, endDate: filterEndDate } = options;
     if (!currentUser) return;
 
     try {
@@ -263,8 +442,8 @@ const Dashboard = () => {
       // 5. processa dados para os gráficos
       processGenreData(loans, books);
       processTopBooks(loans);
-      processTopStudents(loans, students);
-      processClassroomPerformance(loans, students);
+      processTopStudents(loans, students, filterStartDate, filterEndDate);
+      processClassroomPerformance(loans, students, filterStartDate, filterEndDate);
       processMonthlyLoanData(loans);
       processCompletionRateData(loans);
 
@@ -302,7 +481,7 @@ const Dashboard = () => {
     onInvalidate: () => {
       console.log('Dashboard cache invalidated - fetching fresh data');
       cache.markAsStale();
-      fetchDashboardData(true);
+      fetchDashboardData({ forceRefresh: true });
     }
   });
 
@@ -316,7 +495,7 @@ const Dashboard = () => {
     
     // Configurar atualização periódica
     const intervalId = setInterval(() => {
-      fetchDashboardData(true); // Force refresh no background
+      fetchDashboardData({ forceRefresh: true }); // Force refresh no background
     }, 300000); // 5 minutos (300000 millisegundos)
     
     // limpa o intervalo quando o componente for desmontado
@@ -420,7 +599,7 @@ const Dashboard = () => {
     setTopBooks(topBooksArray);
   };
 
-  const processTopStudents = (loans: Loan[], students: Student[]) => {
+  const processTopStudents = (loans: Loan[], students: Student[], startDate?: Date, endDate?: Date) => {
     // Contar livros lidos por aluno, considerando progresso parcial
     const studentReadCounts: Record<string, { id: string, name: string, classroom: string, count: number }> = {};
     
@@ -436,6 +615,14 @@ const Dashboard = () => {
     
     // Calcular pontuação baseada no progresso de leitura
     loans.forEach(loan => {
+      // Filtrar por data se os filtros estiverem ativos
+      if (startDate && endDate) {
+        const loanDate = loan.returnDate || loan.borrowDate;
+        if (!loanDate || loanDate < startDate || loanDate > endDate) {
+          return; // Pula este empréstimo se não estiver no período filtrado
+        }
+      }
+      
       if (loan.status === 'returned' && studentReadCounts[loan.studentId]) {
         // Se o livro foi marcado como concluído, soma 1 ponto
         if (loan.completed) {
@@ -464,7 +651,7 @@ const Dashboard = () => {
     setTopStudents(topStudentsArray);
   };
 
-  const processClassroomPerformance = (loans: Loan[], students: Student[]) => {
+  const processClassroomPerformance = (loans: Loan[], students: Student[], startDate?: Date, endDate?: Date) => {
     // Agrupar alunos por turma
     const classroomStudents: Record<string, string[]> = {};
     
@@ -491,6 +678,14 @@ const Dashboard = () => {
     
     // Processar empréstimos
     loans.forEach(loan => {
+      // Filtrar por data se os filtros estiverem ativos
+      if (startDate && endDate) {
+        const loanDate = loan.returnDate || loan.borrowDate;
+        if (!loanDate || loanDate < startDate || loanDate > endDate) {
+          return; // Pula este empréstimo se não estiver no período filtrado
+        }
+      }
+      
       const student = students.find(s => s.id === loan.studentId);
       if (student) {
         const classroom = student.classroom || 'Sem Turma';
@@ -695,6 +890,7 @@ const Dashboard = () => {
       )}
       
       <h2>Dashboard</h2>
+      
       <div className={styles.statsGrid}>
         {stats.map((stat, index) => (
           <StatCard 
@@ -939,7 +1135,17 @@ const Dashboard = () => {
       <div className={styles.charts}>
         {/* Top Alunos */}
         <div className={styles.chartCard}>
-          <h3>Ranking de Alunos</h3>
+          <div className={styles.chartHeader}>
+            <h3>Ranking de Alunos</h3>
+            <EmbeddedDateFilter
+              onApplyFilter={applyStudentRankingFilter}
+              onClearFilter={clearStudentRankingFilter}
+              hasActiveFilter={studentRankingFilter.active}
+              activeStartDate={studentRankingFilter.startDate}
+              activeEndDate={studentRankingFilter.endDate}
+              loading={studentRankingFilter.loading}
+            />
+          </div>
           {topStudents.length > 0 ? (
             <div className={styles.rankingContainer}>
               <table className={styles.topItemsTable}>
@@ -994,7 +1200,17 @@ const Dashboard = () => {
         
         {/* Desempenho por Turma */}
         <div className={styles.chartCard}>
-          <h3>Desempenho por Turma</h3>
+          <div className={styles.chartHeader}>
+            <h3>Desempenho por Turma</h3>
+            <EmbeddedDateFilter
+              onApplyFilter={applyClassroomRankingFilter}
+              onClearFilter={clearClassroomRankingFilter}
+              hasActiveFilter={classroomRankingFilter.active}
+              activeStartDate={classroomRankingFilter.startDate}
+              activeEndDate={classroomRankingFilter.endDate}
+              loading={classroomRankingFilter.loading}
+            />
+          </div>
           {classroomPerformance.length > 0 ? (
             <div className={styles.chartContainer}>
               <Bar
