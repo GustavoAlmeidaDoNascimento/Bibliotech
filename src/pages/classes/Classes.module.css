@@ -1,162 +1,351 @@
+@import '../../styles/PageStyles.module.css';
+
 .container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: 80vh;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-.header h1 {
-  color: #2c3e50;
-  margin-bottom: 3rem;
-  font-size: 2.5rem;
-  font-weight: 600;
-  text-align: center;
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.constructionArea {
+.headerActions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filterButton, .createButton, .selectAllButton, .deleteButton, .applyFiltersButton, .clearFiltersButton, .cancelButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.filterButton {
+  background-color: white;
+  color: var(--text-primary);
+}
+
+.filterButton:hover {
+  background-color: var(--bg-primary);
+}
+
+.createButton {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.createButton:hover {
+  background-color: var(--primary-hover);
+}
+
+.selectAllButton {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.selectAllButton:hover {
+  background-color: var(--secondary-hover);
+}
+
+.deleteButton {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.deleteButton:hover {
+  background-color: var(--danger-hover);
+}
+
+.deleteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttonIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.filters {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filterGroup {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 20px;
-  padding: 3rem 2rem;
-  position: relative;
+  gap: 0.5rem;
+}
+
+.filterGroup label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.filterGroup input, .filterGroup select, .selectField {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.filterGroup input:focus, .filterGroup select:focus, .selectField:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.filterActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.applyFiltersButton {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.applyFiltersButton:hover {
+  background-color: var(--primary-hover);
+}
+
+.clearFiltersButton {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.clearFiltersButton:hover {
+  background-color: var(--bg-primary);
+}
+
+/* Formulário de criação */
+.createForm {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.createForm h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.formGroup input, .formGroup select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.formGroup input:focus, .formGroup select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.formActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cancelButton {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.cancelButton:hover {
+  background-color: var(--bg-primary);
+}
+
+.content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-
-
-/* Fita de isolamento */
-.cautionTape {
-  width: 100%;
-  height: 40px;
-  background: repeating-linear-gradient(
-    45deg,
-    #ffeb3b 0px,
-    #ffeb3b 20px,
-    #000000 20px,
-    #000000 40px
-  );
-  position: relative;
-  margin: 1rem 0;
-  border-radius: 5px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.tapeStripe {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #333;
-  transform: translateY(-50%);
-}
-
-/* Área da mensagem */
-.messageArea {
+.loading {
+  padding: 3rem;
   text-align: center;
-  max-width: 600px;
+  color: var(--text-secondary);
 }
 
-/* Alerta de notificação */
-.notificationAlert {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border: 2px solid #2196f3;
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
-  margin: 1.5rem 0;
-  animation: pulse-notification 2s ease-in-out infinite;
+.emptyState {
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-secondary);
 }
 
-.bellIcon {
-  font-size: 1.5rem;
-  animation: ring 2s ease-in-out infinite;
+.emptyIcon {
+  margin-bottom: 1rem;
 }
 
-.alertText {
+.emptyStateIcon {
+  width: 4rem;
+  height: 4rem;
+  color: var(--text-tertiary);
+  margin: 0 auto;
+}
+
+.emptyState h3 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.emptyState p {
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+.table th {
+  background-color: var(--bg-primary);
+  padding: 1rem;
   text-align: left;
-  color: #1565c0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.alertText strong {
-  color: #0d47a1;
   font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
-.messageArea h2 {
-  color: #e67e22;
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  font-weight: 700;
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-light);
 }
 
-.messageArea p {
-  color: #5a6c7d;
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
+.checkboxColumn {
+  width: 50px;
 }
 
-/* Funcionalidades futuras */
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
-.feature {
+.checkbox {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  background: white;
-  padding: 1rem 1.5rem;
+  justify-content: center;
+}
+
+.checkbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.classRow {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.classRow:hover {
+  background-color: var(--bg-primary);
+}
+
+.classRow.selected {
+  background-color: var(--primary-light);
+}
+
+.className {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.shift {
+  color: var(--text-secondary);
+}
+
+.studentsCount {
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--primary-color);
+  color: white;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.feature:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.featureIcon {
-  font-size: 1.5rem;
-}
-
-.feature span:last-child {
-  color: #2c3e50;
+  font-size: 0.8rem;
   font-weight: 500;
 }
 
-/* Animações */
-@keyframes pulse-notification {
-  0%, 100% { 
-    box-shadow: 0 2px 10px rgba(33, 150, 243, 0.2);
-    transform: scale(1);
-  }
-  50% { 
-    box-shadow: 0 4px 20px rgba(33, 150, 243, 0.4);
-    transform: scale(1.02);
-  }
+
+.noResults {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
 }
 
-@keyframes ring {
-  0%, 100% { transform: rotate(0deg); }
-  10%, 30% { transform: rotate(-10deg); }
-  20% { transform: rotate(10deg); }
-  40%, 60% { transform: rotate(-5deg); }
-  50% { transform: rotate(5deg); }
-  70%, 90% { transform: rotate(-2deg); }
-  80% { transform: rotate(2deg); }
+.loadingMore {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
 /* Responsividade */
@@ -164,31 +353,61 @@
   .container {
     padding: 1rem;
   }
-  
-  .header h1 {
-    font-size: 2rem;
-    margin-bottom: 2rem;
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
   }
-  
-  .constructionArea {
-    padding: 2rem 1rem;
+
+  .headerActions {
+    justify-content: flex-end;
   }
-  
-  .features {
+
+  .filterGrid, .formGrid {
     grid-template-columns: 1fr;
   }
-  
-  .messageArea h2 {
-    font-size: 1.5rem;
-  }
-  
-  .notificationAlert {
+
+  .filterActions, .formActions {
     flex-direction: column;
-    text-align: center;
-    gap: 0.5rem;
   }
-  
-  .alertText {
-    text-align: center;
+
+  .filterButton, .createButton, .selectAllButton, .deleteButton,
+  .applyFiltersButton, .clearFiltersButton, .cancelButton {
+    justify-content: center;
   }
+
+  .table {
+    font-size: 0.9rem;
+  }
+
+  .table th, .table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .emptyState {
+    padding: 2rem 1rem;
+  }
+
+  .emptyStateIcon {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerActions {
+    flex-direction: column;
+  }
+
+  .table th, .table td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+
 }
