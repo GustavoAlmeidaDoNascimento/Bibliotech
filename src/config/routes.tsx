@@ -19,6 +19,7 @@ import Books from '../pages/books/Books';
 import RegisterBook from '../pages/books/RegisterBook';
 import EditBook from '../pages/books/EditBook';
 import Classes from '../pages/classes/Classes';
+import EditClass from '../pages/classes/EditClass';
 import StudentLoans from '../pages/loans/StudentLoans';
 import StudentLoanDetail from '../pages/loans/StudentLoanDetail';
 import StaffLoans from '../pages/loans/StaffLoans';
@@ -123,6 +124,10 @@ export const protectedRoutes = [
   {
     path: ROUTES.CLASSES,
     element: <Classes />,
+  },
+  {
+    path: "/classes/:className/:shift",
+    element: <EditClass />,
   },
   {
     path: "/student-loans",

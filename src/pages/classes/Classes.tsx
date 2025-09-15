@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { collection, query, getDocs, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -45,6 +46,7 @@ const Classes: React.FC = () => {
   });
 
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
 
   // Função para extrair turmas únicas dos alunos
   const extractClassesFromStudents = useCallback((studentsData: Student[]): ClassInfo[] => {
@@ -248,6 +250,12 @@ const Classes: React.FC = () => {
     }
   };
 
+  const handleRowClick = (className: string, shift: string) => {
+    // Codificar os parâmetros para a URL
+    const encodedClassName = encodeURIComponent(className);
+    const encodedShift = encodeURIComponent(shift);
+    navigate(`/classes/${encodedClassName}/${encodedShift}`);
+  };
 
   return (
     <div className={styles.container}>
@@ -455,6 +463,7 @@ const Classes: React.FC = () => {
                         <tr 
                           key={classKey}
                           className={`${styles.classRow} ${selectedClasses.includes(classKey) ? styles.selected : ''}`}
+                          onClick={() => handleRowClick(classInfo.name, classInfo.shift)}
                         >
                           <td 
                             className={styles.checkboxColumn}
