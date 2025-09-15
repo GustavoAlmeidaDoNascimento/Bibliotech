@@ -324,10 +324,24 @@
   text-align: center;
 }
 
+.booksWithdrawnCount {
+  text-align: center;
+}
+
 .badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
   background-color: var(--primary-color);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.booksBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: #059669;
   color: white;
   border-radius: 12px;
   font-size: 0.8rem;

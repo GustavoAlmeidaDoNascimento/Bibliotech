@@ -21,6 +21,7 @@ interface ClassInfo {
   shift: string;
   studentsCount: number;
   students: Student[];
+  totalBooksWithdrawn: number;
   createdAt?: any;
 }
 
@@ -49,7 +50,7 @@ const Classes: React.FC = () => {
   const navigate = useNavigate();
 
   // Função para extrair turmas únicas dos alunos
-  const extractClassesFromStudents = useCallback((studentsData: Student[]): ClassInfo[] => {
+  const extractClassesFromStudents = useCallback((studentsData: Student[], loansData: any[] = []): ClassInfo[] => {
     const classMap = new Map<string, ClassInfo>();
 
     studentsData.forEach(student => {
@@ -66,9 +67,17 @@ const Classes: React.FC = () => {
           name: student.classroom,
           shift: student.shift || 'Não informado',
           studentsCount: 1,
-          students: [student]
+          students: [student],
+          totalBooksWithdrawn: 0
         });
       }
+    });
+
+    // Calcular total de livros retirados por turma
+    classMap.forEach((classInfo, key) => {
+      const studentIds = classInfo.students.map(student => student.id);
+      const classLoans = loansData.filter(loan => studentIds.includes(loan.studentId));
+      classInfo.totalBooksWithdrawn = classLoans.length;
     });
 
     return Array.from(classMap.values()).sort((a, b) => a.name.localeCompare(b.name));
@@ -79,22 +88,33 @@ const Classes: React.FC = () => {
     
     try {
       setLoading(true);
-      const studentsRef = collection(db, `users/${currentUser.uid}/students`);
-      const q = query(studentsRef, orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
       
-      const fetchedStudents = querySnapshot.docs.map(doc => ({
+      // Buscar alunos
+      const studentsRef = collection(db, `users/${currentUser.uid}/students`);
+      const studentsQuery = query(studentsRef, orderBy('createdAt', 'desc'));
+      const studentsSnapshot = await getDocs(studentsQuery);
+      
+      const fetchedStudents = studentsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as Student[];
       
+      // Buscar empréstimos
+      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
+      const loansQuery = query(loansRef);
+      const loansSnapshot = await getDocs(loansQuery);
       
-      // Extrair turmas dos alunos
-      const extractedClasses = extractClassesFromStudents(fetchedStudents);
+      const fetchedLoans = loansSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Extrair turmas dos alunos com dados de empréstimos
+      const extractedClasses = extractClassesFromStudents(fetchedStudents, fetchedLoans);
       setClasses(extractedClasses);
       setFilteredClasses(extractedClasses);
     } catch (error) {
-      console.error('Erro ao buscar alunos:', error);
+      console.error('Erro ao buscar dados:', error);
     } finally {
       setLoading(false);
     }
@@ -454,6 +474,7 @@ const Classes: React.FC = () => {
                       <th>Nome da Turma</th>
                       <th>Turno</th>
                       <th>Quantidade de Alunos</th>
+                      <th>Total de Livros Retirados</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -488,6 +509,11 @@ const Classes: React.FC = () => {
                           <td className={styles.studentsCount}>
                             <span className={styles.badge}>
                               {classInfo.studentsCount} {classInfo.studentsCount === 1 ? 'aluno' : 'alunos'}
+                            </span>
+                          </td>
+                          <td className={styles.booksWithdrawnCount}>
+                            <span className={styles.booksBadge}>
+                              {classInfo.totalBooksWithdrawn} {classInfo.totalBooksWithdrawn === 1 ? 'livro' : 'livros'}
                             </span>
                           </td>
                         </tr>
