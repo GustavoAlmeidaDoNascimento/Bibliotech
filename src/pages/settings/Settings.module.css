@@ -342,6 +342,108 @@
   background-color: #128C7E;
 }
 
+/* Estilos modernos para a seção de suporte */
+.supportContainer {
+  display: flex;
+  gap: 24px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #e3e8ff;
+  margin-top: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.teamImageContainer {
+  flex-shrink: 0;
+}
+
+.teamImage {
+  width: 180px;
+  height: 140px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 3px solid white;
+}
+
+.supportContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.supportHeader h4 {
+  margin: 0 0 12px 0;
+  color: #1e293b;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.supportDescription {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.supportActions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modernSupportButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  text-decoration: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.3);
+  align-self: flex-start;
+}
+
+.modernSupportButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+  background: linear-gradient(135deg, #128C7E 0%, #075e54 100%);
+}
+
+.whatsappIcon {
+  flex-shrink: 0;
+}
+
+
+/* Responsividade para a seção de suporte */
+@media (max-width: 768px) {
+  .supportContainer {
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+  }
+  
+  .teamImage {
+    width: 100%;
+    height: 200px;
+    max-width: 300px;
+    margin: 0 auto;
+    display: block;
+  }
+  
+  
+  .modernSupportButton {
+    align-self: stretch;
+    justify-content: center;
+  }
+}
+
 .adminButton {
   background-color: #6f42c1;
   color: white;
