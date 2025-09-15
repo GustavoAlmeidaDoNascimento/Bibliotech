@@ -30,6 +30,8 @@ interface Filters {
   shift: string;
 }
 
+type SortOption = 'name' | 'shift' | 'studentsAsc' | 'studentsDesc' | 'booksAsc' | 'booksDesc';
+
 const Classes: React.FC = () => {
   const [classes, setClasses] = useState<ClassInfo[]>([]);
   const [filteredClasses, setFilteredClasses] = useState<ClassInfo[]>([]);
@@ -41,6 +43,7 @@ const Classes: React.FC = () => {
   const [newClassName, setNewClassName] = useState('');
   const [newClassShift, setNewClassShift] = useState('');
   const [creating, setCreating] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('name');
   const [filters, setFilters] = useState<Filters>({
     name: '',
     shift: ''
@@ -80,7 +83,29 @@ const Classes: React.FC = () => {
       classInfo.totalBooksWithdrawn = classLoans.length;
     });
 
-    return Array.from(classMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return Array.from(classMap.values());
+  }, []);
+
+  // Função para ordenar as turmas
+  const sortClasses = useCallback((classesToSort: ClassInfo[], sortOption: SortOption): ClassInfo[] => {
+    const sorted = [...classesToSort];
+    
+    switch (sortOption) {
+      case 'name':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'shift':
+        return sorted.sort((a, b) => a.shift.localeCompare(b.shift));
+      case 'studentsAsc':
+        return sorted.sort((a, b) => a.studentsCount - b.studentsCount);
+      case 'studentsDesc':
+        return sorted.sort((a, b) => b.studentsCount - a.studentsCount);
+      case 'booksAsc':
+        return sorted.sort((a, b) => a.totalBooksWithdrawn - b.totalBooksWithdrawn);
+      case 'booksDesc':
+        return sorted.sort((a, b) => b.totalBooksWithdrawn - a.totalBooksWithdrawn);
+      default:
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    }
   }, []);
 
   const fetchStudents = useCallback(async () => {
@@ -111,18 +136,32 @@ const Classes: React.FC = () => {
       
       // Extrair turmas dos alunos com dados de empréstimos
       const extractedClasses = extractClassesFromStudents(fetchedStudents, fetchedLoans);
-      setClasses(extractedClasses);
-      setFilteredClasses(extractedClasses);
+      const sortedClasses = sortClasses(extractedClasses, sortBy);
+      setClasses(sortedClasses);
+      setFilteredClasses(sortedClasses);
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
     } finally {
       setLoading(false);
     }
-  }, [currentUser, extractClassesFromStudents]);
+  }, [currentUser, extractClassesFromStudents, sortClasses]);
 
   useEffect(() => {
     fetchStudents();
   }, [fetchStudents]);
+
+  // Re-ordenar quando a ordenação mudar
+  useEffect(() => {
+    if (classes.length > 0) {
+      const sortedClasses = sortClasses([...classes], sortBy);
+      setClasses(sortedClasses);
+      
+      if (filtersApplied && filteredClasses.length > 0) {
+        const sortedFilteredClasses = sortClasses([...filteredClasses], sortBy);
+        setFilteredClasses(sortedFilteredClasses);
+      }
+    }
+  }, [sortBy]);
 
   const currentClasses = filtersApplied ? filteredClasses : classes;
 
@@ -206,7 +245,8 @@ const Classes: React.FC = () => {
       );
     }
 
-    setFilteredClasses(result);
+    const sortedResult = sortClasses(result, sortBy);
+    setFilteredClasses(sortedResult);
     setFiltersApplied(true);
   };
 
@@ -294,6 +334,22 @@ const Classes: React.FC = () => {
           )}
           {selectedClasses.length === 0 && (
             <>
+              <div className={styles.sortContainer}>
+                <label htmlFor="sortBy" className={styles.sortLabel}>Ordenar por:</label>
+                <select
+                  id="sortBy"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className={styles.sortSelect}
+                >
+                  <option value="name">Nome</option>
+                  <option value="shift">Turno</option>
+                  <option value="studentsAsc">Alunos (Crescente)</option>
+                  <option value="studentsDesc">Alunos (Decrescente)</option>
+                  <option value="booksAsc">Leituras (Crescente)</option>
+                  <option value="booksDesc">Leituras (Decrescente)</option>
+                </select>
+              </div>
               <button
                 className={styles.filterButton}
                 onClick={() => setShowFilters(!showFilters)}
