@@ -17,7 +17,7 @@ import {
 } from 'chart.js';
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeftIcon, AcademicCapIcon } from '@heroicons/react/24/solid';
+import { ArrowLeftIcon, AcademicCapIcon, UserIcon, UserGroupIcon, StarIcon } from '@heroicons/react/24/solid';
 import styles from './StudentDashboard.module.css';
 
 // Registrando os componentes necessários do Chart.js
@@ -237,9 +237,9 @@ const StudentDashboard: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'pessoal' as TabType, label: 'Pessoal', icon: '👤' },
-    { id: 'turma' as TabType, label: 'Turma', icon: '👥' },
-    { id: 'recomendacoes' as TabType, label: 'Recomendações', icon: '⭐' }
+    { id: 'pessoal' as TabType, label: 'Pessoal', icon: UserIcon },
+    { id: 'turma' as TabType, label: 'Turma', icon: UserGroupIcon },
+    { id: 'recomendacoes' as TabType, label: 'Recomendações', icon: StarIcon }
   ];
 
   const renderTabContent = () => {
@@ -249,7 +249,9 @@ const StudentDashboard: React.FC = () => {
       case 'turma':
         return (
           <div className={styles.tabContentPlaceholder}>
-            <div className={styles.placeholderIcon}>👥</div>
+            <div className={styles.placeholderIcon}>
+              <UserGroupIcon />
+            </div>
             <h3>Dashboard da Turma</h3>
             <p>Em desenvolvimento...</p>
             <p>Aqui aparecerão estatísticas e informações sobre a turma {student?.className}</p>
@@ -258,7 +260,9 @@ const StudentDashboard: React.FC = () => {
       case 'recomendacoes':
         return (
           <div className={styles.tabContentPlaceholder}>
-            <div className={styles.placeholderIcon}>⭐</div>
+            <div className={styles.placeholderIcon}>
+              <StarIcon />
+            </div>
             <h3>Recomendações</h3>
             <p>Em desenvolvimento...</p>
             <p>Aqui aparecerão recomendações personalizadas de livros</p>
@@ -545,16 +549,19 @@ const StudentDashboard: React.FC = () => {
       {/* Sistema de Abas */}
       <div className={styles.tabsContainer}>
         <div className={styles.tabsWrapper}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <span className={styles.tabIcon}>{tab.icon}</span>
-              <span className={styles.tabLabel}>{tab.label}</span>
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            const IconComponent = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <IconComponent className={styles.tabIcon} />
+                <span className={styles.tabLabel}>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
         
         {/* Indicador da aba ativa */}
