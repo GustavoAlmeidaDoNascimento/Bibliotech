@@ -18,6 +18,9 @@
 .env.test.local
 .env.production.local
 
+# Cursor rules (configurações locais do editor)
+.cursor/
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
