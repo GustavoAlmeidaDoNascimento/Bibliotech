@@ -9,7 +9,7 @@ import Dashboard from '../pages/dashboard/Dashboard';
 import Students from '../pages/students/Students';
 import RegisterStudent from '../pages/students/RegisterStudent';
 import EditStudent from '../pages/students/EditStudent';
-import StudentDashboard from '../pages/students/StudentDashboard';
+import LibrarianStudentDashboard from '../pages/students/StudentDashboard';
 import Staff from '../pages/staff/Staff';
 import RegisterStaff from '../pages/staff/RegisterStaff';
 import EditStaff from '../pages/staff/EditStaff';
@@ -33,7 +33,7 @@ import Settings from '../pages/settings/Settings';
 import UpdateNotification from '../pages/admin/UpdateNotification';
 import Home from '../pages/Home';
 import StudentIdInput from '../pages/student/StudentIdInput';
-import StudentWelcome from '../pages/student/StudentWelcome';
+import StudentDashboard from '../pages/student/StudentDashboard';
 import { ROUTES } from '../constants';
 
 // redireciona com base no estado de autenticação
@@ -65,8 +65,8 @@ export const publicRoutes = [
     element: <StudentIdInput />,
   },
   {
-    path: "/student-welcome/:studentId",
-    element: <StudentWelcome />,
+    path: "/student-dashboard/:studentId",
+    element: <StudentDashboard />,
   },
 ];
 
@@ -90,7 +90,7 @@ export const protectedRoutes = [
   },
   {
     path: "/students/:studentId",
-    element: <StudentDashboard />,
+    element: <LibrarianStudentDashboard />,
   },
   {
     path: ROUTES.STAFF,

@@ -1,0 +1,500 @@
+/* Container principal */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header */
+.header {
+  margin-bottom: 30px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  margin-bottom: 20px;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.backIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.studentHeader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px 30px;
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+}
+
+.studentIcon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.studentIcon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.studentInfo {
+  flex: 1;
+}
+
+.studentName {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.studentDetails {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Loading */
+.loadingCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 60px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  text-align: center;
+  max-width: 400px;
+  margin: 100px auto;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingCard p {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+}
+
+/* Error */
+.errorCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 60px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  text-align: center;
+  max-width: 500px;
+  margin: 100px auto;
+}
+
+.errorCard h2 {
+  color: #e53e3e;
+  font-size: 24px;
+  margin: 0 0 16px 0;
+}
+
+.errorCard p {
+  color: #718096;
+  font-size: 16px;
+  margin: 0 0 30px 0;
+}
+
+.errorActions {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Empty State */
+.emptyState {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 60px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.emptyIcon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin: 0 auto 30px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.emptyIcon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.emptyState h3 {
+  font-size: 24px;
+  color: #2d3748;
+  margin: 0 0 16px 0;
+  font-weight: 600;
+}
+
+.emptyState p {
+  font-size: 16px;
+  color: #718096;
+  margin: 0 0 30px 0;
+  line-height: 1.6;
+}
+
+.emptyActions {
+  display: flex;
+  justify-content: center;
+}
+
+/* Buttons */
+.primaryButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.primaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.secondaryButton {
+  background: rgba(255, 255, 255, 0.9);
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 10px 22px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.secondaryButton:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+}
+
+.statCard h3 {
+  font-size: 14px;
+  color: #718096;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statCard .value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.statCard p {
+  font-size: 12px;
+  color: #a0aec0;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Charts Grid */
+.chartGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.chartCard {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+}
+
+.chartCard h3 {
+  font-size: 18px;
+  color: #2d3748;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+}
+
+.chart {
+  height: 300px;
+  position: relative;
+}
+
+.noData {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #a0aec0;
+  font-size: 16px;
+  font-style: italic;
+}
+
+/* Loans Table */
+.loansList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.loansTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.loansTable th,
+.loansTable td {
+  text-align: left;
+  padding: 12px 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.loansTable th {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 14px;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.loansTable td {
+  font-size: 14px;
+  color: #2d3748;
+}
+
+.loansTable tr:hover {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.returned {
+  color: #48bb78;
+  font-weight: 600;
+}
+
+.active {
+  color: #ed8936;
+  font-weight: 600;
+}
+
+.moreLoans {
+  text-align: center;
+  color: #718096;
+  font-size: 14px;
+  margin: 15px 0 0 0;
+  font-style: italic;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.footerButton {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.footerButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+
+  .studentHeader {
+    padding: 20px;
+    gap: 15px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .studentName {
+    font-size: 24px;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .chartCard {
+    padding: 20px;
+  }
+
+  .chart {
+    height: 250px;
+  }
+
+  .errorCard,
+  .loadingCard,
+  .emptyState {
+    padding: 40px 20px;
+    margin: 50px auto;
+  }
+
+  .errorActions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+
+  .studentHeader {
+    padding: 15px;
+  }
+
+  .studentName {
+    font-size: 20px;
+  }
+
+  .statCard {
+    padding: 20px;
+  }
+
+  .statCard .value {
+    font-size: 28px;
+  }
+
+  .chartCard {
+    padding: 15px;
+  }
+
+  .chart {
+    height: 200px;
+  }
+
+  .loansTable th,
+  .loansTable td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+}

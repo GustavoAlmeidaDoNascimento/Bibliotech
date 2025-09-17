@@ -1,0 +1,90 @@
+Firebase Security Rules - Atualização para Dashboard Público do Aluno
+==========================================================================
+
+Para permitir que o dashboard do aluno funcione sem autenticação, você precisa atualizar as regras do Firebase para permitir acesso público às seguintes coleções:
+
+1. ✅ users (já permitido) - para buscar alunos
+2. ✅ users/{userId}/students/{studentId} (já permitido) - para dados do aluno  
+3. ❌ users/{userId}/loans (NOVO) - para empréstimos do aluno
+4. ❌ users/{userId}/books (NOVO) - para dados dos livros
+
+REGRAS ATUALIZADAS:
+==================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Permitir leitura da coleção users para listar bibliotecas
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Permitir acesso público aos dados dos alunos
+    match /users/{userId}/students/{studentId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 🆕 NOVO: Permitir acesso público aos empréstimos para dashboard do aluno
+    match /users/{userId}/loans/{loanId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 🆕 NOVO: Permitir acesso público aos dados dos livros para dashboard do aluno
+    match /users/{userId}/books/{bookId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Demais regras permanecem iguais
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /globalNotifications/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.email == 'admin@admin.com';
+    }
+    
+    match /publicData/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
+
+INSTRUÇÕES:
+===========
+
+1. Acesse o Console do Firebase (https://console.firebase.google.com)
+2. Vá para seu projeto
+3. Navegue até "Firestore Database" > "Rules"
+4. Substitua as regras atuais pelas regras acima
+5. Clique em "Publish" para aplicar as mudanças
+
+IMPORTANTE:
+===========
+
+⚠️  Estas regras permitem acesso público (sem autenticação) aos dados de:
+   - Alunos
+   - Empréstimos 
+   - Livros
+   
+   Isso é necessário para o dashboard público funcionar, mas significa que qualquer pessoa
+   com um ID de aluno válido pode acessar esses dados.
+
+✅  As operações de escrita (write) ainda requerem autenticação, mantendo a segurança.
+
+✅  Somente as operações de leitura (read) são públicas.
+
+TESTE APÓS APLICAR:
+==================
+
+1. Salve este arquivo
+2. Aplique as regras no Firebase Console  
+3. Teste o login do aluno para verificar se o dashboard carrega corretamente
+4. Verifique se os gráficos e métricas aparecem quando há dados de empréstimos
+
+Se tiver problemas, verifique o console do navegador para mensagens de erro relacionadas às permissões do Firebase.
