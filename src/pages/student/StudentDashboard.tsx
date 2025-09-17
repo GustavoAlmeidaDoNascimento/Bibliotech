@@ -249,7 +249,7 @@ const StudentDashboard: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.errorCard}>
           <h2>Ops! Algo deu errado</h2>
-          <p>{error?.message || 'Não conseguimos carregar seus dados.'}</p>
+          <p>{error || 'Não conseguimos carregar seus dados.'}</p>
           <div className={styles.errorActions}>
             <button onClick={handleGoBack} className={styles.secondaryButton}>
               Tentar novamente
