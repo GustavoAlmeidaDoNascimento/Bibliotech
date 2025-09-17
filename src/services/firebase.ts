@@ -8,14 +8,9 @@ import {
 } from 'firebase/auth';
 import { 
   getFirestore, 
-  collection, 
-  query, 
-  where, 
-  getDocs,
   doc,
   getDoc
 } from 'firebase/firestore';
-import { Student } from '../types/common';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBaukjjy1nr7HognROeHmdQADjfbvSmu64",
@@ -48,46 +43,6 @@ export const authService = {
   },
 };
 
-// Student auth services
-export const studentAuthService = {
-  authenticate: async (username: string, password: string): Promise<Student> => {
-    // pega lista de todos os usuários da biblioteca
-    const usersRef = collection(db, 'users');
-    const usersSnapshot = await getDocs(usersRef);
-    
-    for (const libraryDoc of usersSnapshot.docs) {
-      // para cada bibliotecário, procura na coleção de alunos
-      const studentsCollRef = collection(db, `users/${libraryDoc.id}/students`);
-      const studentQuery = query(
-        studentsCollRef,
-        where('username', '==', username),
-        where('hasCredentials', '==', true)
-      );
-      
-      const studentSnapshot = await getDocs(studentQuery);
-      
-      if (!studentSnapshot.empty) {
-        const doc = studentSnapshot.docs[0];
-        const studentData = doc.data();
-        
-        // verifica a senha
-        if (studentData.tempPassword === password) {
-          return {
-            id: doc.id,
-            name: studentData.name,
-            className: studentData.className,
-            userId: libraryDoc.id,
-            username: studentData.username,
-            hasCredentials: studentData.hasCredentials,
-            tempPassword: studentData.tempPassword,
-          };
-        }
-      }
-    }
-    
-    throw new Error('Nome de usuário ou senha incorretos');
-  },
-};
 
 // Settings services
 export const settingsService = {

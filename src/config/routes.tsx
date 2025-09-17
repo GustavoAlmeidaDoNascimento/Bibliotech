@@ -5,8 +5,6 @@ import { useAuth } from '../contexts/AuthContext';
 // lazy loading dos componentes para melhor performance
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
-import StudentLogin from '../pages/auth/StudentLogin';
-import StudentDashboardPage from '../pages/student/StudentDashboard';
 import Dashboard from '../pages/dashboard/Dashboard';
 import Students from '../pages/students/Students';
 import RegisterStudent from '../pages/students/RegisterStudent';
@@ -31,7 +29,6 @@ import CodeSelection from '../pages/withdrawals/CodeSelection';
 import WithdrawalConfirmation from '../pages/withdrawals/WithdrawalConfirmation';
 import StaffWithdrawalConfirmation from '../pages/withdrawals/StaffWithdrawalConfirmation';
 import SelectStaffBook from '../pages/withdrawals/SelectStaffBook';
-import StaffReturns from '../pages/returns/StaffReturns';
 import Settings from '../pages/settings/Settings';
 import UpdateNotification from '../pages/admin/UpdateNotification';
 import Home from '../pages/Home';
@@ -60,14 +57,6 @@ export const publicRoutes = [
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
-  },
-  {
-    path: "/student-login",
-    element: <StudentLogin />,
-  },
-  {
-    path: "/student-dashboard",
-    element: <StudentDashboardPage />,
   },
 ];
 

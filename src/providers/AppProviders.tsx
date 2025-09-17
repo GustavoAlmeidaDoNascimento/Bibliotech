@@ -1,6 +1,5 @@
 import React from 'react';
 import { AuthProvider } from '../contexts/AuthContext';
-import { StudentAuthProvider } from '../contexts/StudentAuthContext';
 import { TagsProvider } from '../contexts/TagsContext';
 import { AuthorsProvider } from '../contexts/AuthorsContext';
 import { SettingsProvider } from '../contexts/SettingsContext';
@@ -21,11 +20,9 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
           <TagsProvider>
             <EducationalLevelsProvider>
               <AuthorsProvider>
-                <StudentAuthProvider>
-                  <ThemeProvider>
-                    {children}
-                  </ThemeProvider>
-                </StudentAuthProvider>
+                <ThemeProvider>
+                  {children}
+                </ThemeProvider>
               </AuthorsProvider>
             </EducationalLevelsProvider>
           </TagsProvider>

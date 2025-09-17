@@ -78,10 +78,6 @@ export interface LoginFormData {
   password: string;
 }
 
-export interface StudentLoginFormData {
-  username: string;
-  password: string;
-}
 
 // Component props interfaces
 export interface CardProps {
