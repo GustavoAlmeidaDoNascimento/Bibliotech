@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, query, getDocs, doc, updateDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, doc, updateDoc, serverTimestamp, orderBy, setDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useEducationalLevels } from '../../contexts/EducationalLevelsContext';
 import { ArrowLeftIcon, ChartBarIcon, TrophyIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
@@ -23,6 +24,7 @@ interface Student {
 interface ClassInfo {
   name: string;
   shift: string;
+  educationalLevelId?: string;
   studentsCount: number;
   students: Student[];
 }
@@ -60,6 +62,7 @@ const EditClass: React.FC = () => {
   const { className, shift } = useParams<{ className: string; shift: string }>();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { levels, getLevelById } = useEducationalLevels();
 
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
   const [classStats, setClassStats] = useState<ClassStats | null>(null);
@@ -72,7 +75,8 @@ const EditClass: React.FC = () => {
   // Estados do formulário
   const [formData, setFormData] = useState({
     name: '',
-    shift: ''
+    shift: '',
+    educationalLevelId: ''
   });
 
   // Função para buscar dados da turma e alunos
@@ -107,9 +111,29 @@ const EditClass: React.FC = () => {
         return;
       }
 
+      // Buscar dados da turma na coleção classes (se existir)
+      let educationalLevelId = '';
+      try {
+        const classesRef = collection(db, `users/${currentUser.uid}/classes`);
+        const classQuery = query(classesRef);
+        const classesSnapshot = await getDocs(classQuery);
+        
+        const existingClass = classesSnapshot.docs.find(doc => {
+          const data = doc.data();
+          return data.name === decodedClassName && data.shift === decodedShift;
+        });
+        
+        if (existingClass) {
+          educationalLevelId = existingClass.data().educationalLevelId || '';
+        }
+      } catch (error) {
+        console.log('Erro ao buscar dados da turma:', error);
+      }
+
       const classData: ClassInfo = {
         name: decodedClassName,
         shift: decodedShift,
+        educationalLevelId,
         studentsCount: classStudents.length,
         students: classStudents
       };
@@ -117,7 +141,8 @@ const EditClass: React.FC = () => {
       setClassInfo(classData);
       setFormData({
         name: decodedClassName,
-        shift: decodedShift
+        shift: decodedShift,
+        educationalLevelId
       });
 
     } catch (err) {
@@ -274,11 +299,27 @@ const EditClass: React.FC = () => {
         return updateDoc(studentRef, {
           classroom: formData.name.trim(),
           shift: formData.shift || 'Não informado',
+          educationalLevelId: formData.educationalLevelId || '',
           updatedAt: serverTimestamp()
         });
       });
 
-      await Promise.all(updatePromises);
+      // Salvar/atualizar dados da turma na coleção classes
+      const classId = `${formData.name.trim()}_${formData.shift || 'Não informado'}`.replace(/[^a-zA-Z0-9]/g, '_');
+      const classRef = doc(db, `users/${currentUser.uid}/classes/${classId}`);
+      const classData = {
+        name: formData.name.trim(),
+        shift: formData.shift || 'Não informado',
+        educationalLevelId: formData.educationalLevelId || '',
+        studentsCount: classInfo.students.length,
+        userId: currentUser.uid,
+        updatedAt: serverTimestamp(),
+        createdAt: serverTimestamp() // Será ignorado se o documento já existir
+      };
+      
+      const classUpdatePromise = setDoc(classRef, classData, { merge: true });
+
+      await Promise.all([...updatePromises, classUpdatePromise]);
 
       setSuccess('Turma atualizada com sucesso!');
       
@@ -286,13 +327,11 @@ const EditClass: React.FC = () => {
       setClassInfo(prev => prev ? {
         ...prev,
         name: formData.name.trim(),
-        shift: formData.shift || 'Não informado'
+        shift: formData.shift || 'Não informado',
+        educationalLevelId: formData.educationalLevelId || ''
       } : null);
 
-      // Redirecionar após um breve delay
-      setTimeout(() => {
-        navigate('/classes');
-      }, 1500);
+      // Não redirecionar mais automaticamente - usuário permanece na página
 
     } catch (err) {
       console.error('Erro ao atualizar turma:', err);
@@ -388,6 +427,22 @@ const EditClass: React.FC = () => {
                   <option value="tarde">Tarde</option>
                   <option value="noite">Noite</option>
                   <option value="integral">Integral</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="educationalLevel">Nível Educacional:</label>
+                <select
+                  id="educationalLevel"
+                  value={formData.educationalLevelId}
+                  onChange={(e) => handleInputChange('educationalLevelId', e.target.value)}
+                  className={styles.selectField}
+                >
+                  <option value="">Selecione um nível</option>
+                  {levels.map((level) => (
+                    <option key={level.id} value={level.id}>
+                      {level.name} {level.abbreviation && `(${level.abbreviation})`}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

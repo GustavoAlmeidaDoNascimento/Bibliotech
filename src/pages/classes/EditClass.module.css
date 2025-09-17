@@ -53,7 +53,7 @@
 }
 
 .saveButton:hover {
-  background-color: var(--primary-hover);
+  background-color: var(--primary-dark);
 }
 
 .saveButton:disabled {

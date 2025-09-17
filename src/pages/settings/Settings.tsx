@@ -14,6 +14,8 @@ import {
 } from 'firebase/firestore';
 import { reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import TagManager from '../../components/TagManager';
+import EducationalLevelManager from '../../components/EducationalLevelManager';
+import ClassesByLevel from '../../components/ClassesByLevel';
 import styles from './Settings.module.css';
 
 const Settings = () => {
@@ -562,6 +564,14 @@ const Settings = () => {
         
         <div className={styles.settingsSection}>
           <TagManager />
+        </div>
+        
+        <div className={styles.settingsSection}>
+          <EducationalLevelManager />
+        </div>
+        
+        <div className={styles.settingsSection}>
+          <ClassesByLevel />
         </div>
         
         <div className={styles.settingsSection}>

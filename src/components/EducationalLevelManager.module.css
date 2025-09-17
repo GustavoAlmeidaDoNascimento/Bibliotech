@@ -1,0 +1,354 @@
+.container {
+  background: var(--background-secondary);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.createButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.createButton:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.createButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttonIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.errorMessage {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}
+
+.successMessage {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.createForm {
+  background: var(--background-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 120px;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formGroup label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.formGroup input {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.formGroup input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.formActions {
+  display: flex;
+  gap: 12px;
+}
+
+.saveButton {
+  padding: 10px 20px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: var(--primary-color-hover);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: var(--background-hover);
+  border-color: var(--text-secondary);
+}
+
+.levelsList {
+  margin-top: 24px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  background: var(--background-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.emptyState p {
+  margin: 8px 0;
+}
+
+.levelsTable {
+  background: var(--background-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 80px 2fr 1fr 120px;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 80px 2fr 1fr 120px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.tableRow:hover {
+  background: var(--background-hover);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableCell {
+  padding: 16px 12px;
+  display: flex;
+  align-items: center;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.tableHeader .tableCell {
+  font-weight: 600;
+  padding: 12px;
+}
+
+@media (max-width: 768px) {
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 1fr;
+  }
+  
+  .tableCell {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .tableHeader .tableCell {
+    display: none;
+  }
+  
+  .tableRow .tableCell:before {
+    content: attr(data-label);
+    font-weight: 600;
+    display: inline-block;
+    min-width: 100px;
+    margin-right: 12px;
+  }
+}
+
+.orderBadge {
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+}
+
+.levelName {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.levelAbbreviation {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.editActionButton,
+.deleteActionButton,
+.saveActionButton,
+.cancelActionButton {
+  padding: 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.editActionButton {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.editActionButton:hover {
+  background: #dbeafe;
+}
+
+.deleteActionButton {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.deleteActionButton:hover {
+  background: #fee2e2;
+}
+
+.saveActionButton {
+  background: #f0f9ff;
+  color: #059669;
+}
+
+.saveActionButton:hover {
+  background: #ecfdf5;
+}
+
+.cancelActionButton {
+  background: #f9fafb;
+  color: #6b7280;
+}
+
+.cancelActionButton:hover {
+  background: #f3f4f6;
+}
+
+.actionIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.editInput {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.editInput:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}

@@ -66,6 +66,7 @@ const EditBook = () => {
   const [currentGenre, setCurrentGenre] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loanHistory, setLoanHistory] = useState<LoanHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
@@ -80,6 +81,12 @@ const EditBook = () => {
   const { genres, addGenre, capitalizeTag } = useTags();
   const useDistinctCodesEnabled = useDistinctCodes();
   const navigate = useNavigate();
+
+  // Função helper para limpar mensagens quando o formulário é modificado
+  const clearMessages = () => {
+    setError('');
+    setSuccess('');
+  };
 
   // Função para buscar códigos que estão emprestados
   const fetchBorrowedCodes = async () => {
@@ -317,7 +324,9 @@ const EditBook = () => {
       const bookRef = doc(db, `users/${currentUser.uid}/books/${bookId}`);
       await updateDoc(bookRef, bookData);
       
-      navigate('/books');
+      // Não redirecionar mais automaticamente - usuário permanece na página
+      setError(''); // Limpar qualquer erro anterior
+      setSuccess('Livro atualizado com sucesso!');
     } catch (err) {
       console.error('Error updating book:', err);
       if (err instanceof Error) {
@@ -636,6 +645,7 @@ const EditBook = () => {
 
       <form onSubmit={handleSubmit} className={styles.form}>
         {error && <div className={styles.error}>{error}</div>}
+        {success && <div className={styles.success}>{success}</div>}
         
         <div className={styles.formGrid}>
           <div className={styles.mainSection}>
@@ -786,7 +796,10 @@ const EditBook = () => {
                 type="text"
                 id="title"
                 value={formData.title}
-                onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={e => {
+                  setFormData(prev => ({ ...prev, title: e.target.value }));
+                  clearMessages();
+                }}
                 required
               />
             </div>

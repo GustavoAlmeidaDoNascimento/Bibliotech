@@ -14,6 +14,7 @@ export interface User extends BaseEntity {
 export interface Student extends BaseEntity {
   name: string;
   className: string;
+  educationalLevelId?: string;
   userId: string;
   username?: string;
   hasCredentials?: boolean;
@@ -44,6 +45,14 @@ export interface Book extends BaseEntity {
   availableCopies: number;
   userId: string;
   description?: string;
+}
+
+export interface Class extends BaseEntity {
+  name: string;
+  shift: string;
+  educationalLevelId?: string;
+  userId: string;
+  studentsCount?: number;
 }
 
 export interface Loan extends BaseEntity {
