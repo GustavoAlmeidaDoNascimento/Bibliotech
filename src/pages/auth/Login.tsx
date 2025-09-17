@@ -80,8 +80,7 @@ const Login: React.FC = () => {
   };
 
   const handleStudentLogin = () => {
-    // Navegar para a página de login do aluno (a ser implementada)
-    alert('Login de aluno será implementado em breve!');
+    navigate('/student-id-input');
   };
 
   return (
@@ -170,6 +169,9 @@ const Login: React.FC = () => {
 
         {GUEST_LOGIN_ENABLED && (
           <div className={styles.guestLogin}>
+            <div className={styles.divider}>
+              <span>ou</span>
+            </div>
             <button 
               type="button" 
               disabled={isLoading} 
@@ -186,6 +188,10 @@ const Login: React.FC = () => {
         
         <div className={styles.links}>
           <Link to="/forgot-password">Esqueceu a senha?</Link>
+        </div>
+        
+        <div className={styles.divider}>
+          <span>ou</span>
         </div>
         
         <div className={styles.betaSection}>

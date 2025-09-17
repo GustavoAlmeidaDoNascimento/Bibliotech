@@ -32,6 +32,8 @@ import SelectStaffBook from '../pages/withdrawals/SelectStaffBook';
 import Settings from '../pages/settings/Settings';
 import UpdateNotification from '../pages/admin/UpdateNotification';
 import Home from '../pages/Home';
+import StudentIdInput from '../pages/student/StudentIdInput';
+import StudentWelcome from '../pages/student/StudentWelcome';
 import { ROUTES } from '../constants';
 
 // redireciona com base no estado de autenticação
@@ -57,6 +59,14 @@ export const publicRoutes = [
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
+  },
+  {
+    path: "/student-id-input",
+    element: <StudentIdInput />,
+  },
+  {
+    path: "/student-welcome/:studentId",
+    element: <StudentWelcome />,
   },
 ];
 

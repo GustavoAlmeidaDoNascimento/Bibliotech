@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Regra para permitir leitura de metadados dos usuários (necessário para listar usuários)
+    match /users/{userId} {
+      allow read: if true; // Permite leitura dos documentos de usuário para buscar bibliotecas
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regra específica para permitir leitura pública dos dados dos alunos
+    match /users/{userId}/students/{studentId} {
+      allow read: if true; // Permite leitura pública dos dados dos alunos
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Permitir leitura pública das coleções students (para listar)
+    match /users/{userId}/students {
+      allow read: if true; // Permite listar alunos
+    }
+    
+    // Regras restritivas para outros documentos dos usuários
+    match /users/{userId}/books/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /users/{userId}/loans/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /users/{userId}/staff/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /users/{userId}/classes/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /users/{userId}/settings/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regra para notificações globais - apenas admin pode escrever
+    match /globalNotifications/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.email == 'admin@admin.com';
+    }
+    
+    // Regra para dados públicos - todos podem ler, apenas usuários autenticados podem escrever
+    match /publicData/{document=**} {
+      allow read: if true; // Qualquer um pode ler dados públicos
+      allow write: if request.auth != null; // Apenas usuários autenticados podem escrever
+    }
+  }
+}
