@@ -87,6 +87,61 @@
   background-repeat: no-repeat;
 }
 
+.studentIdSection {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.studentIdInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.studentIdLabel {
+  font-weight: 500;
+  color: #555;
+  font-size: 14px;
+}
+
+.studentIdValue {
+  font-family: 'Courier New', monospace;
+  background-color: #ffffff;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+}
+
+.copyButton {
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.copyButton:hover {
+  background-color: #3a5a94;
+}
+
+.copyButton:active {
+  transform: scale(0.98);
+}
+
 .loading {
   display: flex;
   justify-content: center;
@@ -282,6 +337,26 @@
 
   .chartCard {
     min-height: 250px;
+  }
+
+  .headerButtons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .studentIdSection {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .studentIdInfo {
+    justify-content: center;
+  }
+
+  .copyButton {
+    align-self: center;
+    width: fit-content;
   }
 }
 

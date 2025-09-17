@@ -342,6 +342,14 @@ const StudentDashboard = () => {
       window.open(`https://wa.me/55${formattedNumber}`, '_blank');
     }
   };
+
+  // copia o ID do aluno para a área de transferência
+  const copyStudentId = () => {
+    if (studentId) {
+      navigator.clipboard.writeText(studentId);
+      alert('ID do aluno copiado para a área de transferência!');
+    }
+  };
   
   if (loading) {
     return <div className={styles.loading}>Carregando...</div>;
@@ -398,6 +406,23 @@ const StudentDashboard = () => {
             </button>
           )}
         </div>
+      </div>
+
+      <div className={styles.studentIdSection}>
+        <div className={styles.studentIdInfo}>
+          <span className={styles.studentIdLabel}>ID do Aluno:</span>
+          <span className={styles.studentIdValue}>{studentId}</span>
+        </div>
+        <button 
+          className={styles.copyButton} 
+          onClick={copyStudentId}
+          title="Copiar ID para área de transferência"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.375a2.25 2.25 0 0 1-2.25-2.25V6.108c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+          </svg>
+          Copiar
+        </button>
       </div>
       
       {loans.length === 0 ? (
