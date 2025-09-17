@@ -72,6 +72,8 @@ const StudentDashboard: React.FC = () => {
         );
         
         if (data) {
+          console.log('🎓 Dados do aluno:', data.student);
+          console.log('📚 className:', data.student.className);
           setDashboardData(data);
           // Processar dados para visualizações
           processData(data.loans, data.books);
@@ -285,7 +287,7 @@ const StudentDashboard: React.FC = () => {
           <div className={styles.studentInfo}>
             <h1 className={styles.studentName}>Olá, {student.name}!</h1>
             <p className={styles.studentDetails}>
-              Turma: {student.className} • ID: {student.id}
+              Turma: {student.className || 'Não informada'} • ID: {student.id}
             </p>
           </div>
         </div>

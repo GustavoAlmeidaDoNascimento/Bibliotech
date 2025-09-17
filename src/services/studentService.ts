@@ -70,10 +70,11 @@ export const studentService = {
           if (studentDoc.exists()) {
             const studentData = studentDoc.data();
             console.log(`✅ Aluno encontrado na escola ${schoolId}!`);
+            console.log(`📋 Dados completos do aluno:`, studentData);
             return {
               id: studentDoc.id,
               name: studentData.name,
-              className: studentData.className,
+              className: studentData.classroom || studentData.className || studentData.class || studentData.turma,
               educationalLevelId: studentData.educationalLevelId,
               userId: schoolId,
               username: studentData.username,
@@ -109,10 +110,11 @@ export const studentService = {
             if (studentDoc.exists()) {
               const studentData = studentDoc.data();
               console.log(`✅ Aluno encontrado na escola ${userDoc.id} via busca geral!`);
+              console.log(`📋 Dados completos do aluno (busca geral):`, studentData);
               return {
                 id: studentDoc.id,
                 name: studentData.name,
-                className: studentData.className,
+                className: studentData.classroom || studentData.className || studentData.class || studentData.turma,
                 educationalLevelId: studentData.educationalLevelId,
                 userId: userDoc.id,
                 username: studentData.username,
