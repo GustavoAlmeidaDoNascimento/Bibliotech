@@ -174,6 +174,9 @@ export const studentService = {
         return null;
       }
 
+      console.log(`✅ Aluno encontrado:`, student);
+      console.log(`🏫 Turma do aluno:`, student.className);
+
       const schoolId = student.userId;
       console.log(`🏫 Aluno encontrado na escola: ${schoolId}`);
 

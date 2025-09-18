@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAsync } from '../../hooks/useAsync';
 import { useResponsiveChart } from '../../hooks/useResponsiveChart';
 import { studentService, StudentDashboardData, StudentLoan, StudentBook } from '../../services/studentService';
+import ClassDashboard from '../../components/student/ClassDashboard';
+import { Student } from '../../types/common';
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -249,14 +251,25 @@ const StudentDashboard: React.FC = () => {
       case 'pessoal':
         return renderPessoalContent();
       case 'turma':
-        return (
+        console.log('🎯 Renderizando aba Turma');
+        console.log('🎯 dashboardData:', dashboardData);
+        console.log('🎯 student.className:', dashboardData?.student?.className);
+        console.log('🎯 student.userId:', dashboardData?.student?.userId);
+        console.log('🎯 studentId:', studentId);
+        
+        return dashboardData?.student?.className ? (
+          <ClassDashboard 
+            studentClassName={dashboardData.student.className}
+            studentId={studentId || ''}
+            currentUserId={dashboardData.student.userId}
+          />
+        ) : (
           <div className={styles.tabContentPlaceholder}>
             <div className={styles.placeholderIcon}>
               <UserGroupIcon />
             </div>
-            <h3>Dashboard da Turma</h3>
-            <p>Em desenvolvimento...</p>
-            <p>Aqui aparecerão estatísticas e informações sobre a turma {student?.className}</p>
+            <h3>Informações da turma não encontradas</h3>
+            <p>Não foi possível carregar as informações da turma</p>
           </div>
         );
       case 'recomendacoes':
