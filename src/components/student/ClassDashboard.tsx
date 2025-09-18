@@ -94,9 +94,26 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
       console.log('📚 Primeiros 3 empréstimos do sistema:', allLoans.slice(0, 3));
 
       // Filtrar empréstimos dos alunos da turma
-      const classLoans = allLoans.filter((loan: any) => studentIds.includes(loan.studentId));
+      console.log('🔍 Filtrando empréstimos da turma...');
+      console.log('🔍 IDs dos alunos da turma:', studentIds);
+      
+      const classLoans = allLoans.filter((loan: any) => {
+        const isFromClass = studentIds.includes((loan as any).studentId);
+        if (!isFromClass) {
+          console.log('🔍 Empréstimo ignorado (não é da turma):', { loanId: loan.id, studentId: (loan as any).studentId });
+        }
+        return isFromClass;
+      });
+      
       console.log('📚 Empréstimos da turma filtrados:', classLoans.length);
-      console.log('📚 Primeiros 3 empréstimos da turma:', classLoans.slice(0, 3));
+      console.log('📚 Todos os empréstimos da turma:', classLoans.map(loan => ({
+        id: loan.id,
+        studentId: (loan as any).studentId,
+        bookId: (loan as any).bookId,
+        status: (loan as any).status,
+        returned: (loan as any).returned,
+        returnedAt: (loan as any).returnedAt
+      })));
 
       // Buscar detalhes dos livros para obter gêneros
       console.log('📖 Buscando livros...');
@@ -112,19 +129,66 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
 
       // Calcular estatísticas
       console.log('📊 Calculando estatísticas...');
+      console.log('📊 Total de empréstimos da turma:', classLoans.length);
+      
       const now = new Date();
       const totalLoans = classLoans.length;
-      const activeLoans = classLoans.filter((loan: any) => !loan.returnedAt).length;
-      const returnedLoans = classLoans.filter((loan: any) => loan.returnedAt).length;
-      const overdueLoans = classLoans.filter((loan: any) => 
-        !loan.returnedAt && new Date(loan.dueDate.toDate()) < now
-      ).length;
 
-      console.log('📊 Estatísticas calculadas:', {
+      // Analisar cada empréstimo individualmente
+      let activeCount = 0;
+      let returnedCount = 0;
+      let overdueCount = 0;
+
+      classLoans.forEach((loan: any, index: number) => {
+        console.log(`📊 Empréstimo ${index + 1}:`, {
+          id: loan.id,
+          studentId: loan.studentId,
+          bookId: loan.bookId,
+          returnedAt: loan.returnedAt,
+          returned: loan.returned,
+          status: loan.status,
+          dueDate: loan.dueDate,
+          borrowedAt: loan.borrowedAt,
+          borrowDate: loan.borrowDate
+        });
+
+        // Verificar se foi devolvido (múltiplos campos possíveis)
+        const isReturned = !!(loan.returnedAt || loan.returned || loan.status === 'returned');
+        
+        if (isReturned) {
+          returnedCount++;
+          console.log(`📊 ✅ Empréstimo ${index + 1} está DEVOLVIDO`);
+        } else {
+          activeCount++;
+          console.log(`📊 🔄 Empréstimo ${index + 1} está ATIVO`);
+          
+          // Verificar se está em atraso
+          let dueDate = null;
+          if (loan.dueDate && typeof loan.dueDate.toDate === 'function') {
+            dueDate = loan.dueDate.toDate();
+          } else if (loan.dueDate) {
+            dueDate = new Date(loan.dueDate);
+          }
+
+          if (dueDate && dueDate < now) {
+            overdueCount++;
+            console.log(`📊 ⚠️ Empréstimo ${index + 1} está EM ATRASO (vence em: ${dueDate})`);
+          } else {
+            console.log(`📊 ✅ Empréstimo ${index + 1} está em dia (vence em: ${dueDate})`);
+          }
+        }
+      });
+
+      const activeLoans = activeCount;
+      const returnedLoans = returnedCount;
+      const overdueLoans = overdueCount;
+
+      console.log('📊 Estatísticas finais calculadas:', {
         totalLoans,
         activeLoans,
         returnedLoans,
-        overdueLoans
+        overdueLoans,
+        verificacao: `${activeLoans + returnedLoans} deve ser igual a ${totalLoans}`
       });
 
       // Calcular estatísticas por gênero
