@@ -1,0 +1,472 @@
+/* Container Principal */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+}
+
+.headerIcon {
+  width: 48px;
+  height: 48px;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 12px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.header h3 {
+  font-size: 20px;
+  color: #2d3748;
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header p {
+  font-size: 14px;
+  color: #718096;
+  margin: 0;
+}
+
+/* Estados de Loading, Error e Empty */
+.loadingState,
+.errorState,
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 60px 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  text-align: center;
+  min-height: 300px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #4285f4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingState p,
+.errorState p,
+.emptyState p {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.errorState h4,
+.emptyState h4 {
+  font-size: 18px;
+  color: #2d3748;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.errorIcon,
+.emptyIcon {
+  width: 60px;
+  height: 60px;
+  color: #4285f4;
+  margin-bottom: 20px;
+}
+
+.retryButton {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.retryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
+}
+
+/* Grid de Recomendações */
+.recommendationsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Seção de Recomendações */
+.section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 20px 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sectionHeader > div:first-child {
+  flex: 1;
+}
+
+.sectionHeader h4 {
+  font-size: 18px;
+  color: #2d3748;
+  margin: 0 0 4px 0;
+  font-weight: 600;
+}
+
+.sectionHeader p {
+  font-size: 14px;
+  color: #718096;
+  margin: 0;
+}
+
+.scrollControls {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.scrollButton {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(66, 133, 244, 0.1);
+  color: #4285f4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scrollButton:hover {
+  background: rgba(66, 133, 244, 0.2);
+  transform: scale(1.05);
+}
+
+.scrollButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Container dos Livros */
+.booksContainer {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.booksContainer::-webkit-scrollbar {
+  height: 6px;
+}
+
+.booksContainer::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.booksContainer::-webkit-scrollbar-thumb {
+  background: #4285f4;
+  border-radius: 3px;
+}
+
+.booksContainer::-webkit-scrollbar-thumb:hover {
+  background: #1a73e8;
+}
+
+/* Card do Livro */
+.bookCard {
+  min-width: 260px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.bookCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 1);
+}
+
+.bookCover {
+  width: 100%;
+  height: 140px;
+  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bookCover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+.bookIcon {
+  width: 40px;
+  height: 40px;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.bookInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bookTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bookAuthor {
+  font-size: 13px;
+  color: #718096;
+  margin: 0;
+  font-weight: 500;
+}
+
+.bookMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.bookGenre {
+  font-size: 11px;
+  color: #4285f4;
+  background: rgba(66, 133, 244, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.bookPopularity {
+  font-size: 11px;
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    gap: 16px;
+  }
+
+  .header {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .headerIcon {
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+  }
+
+  .header h3 {
+    font-size: 18px;
+  }
+
+  .header p {
+    font-size: 13px;
+  }
+
+  .sectionHeader {
+    padding: 16px 16px 12px 16px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .sectionHeader h4 {
+    font-size: 16px;
+  }
+
+  .sectionHeader p {
+    font-size: 13px;
+  }
+
+  .scrollControls {
+    align-self: flex-end;
+  }
+
+  .booksContainer {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .bookCard {
+    min-width: 220px;
+    padding: 12px;
+  }
+
+  .bookCover {
+    height: 120px;
+    margin-bottom: 10px;
+  }
+
+  .bookIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .loadingState,
+  .errorState,
+  .emptyState {
+    padding: 40px 16px;
+    min-height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .headerIcon {
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+  }
+
+  .header h3 {
+    font-size: 16px;
+  }
+
+  .header p {
+    font-size: 12px;
+  }
+
+  .sectionHeader {
+    padding: 14px 14px 10px 14px;
+  }
+
+  .sectionHeader h4 {
+    font-size: 15px;
+  }
+
+  .scrollButton {
+    width: 28px;
+    height: 28px;
+  }
+
+  .scrollButton svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .booksContainer {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .bookCard {
+    min-width: 200px;
+    padding: 10px;
+  }
+
+  .bookCover {
+    height: 100px;
+    margin-bottom: 8px;
+  }
+
+  .bookIcon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .bookTitle {
+    font-size: 13px;
+  }
+
+  .bookAuthor {
+    font-size: 12px;
+  }
+
+  .bookGenre,
+  .bookPopularity {
+    font-size: 10px;
+  }
+}

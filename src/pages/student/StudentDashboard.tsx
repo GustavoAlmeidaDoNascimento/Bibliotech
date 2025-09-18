@@ -4,6 +4,7 @@ import { useAsync } from '../../hooks/useAsync';
 import { useResponsiveChart } from '../../hooks/useResponsiveChart';
 import { studentService, StudentDashboardData, StudentLoan, StudentBook } from '../../services/studentService';
 import ClassDashboard from '../../components/student/ClassDashboard';
+import StudentBookRecommendations from '../../components/student/StudentBookRecommendations';
 import { Student } from '../../types/common';
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import {
@@ -273,14 +274,23 @@ const StudentDashboard: React.FC = () => {
           </div>
         );
       case 'recomendacoes':
-        return (
+        console.log('🌟 Renderizando aba Recomendações');
+        console.log('🌟 dashboardData:', dashboardData);
+        console.log('🌟 student.userId:', dashboardData?.student?.userId);
+        console.log('🌟 studentId:', studentId);
+        
+        return dashboardData?.student?.userId && studentId ? (
+          <StudentBookRecommendations 
+            userId={dashboardData.student.userId}
+            studentId={studentId}
+          />
+        ) : (
           <div className={styles.tabContentPlaceholder}>
             <div className={styles.placeholderIcon}>
               <StarIcon />
             </div>
-            <h3>Recomendações</h3>
-            <p>Em desenvolvimento...</p>
-            <p>Aqui aparecerão recomendações personalizadas de livros</p>
+            <h3>Informações necessárias não encontradas</h3>
+            <p>Não foi possível carregar as recomendações</p>
           </div>
         );
       default:
