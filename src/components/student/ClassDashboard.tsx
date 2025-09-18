@@ -128,14 +128,26 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
       });
 
       // Calcular estatísticas por gênero
+      console.log('📈 Calculando estatísticas por gênero...');
       const genreStats: { [genre: string]: number } = {};
       classLoans.forEach((loan: any) => {
         const book = books.find((b: any) => b.id === loan.bookId);
-        if (book && (book as any).genre) {
-          const genre = (book as any).genre;
-          genreStats[genre] = (genreStats[genre] || 0) + 1;
+        console.log('📖 Processando empréstimo:', { loanId: loan.id, bookId: loan.bookId, bookFound: !!book });
+        if (book) {
+          console.log('📖 Dados do livro:', book);
+          // Tentar diferentes propriedades para o gênero
+          const genre = (book as any).genre || (book as any).genres || (book as any).category || (book as any).categories;
+          console.log('📖 Gênero encontrado:', genre);
+          if (genre) {
+            // Se for um array, pegar o primeiro
+            const genreValue = Array.isArray(genre) ? genre[0] : genre;
+            if (genreValue) {
+              genreStats[genreValue] = (genreStats[genreValue] || 0) + 1;
+            }
+          }
         }
       });
+      console.log('📈 Estatísticas de gênero finais:', genreStats);
 
       // Calcular ranking de alunos
       const studentLoansCount: { [studentId: string]: number } = {};
@@ -152,31 +164,64 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
         .sort((a, b) => b.totalBooks - a.totalBooks);
 
       // Calcular empréstimos por mês (últimos 6 meses)
+      console.log('📅 Calculando estatísticas mensais...');
       const monthlyStats: { [monthKey: string]: number } = {};
       const monthsToShow = 6;
       
+      // Criar estrutura para os últimos 6 meses
       for (let i = monthsToShow - 1; i >= 0; i--) {
         const date = new Date();
         date.setMonth(date.getMonth() - i);
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         const monthName = date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
         monthlyStats[monthName] = 0;
+        console.log('📅 Mês inicializado:', monthName);
       }
 
+      console.log('📅 Estrutura inicial dos meses:', Object.keys(monthlyStats));
+
+      // Processar empréstimos
       classLoans.forEach((loan: any) => {
-        if (loan.borrowedAt) {
-          const loanDate = loan.borrowedAt.toDate();
+        console.log('📅 Processando empréstimo para data:', { 
+          loanId: loan.id, 
+          borrowedAt: loan.borrowedAt,
+          borrowDate: loan.borrowDate,
+          createdAt: loan.createdAt 
+        });
+        
+        // Tentar diferentes campos de data
+        let loanDate = null;
+        if (loan.borrowedAt && typeof loan.borrowedAt.toDate === 'function') {
+          loanDate = loan.borrowedAt.toDate();
+        } else if (loan.borrowDate && typeof loan.borrowDate.toDate === 'function') {
+          loanDate = loan.borrowDate.toDate();
+        } else if (loan.createdAt && typeof loan.createdAt.toDate === 'function') {
+          loanDate = loan.createdAt.toDate();
+        } else if (loan.borrowedAt) {
+          loanDate = new Date(loan.borrowedAt);
+        } else if (loan.borrowDate) {
+          loanDate = new Date(loan.borrowDate);
+        }
+
+        if (loanDate) {
           const monthName = loanDate.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+          console.log('📅 Data processada:', loanDate, 'Mês:', monthName);
           if (monthlyStats.hasOwnProperty(monthName)) {
             monthlyStats[monthName]++;
+            console.log('📅 Incrementado mês:', monthName, 'Total:', monthlyStats[monthName]);
           }
+        } else {
+          console.log('📅 Empréstimo sem data válida:', loan);
         }
       });
+
+      console.log('📅 Estatísticas mensais finais:', monthlyStats);
 
       const monthlyLoans = Object.entries(monthlyStats).map(([month, count]) => ({
         month,
         count
       }));
+      
+      console.log('📅 Array final para gráfico:', monthlyLoans);
 
       const finalStats = {
         totalLoans,
@@ -235,6 +280,14 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
     );
   }
 
+  console.log('🎨 Renderizando ClassDashboard com dados:', {
+    totalLoans: classStats.totalLoans,
+    genreStatsKeys: Object.keys(classStats.genreStats),
+    monthlyLoansLength: classStats.monthlyLoans.length,
+    hasGenreData: Object.keys(classStats.genreStats).length > 0,
+    hasMonthlyData: classStats.monthlyLoans.length > 0
+  });
+
   return (
     <div className={styles.classDashboard}>
       <div className={styles.header}>
@@ -290,7 +343,7 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
         {/* Gráfico de Pizza - Empréstimos por Gênero */}
         <div className={styles.chartCard}>
           <h4>Empréstimos por Gênero</h4>
-          {Object.keys(classStats.genreStats).length > 0 ? (
+          {Object.keys(classStats.genreStats).length > 0 && Object.values(classStats.genreStats).some(val => val > 0) ? (
             <div className={styles.chart}>
               <Pie
                 data={{
@@ -342,8 +395,9 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
         {/* Gráfico de Barras - Empréstimos por Mês */}
         <div className={styles.chartCard}>
           <h4>Empréstimos por Mês</h4>
-          <div className={styles.chart}>
-            <Bar
+          {classStats.monthlyLoans && classStats.monthlyLoans.length > 0 ? (
+            <div className={styles.chart}>
+              <Bar
               data={{
                 labels: classStats.monthlyLoans.map(item => item.month),
                 datasets: [
@@ -384,7 +438,10 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
                 }
               }}
             />
-          </div>
+            </div>
+          ) : (
+            <div className={styles.noData}>Nenhum empréstimo encontrado</div>
+          )}
         </div>
       </div>
 
