@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAsync } from '../../hooks/useAsync';
+import { useResponsiveChart } from '../../hooks/useResponsiveChart';
 import { studentService, StudentDashboardData, StudentLoan, StudentBook } from '../../services/studentService';
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import {
@@ -37,6 +38,7 @@ type TabType = 'pessoal' | 'turma' | 'recomendacoes';
 
 const StudentDashboard: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>();
+  const chartOptions = useResponsiveChart();
   const navigate = useNavigate();
   
   const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
@@ -283,9 +285,7 @@ const StudentDashboard: React.FC = () => {
           <h3>Você ainda não possui histórico de leitura</h3>
           <p>Quando você começar a retirar livros na biblioteca, seus dados aparecerão aqui.</p>
           <div className={styles.emptyActions}>
-            <button onClick={handleGoToLogin} className={styles.primaryButton}>
-              Área do Bibliotecário
-            </button>
+            
           </div>
         </div>
       );
@@ -350,9 +350,17 @@ const StudentDashboard: React.FC = () => {
                   }}
                   options={{
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                       legend: {
-                        position: 'top',
+                        position: chartOptions.legendPosition,
+                        labels: {
+                          usePointStyle: true,
+                          padding: chartOptions.padding,
+                          font: {
+                            size: chartOptions.fontSize
+                          }
+                        }
                       },
                       title: {
                         display: false
@@ -377,6 +385,23 @@ const StudentDashboard: React.FC = () => {
                               }
                             }
                             return '';
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        ticks: {
+                          font: {
+                            size: chartOptions.fontSize
+                          },
+                          maxRotation: chartOptions.maxRotation
+                        }
+                      },
+                      y: {
+                        ticks: {
+                          font: {
+                            size: chartOptions.fontSize
                           }
                         }
                       }
@@ -412,9 +437,17 @@ const StudentDashboard: React.FC = () => {
                   }}
                   options={{
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                       legend: {
-                        position: 'right',
+                        position: chartOptions.isMobile ? 'bottom' : 'right',
+                        labels: {
+                          usePointStyle: true,
+                          padding: chartOptions.padding,
+                          font: {
+                            size: chartOptions.fontSize
+                          }
+                        }
                       }
                     }
                   }}
@@ -442,9 +475,27 @@ const StudentDashboard: React.FC = () => {
                   }}
                   options={{
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                       legend: {
                         display: false
+                      }
+                    },
+                    scales: {
+                      x: {
+                        ticks: {
+                          font: {
+                            size: chartOptions.fontSize
+                          },
+                          maxRotation: chartOptions.maxRotation
+                        }
+                      },
+                      y: {
+                        ticks: {
+                          font: {
+                            size: chartOptions.fontSize
+                          }
+                        }
                       }
                     }
                   }}
@@ -579,9 +630,7 @@ const StudentDashboard: React.FC = () => {
       </div>
 
       <div className={styles.footer}>
-        <button onClick={handleGoToLogin} className={styles.footerButton}>
-          Área do Bibliotecário
-        </button>
+        
       </div>
     </div>
   );

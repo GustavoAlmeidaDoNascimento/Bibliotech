@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
   position: relative;
   padding: 20px;
 }
@@ -19,7 +19,7 @@
   background-color: rgba(255, 255, 255, 0.9);
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 25px;
-  color: #667eea;
+  color: #4285f4;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -66,7 +66,7 @@
   width: 72px;
   height: 72px;
   margin: 0 auto 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -125,9 +125,9 @@
 
 .input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #4285f4;
   background-color: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
 }
 
 .input:disabled {
@@ -146,7 +146,7 @@
 .submitButton {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -158,13 +158,13 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
   margin-bottom: 24px;
 }
 
 .submitButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 8px 25px rgba(66, 133, 244, 0.5);
   background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
 }
 
