@@ -344,10 +344,40 @@ const StudentDashboard = () => {
   };
 
   // copia o ID do aluno para a área de transferência
-  const copyStudentId = () => {
-    if (studentId) {
-      navigator.clipboard.writeText(studentId);
-      alert('ID do aluno copiado para a área de transferência!');
+  const copyStudentId = async () => {
+    if (!studentId) return;
+    
+    try {
+      // Tentar usar a API moderna do clipboard primeiro
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(studentId);
+        alert('ID do aluno copiado para a área de transferência!');
+      } else {
+        // Fallback: método tradicional usando textarea temporário
+        const textArea = document.createElement('textarea');
+        textArea.value = studentId;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+          const successful = document.execCommand('copy');
+          if (successful) {
+            alert('ID do aluno copiado para a área de transferência!');
+          } else {
+            throw new Error('Falha ao copiar usando execCommand');
+          }
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao copiar ID do aluno:', error);
+      // Como último recurso, mostrar o ID para o usuário copiar manualmente
+      alert(`Não foi possível copiar automaticamente. ID do aluno: ${studentId}`);
     }
   };
   
