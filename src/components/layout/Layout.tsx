@@ -187,7 +187,7 @@ ${daysOverdue > 0
   : '🟡 Lembre-se de devolver o livro no prazo.'
 }
 
-Você pode consultar suas métricas, estatísticas, e recomendações no link https://bibliotech.tech/student-id-input , colocando o seu ID: ${notification.studentId}
+Você pode acessar suas métricas e etc pelo link: https://bibliotech.tech/student-dashboard/${notification.studentId}
 
 📍 *Biblioteca Escolar*
 💻 *Feito através do Bibliotech*`;
