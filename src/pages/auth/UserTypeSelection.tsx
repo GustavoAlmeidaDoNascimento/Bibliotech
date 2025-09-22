@@ -41,7 +41,7 @@ const UserTypeSelection: React.FC = () => {
         </div>
         
         <h1 className={styles.title}>
-          Biblio<span style={{ color: '#0078d4' }}>tech</span>
+          Biblio<span style={{ color: '#0078d4' }}>tech</span> Beta
         </h1>
         
         <p className={styles.subtitle}>
