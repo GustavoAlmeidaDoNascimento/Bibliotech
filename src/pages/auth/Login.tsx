@@ -67,7 +67,7 @@ const Login: React.FC = () => {
   };
 
   const handleGoBack = () => {
-    navigate(ROUTES.HOME);
+    navigate(-1);
   };
 
   const handleGuestLogin = async () => {
@@ -188,24 +188,6 @@ const Login: React.FC = () => {
         
         <div className={styles.links}>
           <Link to="/forgot-password">Esqueceu a senha?</Link>
-        </div>
-        
-        <div className={styles.divider}>
-          <span>ou</span>
-        </div>
-        
-        <div className={styles.betaSection}>
-          <p className={styles.betaQuestion}>
-            Quer participar do Biblio<span style={{ color: '#4285f4' }}>tech</span> beta?
-          </p>
-          <button 
-            className={styles.whatsappButton}
-            onClick={() => window.open('https://wa.me/5551997188572?text=Olá! Gostaria de participar do beta do Bibliotech!', '_blank')}
-            type="button"
-          >
-            <span>Fale conosco</span>
-            <img src="/images/home/icone/wpp.png" alt="WhatsApp" />
-          </button>
         </div>
       </div>
     </div>

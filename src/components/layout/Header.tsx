@@ -321,10 +321,10 @@ const Header: React.FC = () => {
         <LoginButton
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/login')}
+          onClick={() => navigate('/select-user-type')}
         >
           <UserCircleIcon width={20} height={20} />
-          Login
+          Acessar
         </LoginButton>
       </DesktopNav>
 
@@ -353,12 +353,12 @@ const Header: React.FC = () => {
           animate={isMenuOpen ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }}
           transition={{ delay: 0.4, duration: 0.3 }}
           onClick={() => {
-            navigate('/login');
+            navigate('/select-user-type');
             setIsMenuOpen(false);
           }}
         >
           <UserCircleIcon width={20} height={20} />
-          Login
+          Acessar
         </LoginButton>
       </MobileNav>
     </HeaderContainer>
