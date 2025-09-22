@@ -2221,7 +2221,7 @@ Aguardo retorno. Obrigado!`;
             >
               <StatIcon color="#4db5ff">📚</StatIcon>
               <StatNumber>
-                <AnimatedCounter end={2000} />+
+                <AnimatedCounter end={2330} />+
               </StatNumber>
               <StatLabel>Livros registrados</StatLabel>
             </EnhancedStatCard>
@@ -2233,7 +2233,7 @@ Aguardo retorno. Obrigado!`;
             >
               <StatIcon color="#25D37B">👥</StatIcon>
               <StatNumber>
-                <AnimatedCounter end={500} />+
+                <AnimatedCounter end={605} />+
               </StatNumber>
               <StatLabel>Leitores registrados</StatLabel>
             </EnhancedStatCard>
@@ -2245,7 +2245,7 @@ Aguardo retorno. Obrigado!`;
             >
               <StatIcon color="#FF6B6A">🔥</StatIcon>
               <StatNumber>
-                <AnimatedCounter end={200} />+
+                <AnimatedCounter end={221} />+
               </StatNumber>
               <StatLabel>Leitores ativos</StatLabel>
             </EnhancedStatCard>
