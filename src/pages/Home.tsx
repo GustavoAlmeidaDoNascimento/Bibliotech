@@ -587,6 +587,30 @@ const ProductVideoContainer = styled(motion.div)`
   }
 `;
 
+const ProductShowcaseVideoContainer = styled(motion.div)`
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1rem;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #ffffff;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  position: relative;
+  margin-top: 2rem;
+
+  @media (max-width: 768px) {
+    grid-column: 1;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.4rem;
+    margin-top: 1.5rem;
+  }
+`;
+
 const PlanCard = ({ title, price, description }: { title: string; price: string; description: string }) => (
   <PlanCardWrapper>
     <div className="card">
@@ -773,6 +797,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ isOpen, onClose }) => {
   );
 };
 
+
 const ScaleOnScroll: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { margin: "-40% 0px -40% 0px" });
@@ -806,6 +831,7 @@ const ScaleOnScroll: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     </motion.div>
   );
 };
+
 
 const PricingSection = styled(Section)`
   background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
@@ -1730,7 +1756,10 @@ const Home: React.FC = () => {
   const [titleRect, setTitleRect] = useState<DOMRect | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isVideoInView, setIsVideoInView] = useState(false);
   const gridVideoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   
   // Hooks para login de convidado
   const navigate = useNavigate();
@@ -1897,6 +1926,9 @@ Aguardo retorno. Obrigado!`;
     }
   }, []);
 
+  // Removido o useEffect que iniciava o vídeo automaticamente
+  // Agora será controlado pelo useInView
+
   const handleMouseMove = (e: React.MouseEvent) => {
     setMousePos({ x: e.clientX, y: e.clientY });
   };
@@ -1929,6 +1961,32 @@ Aguardo retorno. Obrigado!`;
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Intersection Observer para autoplay do vídeo showcase
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVideoInView(true);
+        }
+      },
+      {
+        threshold: 0.5, // 50% do elemento visível
+        rootMargin: '0px 0px -10% 0px' // Margem para ativar um pouco antes
+      }
+    );
+
+    if (videoContainerRef.current) {
+      observer.observe(videoContainerRef.current);
+    }
+
+    return () => {
+      if (videoContainerRef.current) {
+        observer.unobserve(videoContainerRef.current);
+      }
+    };
+  }, []);
+
 
   return (
     <>
@@ -2221,7 +2279,7 @@ Aguardo retorno. Obrigado!`;
             >
               <StatIcon color="#4db5ff">📚</StatIcon>
               <StatNumber>
-                <AnimatedCounter end={2000} />+
+                <AnimatedCounter end={2330} />+
               </StatNumber>
               <StatLabel>Livros registrados</StatLabel>
             </EnhancedStatCard>
@@ -2233,7 +2291,7 @@ Aguardo retorno. Obrigado!`;
             >
               <StatIcon color="#25D37B">👥</StatIcon>
               <StatNumber>
-                <AnimatedCounter end={500} />+
+                <AnimatedCounter end={605} />+
               </StatNumber>
               <StatLabel>Leitores registrados</StatLabel>
             </EnhancedStatCard>
@@ -2245,7 +2303,7 @@ Aguardo retorno. Obrigado!`;
             >
               <StatIcon color="#FF6B6A">🔥</StatIcon>
               <StatNumber>
-                <AnimatedCounter end={200} />+
+                <AnimatedCounter end={221} />+
               </StatNumber>
               <StatLabel>Leitores ativos</StatLabel>
             </EnhancedStatCard>
@@ -2504,6 +2562,83 @@ Aguardo retorno. Obrigado!`;
                   />
                 </DecorativeContainer>
               </ProductVideoContainer>
+              <ProductShowcaseVideoContainer
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+              >
+                <VideoContainer 
+                  ref={videoContainerRef}
+                  onClick={() => !isVideoInView && setIsVideoModalOpen(true)}
+                  style={{ cursor: isVideoInView ? 'default' : 'pointer' }}
+                >
+                  {isVideoInView ? (
+                    <iframe
+                      ref={iframeRef}
+                      width="100%"
+                      height="100%"
+                      src="https://www.youtube.com/embed/p1EwxbQ323k?autoplay=1&mute=0&loop=1&playlist=p1EwxbQ323k&controls=1&modestbranding=1&rel=0"
+                      title="Bibliotech - Demonstração do Sistema"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      style={{ 
+                        border: 'none',
+                        borderRadius: '12px'
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <img
+                        src="https://img.youtube.com/vi/p1EwxbQ323k/maxresdefault.jpg"
+                        alt="Bibliotech - Demonstração do Sistema"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '12px'
+                        }}
+                      />
+                      <PlayOverlay className="play-overlay">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </PlayOverlay>
+                    </>
+                  )}
+                </VideoContainer>
+                
+                {/* Ilustrações decorativas ao redor do vídeo showcase */}
+                <DecorativeContainer>
+                  <FloatingIcon
+                    color="#FF6B6B"
+                    size="35px"
+                    position="top: -20px; left: -20px;"
+                    icon="🎭"
+                    mouseX={decorativeMousePos.x}
+                    mouseY={decorativeMousePos.y}
+                    speed={0.3}
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 0.2, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1, delay: 1.0 }}
+                  />
+                  <DecorativeShape
+                    color="#4db5ff"
+                    size="50px"
+                    position="bottom: -25px; right: -25px;"
+                    rotation={-30}
+                    mouseX={decorativeMousePos.x}
+                    mouseY={decorativeMousePos.y}
+                    speed={0.4}
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 0.1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, delay: 1.2 }}
+                  />
+                </DecorativeContainer>
+              </ProductShowcaseVideoContainer>
             </ProductGrid>
           </ProductSection>
         </Section>
@@ -2766,6 +2901,7 @@ Aguardo retorno. Obrigado!`;
         isOpen={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}
       />
+      
       
       <ImageViewer
         isOpen={!!selectedImage}

@@ -24,3 +24,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Large video files (use external hosting like YouTube)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm

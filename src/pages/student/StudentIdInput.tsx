@@ -33,7 +33,7 @@ const StudentIdInput: React.FC = () => {
   };
 
   const handleGoBack = () => {
-    navigate('/login');
+    navigate(-1);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

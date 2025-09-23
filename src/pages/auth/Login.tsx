@@ -6,7 +6,7 @@ import { settingsService } from '../../services/firebase';
 import { LoginFormData } from '../../types/common';
 import { ROUTES } from '../../constants';
 import styles from './Login.module.css';
-import { UserCircleIcon, ArrowLeftIcon, AcademicCapIcon } from '@heroicons/react/24/solid';
+import { UserCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
 
 // Configuração para habilitar/desabilitar login de convidado (para facilitar remoção)
 const GUEST_LOGIN_ENABLED = true;
@@ -67,7 +67,7 @@ const Login: React.FC = () => {
   };
 
   const handleGoBack = () => {
-    navigate(ROUTES.HOME);
+    navigate(-1);
   };
 
   const handleGuestLogin = async () => {
@@ -79,9 +79,6 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleStudentLogin = () => {
-    navigate('/student-id-input');
-  };
 
   return (
     <div className={styles.container}>
@@ -147,25 +144,6 @@ const Login: React.FC = () => {
           </button>
         </form>
 
-        {/* Seção destacada para login do aluno */}
-        <div className={styles.studentLoginSection}>
-          <div className={styles.divider}>
-            <span>ou</span>
-          </div>
-          <button 
-            type="button" 
-            className={styles.studentLoginButton}
-            onClick={handleStudentLogin}
-          >
-            <div className={styles.studentLoginIcon}>
-              <AcademicCapIcon />
-            </div>
-            <div className={styles.studentLoginText}>
-              <span className={styles.studentLoginTitle}>Logar como Aluno</span>
-              <span className={styles.studentLoginSubtitle}>Acesse sua área estudantil</span>
-            </div>
-          </button>
-        </div>
 
         {GUEST_LOGIN_ENABLED && (
           <div className={styles.guestLogin}>
@@ -188,24 +166,6 @@ const Login: React.FC = () => {
         
         <div className={styles.links}>
           <Link to="/forgot-password">Esqueceu a senha?</Link>
-        </div>
-        
-        <div className={styles.divider}>
-          <span>ou</span>
-        </div>
-        
-        <div className={styles.betaSection}>
-          <p className={styles.betaQuestion}>
-            Quer participar do Biblio<span style={{ color: '#4285f4' }}>tech</span> beta?
-          </p>
-          <button 
-            className={styles.whatsappButton}
-            onClick={() => window.open('https://wa.me/5551997188572?text=Olá! Gostaria de participar do beta do Bibliotech!', '_blank')}
-            type="button"
-          >
-            <span>Fale conosco</span>
-            <img src="/images/home/icone/wpp.png" alt="WhatsApp" />
-          </button>
         </div>
       </div>
     </div>

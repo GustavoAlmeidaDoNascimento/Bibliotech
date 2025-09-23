@@ -214,7 +214,7 @@ ${daysLeft < 0
     : '🟢 Aproveite sua leitura!'
 }
 
-Você pode consultar suas métricas, estatísticas, e recomendações no link https://bibliotech.tech/student-id-input , colocando o seu ID: ${loan.studentId}
+Você pode acessar suas métricas e etc pelo link: https://bibliotech.tech/student-dashboard/${loan.studentId}
 
 📍 *Biblioteca Escolar*
 💻 *Feito através do Bibliotech*`;

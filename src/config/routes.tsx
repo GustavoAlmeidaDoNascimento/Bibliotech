@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 // lazy loading dos componentes para melhor performance
+import UserTypeSelection from '../pages/auth/UserTypeSelection';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import Dashboard from '../pages/dashboard/Dashboard';
@@ -39,7 +40,7 @@ import { ROUTES } from '../constants';
 // redireciona com base no estado de autenticação
 export const RedirectBasedOnAuth = () => {
   const { currentUser } = useAuth();
-  return currentUser ? <Navigate to={ROUTES.DASHBOARD} /> : <Navigate to={ROUTES.LOGIN} />;
+  return currentUser ? <Navigate to={ROUTES.DASHBOARD} /> : <Navigate to={ROUTES.USER_TYPE_SELECTION} />;
 };
 
 // rotas públicas
@@ -51,6 +52,10 @@ export const publicRoutes = [
   {
     path: "/home",
     element: <Home />,
+  },
+  {
+    path: ROUTES.USER_TYPE_SELECTION,
+    element: <UserTypeSelection />,
   },
   {
     path: ROUTES.LOGIN,

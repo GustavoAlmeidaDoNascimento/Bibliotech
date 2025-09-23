@@ -51,6 +51,7 @@ export const SIZES = {
 // Routes
 export const ROUTES = {
   HOME: '/',
+  USER_TYPE_SELECTION: '/select-user-type',
   LOGIN: '/login',
   DASHBOARD: '/dashboard',
   STUDENTS: '/students',
