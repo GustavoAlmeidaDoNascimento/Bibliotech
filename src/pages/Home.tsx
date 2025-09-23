@@ -1856,8 +1856,10 @@ const Home: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isShowcaseVideoModalOpen, setIsShowcaseVideoModalOpen] = useState(false);
+  const [isVideoInView, setIsVideoInView] = useState(false);
   const gridVideoRef = useRef<HTMLVideoElement>(null);
   const showcaseVideoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
   
   // Hooks para login de convidado
   const navigate = useNavigate();
@@ -2058,6 +2060,31 @@ Aguardo retorno. Obrigado!`;
       setIsLoading(false);
     }, 2000);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Intersection Observer para autoplay do vídeo showcase
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVideoInView(true);
+        }
+      },
+      {
+        threshold: 0.5, // 50% do elemento visível
+        rootMargin: '0px 0px -10% 0px' // Margem para ativar um pouco antes
+      }
+    );
+
+    if (videoContainerRef.current) {
+      observer.observe(videoContainerRef.current);
+    }
+
+    return () => {
+      if (videoContainerRef.current) {
+        observer.unobserve(videoContainerRef.current);
+      }
+    };
   }, []);
 
   return (
@@ -2641,22 +2668,45 @@ Aguardo retorno. Obrigado!`;
                 transition={{ duration: 0.6, delay: 0.7 }}
               >
                 <VideoOnScroll videoRef={showcaseVideoRef}>
-                  <VideoContainer onClick={() => setIsShowcaseVideoModalOpen(true)}>
-                    <img
-                      src="https://img.youtube.com/vi/p1EwxbQ323k/maxresdefault.jpg"
-                      alt="Bibliotech - Demonstração do Sistema"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        borderRadius: '12px'
-                      }}
-                    />
-                    <PlayOverlay className="play-overlay">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </PlayOverlay>
+                  <VideoContainer 
+                    ref={videoContainerRef}
+                    onClick={() => !isVideoInView && setIsShowcaseVideoModalOpen(true)}
+                    style={{ cursor: isVideoInView ? 'default' : 'pointer' }}
+                  >
+                    {isVideoInView ? (
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        src="https://www.youtube.com/embed/p1EwxbQ323k?autoplay=1&mute=1&loop=1&playlist=p1EwxbQ323k&controls=0&modestbranding=1&rel=0"
+                        title="Bibliotech - Demonstração do Sistema"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        style={{ 
+                          border: 'none',
+                          borderRadius: '12px',
+                          pointerEvents: 'none' // Impede cliques no iframe
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <img
+                          src="https://img.youtube.com/vi/p1EwxbQ323k/maxresdefault.jpg"
+                          alt="Bibliotech - Demonstração do Sistema"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '12px'
+                          }}
+                        />
+                        <PlayOverlay className="play-overlay">
+                          <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </PlayOverlay>
+                      </>
+                    )}
                   </VideoContainer>
                 </VideoOnScroll>
                 
