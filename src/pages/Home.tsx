@@ -587,6 +587,30 @@ const ProductVideoContainer = styled(motion.div)`
   }
 `;
 
+const ProductShowcaseVideoContainer = styled(motion.div)`
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1rem;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #ffffff;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  position: relative;
+  margin-top: 2rem;
+
+  @media (max-width: 768px) {
+    grid-column: 1;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.4rem;
+    margin-top: 1.5rem;
+  }
+`;
+
 const PlanCard = ({ title, price, description }: { title: string; price: string; description: string }) => (
   <PlanCardWrapper>
     <div className="card">
@@ -773,6 +797,56 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ isOpen, onClose }) => {
   );
 };
 
+const ShowcaseVideoPlayer: React.FC<VideoPlayerProps> = ({ isOpen, onClose }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (isOpen && videoRef.current) {
+      videoRef.current.muted = true;
+      videoRef.current.play();
+    }
+  }, [isOpen]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <VideoModal
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
+          <motion.div
+            style={{
+              width: '90vw',
+              maxWidth: '1200px',
+              height: '60vh',
+              borderRadius: '12px',
+              overflow: 'hidden'
+            }}
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.5, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/SEU_VIDEO_ID_AQUI?autoplay=1&mute=0"
+              title="Bibliotech - Sistema de Biblioteca"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              style={{ border: 'none' }}
+            />
+          </motion.div>
+        </VideoModal>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const ScaleOnScroll: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { margin: "-40% 0px -40% 0px" });
@@ -786,6 +860,57 @@ const ScaleOnScroll: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  return (
+    <motion.div
+      ref={ref}
+      style={{
+        width: '100%',
+        height: '100%'
+      }}
+      animate={isMobile ? {
+        scale: isInView ? 1.05 : 1
+      } : {}}
+      transition={{
+        duration: 0.5,
+        ease: "easeOut"
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const VideoOnScroll: React.FC<{ 
+  children: React.ReactNode; 
+  videoRef: React.RefObject<HTMLVideoElement>;
+}> = ({ children, videoRef }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { margin: "-30% 0px -30% 0px" });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = true;
+      
+      if (isInView) {
+        videoRef.current.play().catch(error => {
+          console.log('Erro ao reproduzir vídeo:', error);
+        });
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isInView, videoRef]);
 
   return (
     <motion.div
@@ -1730,7 +1855,9 @@ const Home: React.FC = () => {
   const [titleRect, setTitleRect] = useState<DOMRect | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isShowcaseVideoModalOpen, setIsShowcaseVideoModalOpen] = useState(false);
   const gridVideoRef = useRef<HTMLVideoElement>(null);
+  const showcaseVideoRef = useRef<HTMLVideoElement>(null);
   
   // Hooks para login de convidado
   const navigate = useNavigate();
@@ -1896,6 +2023,9 @@ Aguardo retorno. Obrigado!`;
       gridVideoRef.current.play();
     }
   }, []);
+
+  // Removido o useEffect que iniciava o vídeo automaticamente
+  // Agora será controlado pelo useInView
 
   const handleMouseMove = (e: React.MouseEvent) => {
     setMousePos({ x: e.clientX, y: e.clientY });
@@ -2504,6 +2634,62 @@ Aguardo retorno. Obrigado!`;
                   />
                 </DecorativeContainer>
               </ProductVideoContainer>
+              <ProductShowcaseVideoContainer
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+              >
+                <VideoOnScroll videoRef={showcaseVideoRef}>
+                  <VideoContainer onClick={() => setIsShowcaseVideoModalOpen(true)}>
+                    <img
+                      src="https://img.youtube.com/vi/SEU_VIDEO_ID_AQUI/maxresdefault.jpg"
+                      alt="Bibliotech - Demonstração do Sistema"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '12px'
+                      }}
+                    />
+                    <PlayOverlay className="play-overlay">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </PlayOverlay>
+                  </VideoContainer>
+                </VideoOnScroll>
+                
+                {/* Ilustrações decorativas ao redor do vídeo showcase */}
+                <DecorativeContainer>
+                  <FloatingIcon
+                    color="#FF6B6B"
+                    size="35px"
+                    position="top: -20px; left: -20px;"
+                    icon="🎭"
+                    mouseX={decorativeMousePos.x}
+                    mouseY={decorativeMousePos.y}
+                    speed={0.3}
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 0.2, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1, delay: 1.0 }}
+                  />
+                  <DecorativeShape
+                    color="#4db5ff"
+                    size="50px"
+                    position="bottom: -25px; right: -25px;"
+                    rotation={-30}
+                    mouseX={decorativeMousePos.x}
+                    mouseY={decorativeMousePos.y}
+                    speed={0.4}
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 0.1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, delay: 1.2 }}
+                  />
+                </DecorativeContainer>
+              </ProductShowcaseVideoContainer>
             </ProductGrid>
           </ProductSection>
         </Section>
@@ -2765,6 +2951,11 @@ Aguardo retorno. Obrigado!`;
       <VideoPlayer
         isOpen={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}
+      />
+      
+      <ShowcaseVideoPlayer
+        isOpen={isShowcaseVideoModalOpen}
+        onClose={() => setIsShowcaseVideoModalOpen(false)}
       />
       
       <ImageViewer
