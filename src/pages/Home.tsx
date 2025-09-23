@@ -832,7 +832,7 @@ const ShowcaseVideoPlayer: React.FC<VideoPlayerProps> = ({ isOpen, onClose }) =>
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/SEU_VIDEO_ID_AQUI?autoplay=1&mute=0"
+              src="https://www.youtube.com/embed/p1EwxbQ323k?autoplay=1&mute=0"
               title="Bibliotech - Sistema de Biblioteca"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -2643,7 +2643,7 @@ Aguardo retorno. Obrigado!`;
                 <VideoOnScroll videoRef={showcaseVideoRef}>
                   <VideoContainer onClick={() => setIsShowcaseVideoModalOpen(true)}>
                     <img
-                      src="https://img.youtube.com/vi/SEU_VIDEO_ID_AQUI/maxresdefault.jpg"
+                      src="https://img.youtube.com/vi/p1EwxbQ323k/maxresdefault.jpg"
                       alt="Bibliotech - Demonstração do Sistema"
                       style={{
                         width: '100%',
