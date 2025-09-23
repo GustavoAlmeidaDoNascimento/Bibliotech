@@ -1672,6 +1672,17 @@ const TypewriterText = styled.span`
     0%, 50% { border-color: transparent; }
     51%, 100% { border-color: #4db5ff; }
   }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 `;
 
 const TypewriterEffect: React.FC<{ text: string; speed?: number }> = ({ text, speed = 100 }) => {
@@ -1857,7 +1868,8 @@ const Home: React.FC = () => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isShowcaseVideoModalOpen, setIsShowcaseVideoModalOpen] = useState(false);
   const [isVideoInView, setIsVideoInView] = useState(false);
-  const [isVideoMuted, setIsVideoMuted] = useState(true);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const gridVideoRef = useRef<HTMLVideoElement>(null);
   const showcaseVideoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -2070,6 +2082,15 @@ Aguardo retorno. Obrigado!`;
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVideoInView(true);
+          // Mostra prompt de som após 2 segundos se não estiver mutado
+          // (indica que o navegador pode ter bloqueado o autoplay com som)
+          if (!isVideoMuted) {
+            setTimeout(() => {
+              setShowSoundPrompt(true);
+              // Remove o prompt após 4 segundos
+              setTimeout(() => setShowSoundPrompt(false), 4000);
+            }, 2000);
+          }
         }
       },
       {
@@ -2087,13 +2108,14 @@ Aguardo retorno. Obrigado!`;
         observer.unobserve(videoContainerRef.current);
       }
     };
-  }, []);
+  }, [isVideoMuted]);
 
   // Função para ativar/desativar som do vídeo
   const toggleVideoSound = () => {
     if (iframeRef.current) {
       const newMutedState = !isVideoMuted;
       setIsVideoMuted(newMutedState);
+      setShowSoundPrompt(false); // Esconde o prompt quando usuário interage
       
       // Recarrega o iframe com nova configuração de som
       const currentSrc = iframeRef.current.src;
@@ -2734,6 +2756,34 @@ Aguardo retorno. Obrigado!`;
                             </svg>
                           )}
                         </div>
+                        
+                        {/* Prompt de som */}
+                        {showSoundPrompt && !isVideoMuted && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '15px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              background: 'rgba(0, 0, 0, 0.8)',
+                              borderRadius: '8px',
+                              padding: '8px 16px',
+                              color: 'white',
+                              fontSize: '14px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              backdropFilter: 'blur(5px)',
+                              animation: 'fadeInUp 0.3s ease-out',
+                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                            }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                            Clique para ativar o som
+                          </div>
+                        )}
                       </>
                     ) : (
                       <>
