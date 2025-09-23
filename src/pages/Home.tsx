@@ -797,55 +797,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ isOpen, onClose }) => {
   );
 };
 
-const ShowcaseVideoPlayer: React.FC<VideoPlayerProps> = ({ isOpen, onClose }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    if (isOpen && videoRef.current) {
-      videoRef.current.muted = true;
-      videoRef.current.play();
-    }
-  }, [isOpen]);
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <VideoModal
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-        >
-          <motion.div
-            style={{
-              width: '90vw',
-              maxWidth: '1200px',
-              height: '60vh',
-              borderRadius: '12px',
-              overflow: 'hidden'
-            }}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.5, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/p1EwxbQ323k?autoplay=1&mute=0"
-              title="Bibliotech - Sistema de Biblioteca"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-              style={{ border: 'none' }}
-            />
-          </motion.div>
-        </VideoModal>
-      )}
-    </AnimatePresence>
-  );
-};
 
 const ScaleOnScroll: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const ref = useRef(null);
@@ -881,56 +832,6 @@ const ScaleOnScroll: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   );
 };
 
-const VideoOnScroll: React.FC<{ 
-  children: React.ReactNode; 
-  videoRef: React.RefObject<HTMLVideoElement>;
-}> = ({ children, videoRef }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { margin: "-30% 0px -30% 0px" });
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = true;
-      
-      if (isInView) {
-        videoRef.current.play().catch(error => {
-          console.log('Erro ao reproduzir vídeo:', error);
-        });
-      } else {
-        videoRef.current.pause();
-      }
-    }
-  }, [isInView, videoRef]);
-
-  return (
-    <motion.div
-      ref={ref}
-      style={{
-        width: '100%',
-        height: '100%'
-      }}
-      animate={isMobile ? {
-        scale: isInView ? 1.05 : 1
-      } : {}}
-      transition={{
-        duration: 0.5,
-        ease: "easeOut"
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-};
 
 const PricingSection = styled(Section)`
   background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
@@ -1672,17 +1573,6 @@ const TypewriterText = styled.span`
     0%, 50% { border-color: transparent; }
     51%, 100% { border-color: #4db5ff; }
   }
-  
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 `;
 
 const TypewriterEffect: React.FC<{ text: string; speed?: number }> = ({ text, speed = 100 }) => {
@@ -1866,10 +1756,8 @@ const Home: React.FC = () => {
   const [titleRect, setTitleRect] = useState<DOMRect | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const [isShowcaseVideoModalOpen, setIsShowcaseVideoModalOpen] = useState(false);
   const [isVideoInView, setIsVideoInView] = useState(false);
   const gridVideoRef = useRef<HTMLVideoElement>(null);
-  const showcaseVideoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
@@ -2680,48 +2568,46 @@ Aguardo retorno. Obrigado!`;
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.7 }}
               >
-                <VideoOnScroll videoRef={showcaseVideoRef}>
-                  <VideoContainer 
-                    ref={videoContainerRef}
-                    onClick={() => !isVideoInView && setIsShowcaseVideoModalOpen(true)}
-                    style={{ cursor: isVideoInView ? 'default' : 'pointer' }}
-                  >
-                    {isVideoInView ? (
-                      <iframe
-                        ref={iframeRef}
-                        width="100%"
-                        height="100%"
-                        src="https://www.youtube.com/embed/p1EwxbQ323k?autoplay=1&mute=0&loop=1&playlist=p1EwxbQ323k&controls=1&modestbranding=1&rel=0"
-                        title="Bibliotech - Demonstração do Sistema"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerPolicy="strict-origin-when-cross-origin"
-                        style={{ 
-                          border: 'none',
+                <VideoContainer 
+                  ref={videoContainerRef}
+                  onClick={() => !isVideoInView && setIsVideoModalOpen(true)}
+                  style={{ cursor: isVideoInView ? 'default' : 'pointer' }}
+                >
+                  {isVideoInView ? (
+                    <iframe
+                      ref={iframeRef}
+                      width="100%"
+                      height="100%"
+                      src="https://www.youtube.com/embed/p1EwxbQ323k?autoplay=1&mute=0&loop=1&playlist=p1EwxbQ323k&controls=1&modestbranding=1&rel=0"
+                      title="Bibliotech - Demonstração do Sistema"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      style={{ 
+                        border: 'none',
+                        borderRadius: '12px'
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <img
+                        src="https://img.youtube.com/vi/p1EwxbQ323k/maxresdefault.jpg"
+                        alt="Bibliotech - Demonstração do Sistema"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
                           borderRadius: '12px'
                         }}
                       />
-                    ) : (
-                      <>
-                        <img
-                          src="https://img.youtube.com/vi/p1EwxbQ323k/maxresdefault.jpg"
-                          alt="Bibliotech - Demonstração do Sistema"
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            borderRadius: '12px'
-                          }}
-                    />
-                    <PlayOverlay className="play-overlay">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </PlayOverlay>
-                      </>
-                    )}
-                  </VideoContainer>
-                </VideoOnScroll>
+                      <PlayOverlay className="play-overlay">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </PlayOverlay>
+                    </>
+                  )}
+                </VideoContainer>
                 
                 {/* Ilustrações decorativas ao redor do vídeo showcase */}
                 <DecorativeContainer>
@@ -3016,10 +2902,6 @@ Aguardo retorno. Obrigado!`;
         onClose={() => setIsVideoModalOpen(false)}
       />
       
-      <ShowcaseVideoPlayer
-        isOpen={isShowcaseVideoModalOpen}
-        onClose={() => setIsShowcaseVideoModalOpen(false)}
-      />
       
       <ImageViewer
         isOpen={!!selectedImage}
