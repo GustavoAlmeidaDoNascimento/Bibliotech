@@ -312,6 +312,53 @@ const CTASection = styled(motion.div)`
   }
 `;
 
+const ImageModal = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  cursor: pointer;
+`;
+
+const ModalImage = styled.img`
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  cursor: default;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+`;
+
 const ContactSection = styled(Section)`
   background: rgba(255, 255, 255, 0.02);
   border-radius: 16px;
@@ -611,6 +658,7 @@ const Home: React.FC = () => {
     interesse: '',
     mensagem: ''
   });
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleGuestLogin = async () => {
     try {
@@ -647,6 +695,14 @@ Aguardo retorno. Obrigado!`;
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const openImageModal = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
   };
 
   return (
@@ -745,7 +801,12 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <img src="/images/home/about/acervo.png" alt="Plataforma de Gestão de Acervo" />
+                <img 
+                  src="/images/home/about/acervo.png" 
+                  alt="Plataforma de Gestão de Acervo" 
+                  onClick={() => openImageModal("/images/home/about/acervo.png")}
+                  style={{ cursor: 'pointer' }}
+                />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -771,7 +832,12 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <img src="/images/home/about/alunos.png" alt="Interface de Recomendação para Alunos" />
+                <img 
+                  src="/images/home/about/alunos.png" 
+                  alt="Interface de Recomendação para Alunos" 
+                  onClick={() => openImageModal("/images/home/about/alunos.png")}
+                  style={{ cursor: 'pointer' }}
+                />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -796,7 +862,12 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <img src="/images/home/about/dashboard.png" alt="Dashboard de Métricas e Relatórios" />
+                <img 
+                  src="/images/home/about/dashboard.png" 
+                  alt="Dashboard de Métricas e Relatórios" 
+                  onClick={() => openImageModal("/images/home/about/dashboard.png")}
+                  style={{ cursor: 'pointer' }}
+                />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -819,7 +890,12 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <img src="/images/home/about/whatsapp.png" alt="Comunicação Integrada via WhatsApp" />
+                <img 
+                  src="/images/home/about/whatsapp.png" 
+                  alt="Comunicação Integrada via WhatsApp" 
+                  onClick={() => openImageModal("/images/home/about/whatsapp.png")}
+                  style={{ cursor: 'pointer' }}
+                />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -842,7 +918,12 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <img src="/images/home/about/gameficação.png" alt="Sistema de Gamificação" />
+                <img 
+                  src="/images/home/about/gameficação.png" 
+                  alt="Sistema de Gamificação" 
+                  onClick={() => openImageModal("/images/home/about/gameficação.png")}
+                  style={{ cursor: 'pointer' }}
+                />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -869,7 +950,12 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <img src="/images/home/about/emprestimos.png" alt="Controle de Empréstimos Automatizado" />
+                <img 
+                  src="/images/home/about/emprestimos.png" 
+                  alt="Controle de Empréstimos Automatizado" 
+                  onClick={() => openImageModal("/images/home/about/emprestimos.png")}
+                  style={{ cursor: 'pointer' }}
+                />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
           </FeaturesContainer>
@@ -1055,6 +1141,25 @@ Aguardo retorno. Obrigado!`;
           phoneNumber="5551997188572"
           message="Olá, Gustavo! Referente à Bibliotech;"
         />
+
+        {/* Image Modal */}
+        {selectedImage && (
+          <ImageModal
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeImageModal}
+          >
+            <CloseButton onClick={closeImageModal}>
+              ×
+            </CloseButton>
+            <ModalImage
+              src={selectedImage}
+              alt="Screenshot do sistema"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </ImageModal>
+        )}
       </PageContainer>
     </>
   );
