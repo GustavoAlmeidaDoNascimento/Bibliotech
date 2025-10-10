@@ -138,21 +138,17 @@ const SelectStaffBook = () => {
         })
       );
       
-      // Filtrar apenas livros que têm pelo menos um código disponível
-      const availableBooks = booksWithAvailability.filter(book => 
-        book.availableCodes && book.availableCodes.length > 0
-      );
-      
-      if (availableBooks.length === 0) {
-        setError('Não há livros disponíveis para empréstimo no momento.');
+      // Mostrar todos os livros, mesmo os sem códigos disponíveis
+      if (booksWithAvailability.length === 0) {
+        setError('Não há livros cadastrados no sistema.');
       } else {
         // Ordenar por título
-        availableBooks.sort((a, b) => {
+        booksWithAvailability.sort((a, b) => {
           return (a.title || '').localeCompare(b.title || '');
         });
         
-        setBooks(availableBooks);
-        setFilteredBooks(availableBooks);
+        setBooks(booksWithAvailability);
+        setFilteredBooks(booksWithAvailability);
       }
     } catch (error) {
       console.error('Erro ao buscar livros:', error);

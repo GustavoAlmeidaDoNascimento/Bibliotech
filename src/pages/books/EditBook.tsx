@@ -118,9 +118,22 @@ const EditBook = () => {
         ...staffLoansSnap.docs.map(doc => doc.data().bookCode)
       ].filter(code => code); // Remove valores undefined/null
       
+      
       setBorrowedCodes(borrowedCodesList);
     } catch (err) {
       console.error('Erro ao buscar códigos emprestados:', err);
+      
+      // Fallback: usar dados do histórico para extrair códigos emprestados ativos
+      try {
+        const borrowedCodesFromHistory = loanHistory
+          .filter(loan => loan.status === 'active')
+          .map(loan => loan.bookCode)
+          .filter((code): code is string => Boolean(code));
+        
+        setBorrowedCodes(borrowedCodesFromHistory);
+      } catch (fallbackErr) {
+        console.error('Erro no fallback de códigos emprestados:', fallbackErr);
+      }
     }
   };
 
@@ -290,6 +303,13 @@ const EditBook = () => {
     fetchBook();
   }, [currentUser, bookId, navigate]); // Removido addGenre das dependências
 
+  // Recarregar códigos emprestados quando o histórico for carregado
+  useEffect(() => {
+    if (currentUser && bookId && loanHistory.length > 0) {
+      fetchBorrowedCodes();
+    }
+  }, [currentUser, bookId, loanHistory]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -402,7 +422,12 @@ const EditBook = () => {
 
   // Função para determinar o estilo de um código
   const getCodeStyle = (code: string) => {
-    if (borrowedCodes.includes(code)) {
+    // Comparação mais robusta - converte ambos para string
+    const isBorrowed = borrowedCodes.some(borrowedCode => 
+      String(borrowedCode).trim() === String(code).trim()
+    );
+    
+    if (isBorrowed) {
       return 'borrowed'; // Amarelo - código retirado
     }
     return 'available'; // Azul normal - código disponível
