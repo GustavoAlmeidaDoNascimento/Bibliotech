@@ -5,4 +5,5 @@ export { useScrollPosition } from './useScrollPosition';
 export { useInfiniteScroll } from './useInfiniteScroll';
 export { useDashboardCache } from './useDashboardCache';
 export { useCacheInvalidation, useDashboardCacheInvalidation } from './useCacheInvalidation';
-export { useBarcodeGenerator } from './useBarcodeGenerator'; 
+export { useBarcodeGenerator } from './useBarcodeGenerator';
+export { useCounterAnimation } from './useCounterAnimation'; 

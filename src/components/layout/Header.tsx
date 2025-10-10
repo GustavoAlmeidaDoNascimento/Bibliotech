@@ -43,7 +43,7 @@ const LogoText = styled.h1`
   margin: 0;
   
   span {
-    color: #3b82f6;
+    color: #0078d4;
   }
   
   @media (max-width: 768px) {

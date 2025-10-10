@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAsync } from '../hooks/useAsync';
 import Header from '../components/layout/Header';
 import WhatsAppButton from '../components/shared/WhatsAppButton';
-import { BookOpenIcon as Book, UsersIcon as Users, ArrowTrendingUpIcon as TrendingUp } from '@heroicons/react/24/outline';
+import AnimatedStatsGrid from '../components/home/AnimatedStatsGrid';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -140,60 +140,6 @@ const SecondaryButton = styled(motion.button)`
   }
 `;
 
-const StatsGrid = styled(motion.div)`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  max-width: 900px;
-  margin: 0 auto;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-`;
-
-const StatCard = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(0, 120, 212, 0.2);
-  border-radius: 12px;
-  padding: 32px 24px;
-  text-align: center;
-  transition: all 0.3s ease;
-  
-    &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(0, 120, 212, 0.4);
-    transform: translateY(-4px);
-  }
-  
-  svg {
-    width: 40px;
-    height: 40px;
-    color: #0078d4;
-    margin-bottom: 16px;
-  }
-  
-  @media (max-width: 768px) {
-    padding: 24px 20px;
-  }
-`;
-
-const StatNumber = styled.div`
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #0078d4;
-  margin-bottom: 8px;
-  
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-`;
-
-const StatLabel = styled.div`
-  font-size: 0.95rem;
-  color: #94a3b8;
-`;
 
 const Section = styled.section`
   padding: 80px 20px;
@@ -743,29 +689,7 @@ Aguardo retorno. Obrigado!`;
               </SecondaryButton>
             </CTAButtons>
             
-            <StatsGrid
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <StatCard whileHover={{ scale: 1.05 }}>
-                <Book />
-                <StatNumber>2.330+</StatNumber>
-              <StatLabel>Livros registrados</StatLabel>
-              </StatCard>
-              
-              <StatCard whileHover={{ scale: 1.05 }}>
-                <Users />
-                <StatNumber>605+</StatNumber>
-              <StatLabel>Leitores registrados</StatLabel>
-              </StatCard>
-              
-              <StatCard whileHover={{ scale: 1.05 }}>
-                <TrendingUp />
-                <StatNumber>221+</StatNumber>
-              <StatLabel>Leitores ativos</StatLabel>
-              </StatCard>
-            </StatsGrid>
+            <AnimatedStatsGrid />
           </HeroContent>
         </HeroSection>
 
