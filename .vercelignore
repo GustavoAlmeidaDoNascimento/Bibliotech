@@ -1,0 +1,34 @@
+# Arquivos a serem ignorados no deploy da Vercel
+
+# Documentação
+*.md
+docs/
+CONTRIBUTING.md
+LICENSE
+
+# Arquivos de desenvolvimento
+.git/
+.gitignore
+.cursor/
+*.log
+
+# Testes
+coverage/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Arquivos grandes (vídeos)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# PDF de pesquisa científica
+pesquisa cientifica.pdf
+
+# Node modules (será reinstalado durante build)
+node_modules/
+
