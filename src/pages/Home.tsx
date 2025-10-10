@@ -271,24 +271,19 @@ const FeatureScreenshotPlaceholder = styled.div`
   justify-content: center;
   position: relative;
   overflow: hidden;
+  padding: 12px;
   
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(0, 120, 212, 0.05) 0%, rgba(0, 120, 212, 0.02) 100%);
-  }
-  
-  span {
-    position: relative;
-    color: #64748b;
-    font-size: clamp(0.85rem, 1.5vw, 0.95rem);
-    text-align: center;
-    padding: 20px;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95);
   }
   
   @media (max-width: 768px) {
     aspect-ratio: 16/12;
+    padding: 8px;
   }
 `;
 
@@ -750,7 +745,7 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <span>Print do sistema - Plataforma de Gestão de Acervo</span>
+                <img src="/images/home/about/acervo.png" alt="Plataforma de Gestão de Acervo" />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -776,7 +771,7 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <span>Print do sistema - Interface de Recomendação para Alunos</span>
+                <img src="/images/home/about/alunos.png" alt="Interface de Recomendação para Alunos" />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -801,7 +796,7 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <span>Print do sistema - Dashboard de Métricas e Relatórios</span>
+                <img src="/images/home/about/dashboard.png" alt="Dashboard de Métricas e Relatórios" />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -824,7 +819,7 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <span>Print do sistema - Comunicação Integrada via WhatsApp</span>
+                <img src="/images/home/about/whatsapp.png" alt="Comunicação Integrada via WhatsApp" />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -847,7 +842,7 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <span>Print do sistema - Sistema de Gamificação</span>
+                <img src="/images/home/about/gameficação.png" alt="Sistema de Gamificação" />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
 
@@ -874,7 +869,7 @@ Aguardo retorno. Obrigado!`;
                 </FeatureDescription>
               </FeatureContent>
               <FeatureScreenshotPlaceholder>
-                <span>Print do sistema - Controle de Empréstimos Automatizado</span>
+                <img src="/images/home/about/emprestimos.png" alt="Controle de Empréstimos Automatizado" />
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
           </FeaturesContainer>
