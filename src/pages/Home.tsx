@@ -12,6 +12,7 @@ const PageContainer = styled.div`
   min-height: 100vh;
   background: #0a0e1a;
   color: white;
+  padding-bottom: 20px;
 `;
 
 const HeroSection = styled.section`
@@ -32,7 +33,7 @@ const HeroSection = styled.section`
 const HeroContent = styled.div`
   max-width: 1200px;
   width: 100%;
-  text-align: center;
+    text-align: center;
 `;
 
 const Title = styled(motion.h1)`
@@ -42,9 +43,9 @@ const Title = styled(motion.h1)`
   margin-bottom: 24px;
   
   span {
-    color: #3b82f6;
+    color: #0078d4;
   }
-  
+
   @media (max-width: 768px) {
     font-size: 2rem;
     margin-bottom: 16px;
@@ -60,7 +61,7 @@ const Tagline = styled(motion.div)`
     margin: 8px 0;
     
     strong {
-      color: #3b82f6;
+      color: #0078d4;
       font-weight: 600;
     }
     
@@ -79,10 +80,10 @@ const Tagline = styled(motion.div)`
 const CTAButtons = styled(motion.div)`
   display: flex;
   gap: 16px;
-  justify-content: center;
+    justify-content: center;
   margin-bottom: 60px;
-  flex-wrap: wrap;
-  
+    flex-wrap: wrap;
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
@@ -92,7 +93,7 @@ const CTAButtons = styled(motion.div)`
 
 const PrimaryButton = styled(motion.button)`
   padding: 14px 32px;
-  background: #3b82f6;
+  background: #0078d4;
   color: white;
   border: none;
   border-radius: 8px;
@@ -102,7 +103,7 @@ const PrimaryButton = styled(motion.button)`
   transition: all 0.3s ease;
   
   &:hover {
-    background: #2563eb;
+    background: #106ebe;
     transform: translateY(-2px);
   }
   
@@ -132,7 +133,7 @@ const SecondaryButton = styled(motion.button)`
     border-color: rgba(255, 255, 255, 0.4);
     background: rgba(255, 255, 255, 0.05);
   }
-  
+
   @media (max-width: 768px) {
     width: 100%;
     max-width: 300px;
@@ -154,22 +155,22 @@ const StatsGrid = styled(motion.div)`
 
 const StatCard = styled(motion.div)`
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(0, 120, 212, 0.2);
   border-radius: 12px;
   padding: 32px 24px;
   text-align: center;
   transition: all 0.3s ease;
   
-  &:hover {
+    &:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(59, 130, 246, 0.4);
+    border-color: rgba(0, 120, 212, 0.4);
     transform: translateY(-4px);
   }
   
   svg {
     width: 40px;
     height: 40px;
-    color: #3b82f6;
+    color: #0078d4;
     margin-bottom: 16px;
   }
   
@@ -181,7 +182,7 @@ const StatCard = styled(motion.div)`
 const StatNumber = styled.div`
   font-size: 2.5rem;
   font-weight: 700;
-  color: #3b82f6;
+  color: #0078d4;
   margin-bottom: 8px;
   
   @media (max-width: 768px) {
@@ -198,7 +199,7 @@ const Section = styled.section`
   padding: 80px 20px;
   max-width: 1200px;
   margin: 0 auto;
-  
+
   @media (max-width: 768px) {
     padding: 60px 16px;
   }
@@ -209,7 +210,7 @@ const SectionTitle = styled(motion.h2)`
   font-weight: 700;
   text-align: center;
   margin-bottom: 16px;
-  
+
   @media (max-width: 768px) {
     font-size: 1.75rem;
   }
@@ -222,7 +223,7 @@ const SectionDescription = styled(motion.p)`
   max-width: 700px;
   margin: 0 auto 60px;
   line-height: 1.6;
-  
+
   @media (max-width: 768px) {
     margin-bottom: 40px;
   }
@@ -255,7 +256,7 @@ const ProductCard = styled(motion.div)`
   
   &:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(59, 130, 246, 0.3);
+    border-color: rgba(0, 120, 212, 0.3);
     transform: translateY(-4px);
   }
   
@@ -282,14 +283,14 @@ const VideoContainer = styled(motion.div)`
   border-radius: 12px;
   overflow: hidden;
   aspect-ratio: 16/9;
-  position: relative;
-  
+    position: relative;
+
   iframe {
-    width: 100%;
+  width: 100%;
     height: 100%;
     border: none;
   }
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -299,25 +300,25 @@ const VideoContainer = styled(motion.div)`
 `;
 
 const PlayButton = styled.div`
-  position: absolute;
+    position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 70px;
   height: 70px;
-  background: rgba(59, 130, 246, 0.9);
+  background: rgba(0, 120, 212, 0.9);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+    transition: all 0.3s ease;
   
   &:hover {
-    background: rgba(59, 130, 246, 1);
+    background: rgba(0, 120, 212, 1);
     transform: translate(-50%, -50%) scale(1.1);
   }
-  
+
   &::after {
     content: '';
     width: 0;
@@ -334,7 +335,7 @@ const ContactSection = styled(Section)`
   border-radius: 16px;
   margin: 80px auto 80px;
   padding: 80px 60px 100px;
-  
+
   @media (max-width: 768px) {
     margin: 60px 16px 60px;
     padding: 60px 20px 80px;
@@ -348,7 +349,7 @@ const ContactForm = styled(motion.form)`
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 40px;
-  
+
   @media (max-width: 768px) {
     padding: 24px 20px;
   }
@@ -360,7 +361,7 @@ const FormGroup = styled.div`
 
 const FormLabel = styled.label`
   display: block;
-  color: #3b82f6;
+  color: #0078d4;
   font-weight: 600;
   margin-bottom: 8px;
   font-size: 0.95rem;
@@ -375,13 +376,13 @@ const FormInput = styled.input`
   color: white;
   font-size: 1rem;
   transition: all 0.3s ease;
-  
+
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: #0078d4;
     background: rgba(255, 255, 255, 0.08);
   }
-  
+
   &::placeholder {
     color: rgba(255, 255, 255, 0.3);
   }
@@ -397,13 +398,13 @@ const FormSelect = styled.select`
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  
+
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: #0078d4;
     background: rgba(255, 255, 255, 0.08);
   }
-  
+
   option {
     background: #0f1420;
     color: white;
@@ -422,13 +423,13 @@ const FormTextarea = styled.textarea`
   resize: vertical;
   font-family: inherit;
   transition: all 0.3s ease;
-  
+
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: #0078d4;
     background: rgba(255, 255, 255, 0.08);
   }
-  
+
   &::placeholder {
     color: rgba(255, 255, 255, 0.3);
   }
@@ -449,12 +450,12 @@ const SubmitButton = styled(motion.button)`
   justify-content: center;
   gap: 8px;
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -465,11 +466,12 @@ const SubmitButton = styled(motion.button)`
 const Footer = styled.footer`
   background: rgba(255, 255, 255, 0.02);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 60px 60px 30px;
+  padding: 60px 60px 60px;
   margin-top: 0;
+  margin-bottom: 0;
   
   @media (max-width: 768px) {
-    padding: 40px 20px 20px;
+    padding: 40px 20px 40px;
   }
 `;
 
@@ -505,7 +507,7 @@ const FooterLogo = styled.div`
   margin-bottom: 8px;
   
   span {
-    color: #3b82f6;
+    color: #0078d4;
   }
 `;
 
@@ -532,7 +534,7 @@ const FooterLink = styled.a`
   gap: 8px;
   
   &:hover {
-    color: #3b82f6;
+    color: #0078d4;
     transform: translateX(4px);
   }
 `;
@@ -551,12 +553,29 @@ const FooterBottom = styled.div`
   @media (max-width: 640px) {
     flex-direction: column;
     text-align: center;
+    gap: 12px;
   }
 `;
 
 const Copyright = styled.p`
   color: #64748b;
   font-size: 0.9rem;
+`;
+
+const ProtonCredit = styled.div`
+  color: #64748b;
+  font-size: 0.9rem;
+  
+  a {
+    color: #0078d4;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      color: #106ebe;
+      text-decoration: underline;
+    }
+  }
 `;
 
 const SocialLinks = styled.div`
@@ -577,9 +596,9 @@ const SocialLink = styled.a`
   transition: all 0.3s ease;
   
   &:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: #3b82f6;
-    color: #3b82f6;
+    background: rgba(0, 120, 212, 0.1);
+    border-color: #0078d4;
+    color: #0078d4;
     transform: translateY(-2px);
   }
   
@@ -732,19 +751,19 @@ Aguardo retorno. Obrigado!`;
               <StatCard whileHover={{ scale: 1.05 }}>
                 <Book />
                 <StatNumber>2.330+</StatNumber>
-                <StatLabel>Livros registrados</StatLabel>
+              <StatLabel>Livros registrados</StatLabel>
               </StatCard>
               
               <StatCard whileHover={{ scale: 1.05 }}>
                 <Users />
                 <StatNumber>605+</StatNumber>
-                <StatLabel>Leitores registrados</StatLabel>
+              <StatLabel>Leitores registrados</StatLabel>
               </StatCard>
               
               <StatCard whileHover={{ scale: 1.05 }}>
                 <TrendingUp />
                 <StatNumber>221+</StatNumber>
-                <StatLabel>Leitores ativos</StatLabel>
+              <StatLabel>Leitores ativos</StatLabel>
               </StatCard>
             </StatsGrid>
           </HeroContent>
@@ -753,7 +772,7 @@ Aguardo retorno. Obrigado!`;
         {/* Product Section */}
         <Section id="produto">
           <SectionTitle
-            initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
@@ -762,11 +781,11 @@ Aguardo retorno. Obrigado!`;
           </SectionTitle>
           
           <SectionDescription
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+              initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
             Uma solução completa que revoluciona a gestão de bibliotecas escolares, 
             criando uma experiência moderna e engajante para todos os usuários.
           </SectionDescription>
@@ -774,8 +793,8 @@ Aguardo retorno. Obrigado!`;
           <ProductGrid>
             <ProductCard
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
               <img src="/images/home/produto/graph1.png" alt="Gráfico de métricas 1" />
@@ -783,8 +802,8 @@ Aguardo retorno. Obrigado!`;
             
             <ProductCard
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <img src="/images/home/produto/graph2.png" alt="Gráfico de métricas 2" />
@@ -792,8 +811,8 @@ Aguardo retorno. Obrigado!`;
             
             <ProductCard
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <img src="/images/home/produto/graph3.png" alt="Gráfico de métricas 3" />
@@ -803,31 +822,31 @@ Aguardo retorno. Obrigado!`;
           <VideoContainer
             ref={videoContainerRef}
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            {isVideoInView ? (
-              <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/p1EwxbQ323k?autoplay=1&mute=0&loop=1&playlist=p1EwxbQ323k&controls=1&modestbranding=1&rel=0"
-                title="Bibliotech - Demonstração do Sistema"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-              />
-            ) : (
-              <>
-                <img
-                  src="https://img.youtube.com/vi/p1EwxbQ323k/maxresdefault.jpg"
-                  alt="Bibliotech - Demonstração do Sistema"
+                >
+                  {isVideoInView ? (
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src="https://www.youtube.com/embed/p1EwxbQ323k?autoplay=1&mute=0&loop=1&playlist=p1EwxbQ323k&controls=1&modestbranding=1&rel=0"
+                      title="Bibliotech - Demonstração do Sistema"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                    />
+                  ) : (
+                    <>
+                      <img
+                        src="https://img.youtube.com/vi/p1EwxbQ323k/maxresdefault.jpg"
+                        alt="Bibliotech - Demonstração do Sistema"
                   onClick={() => setIsVideoInView(true)}
                 />
                 <PlayButton onClick={() => setIsVideoInView(true)} />
-              </>
-            )}
-          </VideoContainer>
+                    </>
+                  )}
+                </VideoContainer>
         </Section>
 
         {/* Contact Section */}
@@ -835,77 +854,77 @@ Aguardo retorno. Obrigado!`;
           <SectionTitle
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
             Entre em contato
           </SectionTitle>
           
           <SectionDescription
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             Pronto para revolucionar a biblioteca da sua escola? Vamos conversar sobre como podemos ajudar!
           </SectionDescription>
           
-          <ContactForm
+            <ContactForm
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            onSubmit={handleWhatsAppSubmit}
-          >
-            <FormGroup>
-              <FormLabel>Nome</FormLabel>
-              <FormInput
-                type="text"
-                value={contactForm.nome}
-                onChange={(e) => setContactForm({ ...contactForm, nome: e.target.value })}
-                placeholder="Digite seu nome"
-                required
-              />
-            </FormGroup>
-            
-            <FormGroup>
-              <FormLabel>Interesse</FormLabel>
-              <FormSelect
-                value={contactForm.interesse}
-                onChange={(e) => setContactForm({ ...contactForm, interesse: e.target.value })}
-                required
-              >
-                <option value="">Selecione um interesse</option>
-                <option value="Suporte">Suporte</option>
-                <option value="Conhecer mais">Conhecer mais sobre o sistema</option>
-                <option value="Demonstração">Solicitar demonstração</option>
-                <option value="Parceria">Oportunidades de parceria</option>
-                <option value="Outros">Outros assuntos</option>
-              </FormSelect>
-            </FormGroup>
-            
-            <FormGroup>
-              <FormLabel>Mensagem</FormLabel>
-              <FormTextarea
-                value={contactForm.mensagem}
-                onChange={(e) => setContactForm({ ...contactForm, mensagem: e.target.value })}
-                placeholder="Digite sua mensagem"
-                required
-              />
-            </FormGroup>
-            
-            <SubmitButton
-              type="submit"
-              disabled={!contactForm.nome || !contactForm.interesse || !contactForm.mensagem}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              onSubmit={handleWhatsAppSubmit}
             >
+              <FormGroup>
+                <FormLabel>Nome</FormLabel>
+                <FormInput
+                  type="text"
+                  value={contactForm.nome}
+                  onChange={(e) => setContactForm({ ...contactForm, nome: e.target.value })}
+                  placeholder="Digite seu nome"
+                  required
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <FormLabel>Interesse</FormLabel>
+                <FormSelect
+                  value={contactForm.interesse}
+                  onChange={(e) => setContactForm({ ...contactForm, interesse: e.target.value })}
+                  required
+                >
+                  <option value="">Selecione um interesse</option>
+                  <option value="Suporte">Suporte</option>
+                  <option value="Conhecer mais">Conhecer mais sobre o sistema</option>
+                  <option value="Demonstração">Solicitar demonstração</option>
+                  <option value="Parceria">Oportunidades de parceria</option>
+                  <option value="Outros">Outros assuntos</option>
+                </FormSelect>
+              </FormGroup>
+              
+              <FormGroup>
+                <FormLabel>Mensagem</FormLabel>
+                <FormTextarea
+                  value={contactForm.mensagem}
+                  onChange={(e) => setContactForm({ ...contactForm, mensagem: e.target.value })}
+                  placeholder="Digite sua mensagem"
+                  required
+                />
+              </FormGroup>
+              
+            <SubmitButton
+                type="submit"
+                disabled={!contactForm.nome || !contactForm.interesse || !contactForm.mensagem}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.569-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488"/>
-              </svg>
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.569-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488"/>
+                </svg>
               Enviar via WhatsApp
             </SubmitButton>
-          </ContactForm>
+            </ContactForm>
         </ContactSection>
 
         {/* Footer */}
@@ -965,13 +984,11 @@ Aguardo retorno. Obrigado!`;
             <Copyright>
               © {new Date().getFullYear()} Bibliotech. Todos os direitos reservados.
             </Copyright>
+            <ProtonCredit>
+              Desenvolvido pela <a href="https://protonsoftware.tech" target="_blank" rel="noopener noreferrer">protonsoftware.tech</a>
+            </ProtonCredit>
             <SocialLinks>
-              <SocialLink href="https://github.com/seu-usuario/bibliotech" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-              </SocialLink>
-              <SocialLink href="https://linkedin.com/company/bibliotech" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <SocialLink href="https://www.linkedin.com/company/107289200/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                 </svg>
@@ -981,7 +998,7 @@ Aguardo retorno. Obrigado!`;
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.569-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488"/>
                 </svg>
               </SocialLink>
-              <SocialLink href="mailto:contato@bibliotech.tech" aria-label="E-mail">
+              <SocialLink href="mailto:proton.hello.world@gmail.com" aria-label="E-mail">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <polyline points="22,6 12,13 2,6"></polyline>
@@ -1000,4 +1017,4 @@ Aguardo retorno. Obrigado!`;
   );
 };
 
-export default Home;
+export default Home; 
