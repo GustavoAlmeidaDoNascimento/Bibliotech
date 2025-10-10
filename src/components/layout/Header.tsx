@@ -235,19 +235,11 @@ const Header: React.FC = () => {
   const menuVariants = {
     closed: {
       opacity: 0,
-      scaleY: 0,
-      transition: {
-        duration: 0.3,
-        ease: "easeInOut"
-      }
+      scaleY: 0
     },
     open: {
       opacity: 1,
-      scaleY: 1,
-      transition: {
-        duration: 0.3,
-        ease: "easeInOut"
-      }
+      scaleY: 1
     }
   };
 
@@ -261,8 +253,7 @@ const Header: React.FC = () => {
       y: 0,
       transition: {
         delay: i * 0.1,
-        duration: 0.3,
-        ease: "easeOut"
+        duration: 0.3
       }
     })
   };
@@ -334,6 +325,7 @@ const Header: React.FC = () => {
         initial="closed"
         animate={isMenuOpen ? "open" : "closed"}
         variants={menuVariants}
+        transition={{ duration: 0.3 }}
       >
         <NavList>
           {['produto', /* 'precos', */ 'contato'].map((section, index) => (
