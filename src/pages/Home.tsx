@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAsync } from '../hooks/useAsync';
 import Header from '../components/layout/Header';
 import WhatsAppButton from '../components/shared/WhatsAppButton';
-import { Book, Users, TrendingUp } from 'lucide-react';
+import { BookOpenIcon as Book, UsersIcon as Users, ArrowTrendingUpIcon as TrendingUp } from '@heroicons/react/24/outline';
 
 const PageContainer = styled.div`
   min-height: 100vh;
