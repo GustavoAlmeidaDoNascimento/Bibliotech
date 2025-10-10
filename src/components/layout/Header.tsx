@@ -12,54 +12,42 @@ const HeaderContainer = styled.header<{ isTransparent: boolean }>`
   right: 0;
   height: 70px;
   background: ${props => props.isTransparent 
-    ? 'linear-gradient(to bottom, rgba(0, 120, 212, 0.4), transparent)' 
-    : 'rgba(0, 120, 212, 0.4)'};
+    ? 'rgba(10, 14, 26, 0.6)' 
+    : 'rgba(10, 14, 26, 0.95)'};
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  box-shadow: ${props => props.isTransparent ? 'none' : '0 2px 10px rgba(0, 0, 0, 0.1)'};
+  box-shadow: ${props => props.isTransparent ? 'none' : '0 1px 0 rgba(255, 255, 255, 0.1)'};
   z-index: 1000;
   transition: all 0.3s ease;
-  isolation: isolate;
-  transform: translateZ(0);
-  will-change: transform;
+  border-bottom: 1px solid ${props => props.isTransparent ? 'transparent' : 'rgba(255, 255, 255, 0.05)'};
+  
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+  }
 `;
 
 const LogoContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
   cursor: pointer;
 `;
 
-const LogoWrapper = styled.div`
-  border-radius: 50%;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 55px;
-  height: 55px;
-`;
-
-const LogoText = styled.div`
+const LogoText = styled.h1`
   color: white;
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0;
-  }
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
   
   span {
-    font-size: 0.75rem;
-    opacity: 0.8;
+    color: #3b82f6;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
   }
 `;
 
@@ -78,16 +66,13 @@ const MobileNav = styled(motion.div)<{ isOpen: boolean }>`
     top: 70px;
     left: 0;
     right: 0;
-    background: rgba(0, 120, 212, 0.4);
+    background: rgba(10, 14, 26, 0.98);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    padding: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transform-origin: top;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    isolation: isolate;
-    transform: translateZ(0);
-    will-change: transform;
   }
 `;
 
@@ -105,11 +90,12 @@ const NavList = styled.ul`
 `;
 
 const NavItem = styled(motion.li)<{ isActive: boolean }>`
-  color: white;
+  color: ${props => props.isActive ? '#3b82f6' : 'white'};
   cursor: pointer;
   font-weight: 500;
   position: relative;
   padding: 0.5rem 1rem;
+  transition: color 0.3s ease;
   
   &:after {
     content: '';
@@ -118,17 +104,21 @@ const NavItem = styled(motion.li)<{ isActive: boolean }>`
     left: 0;
     width: 100%;
     height: 2px;
-    background: white;
+    background: #3b82f6;
     transform: scaleX(${props => props.isActive ? 1 : 0});
     transition: transform 0.3s ease;
   }
   
   &:hover {
-    opacity: 0.8;
+    color: #3b82f6;
     
     &:after {
       transform: scaleX(1);
     }
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem 0;
   }
 `;
 
@@ -136,23 +126,26 @@ const LoginButton = styled(motion.button)`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.25rem;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
   width: 100%;
   justify-content: center;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
   }
 
   @media (max-width: 768px) {
-    margin-top: 1rem;
+    margin-top: 1.5rem;
   }
 
   @media (min-width: 769px) {
@@ -262,7 +255,7 @@ const Header: React.FC = () => {
     <HeaderContainer isTransparent={isTransparent}>
       <LogoContainer onClick={() => scrollToSection('inicio')}>
         <LogoText>
-          <h1>Bibliotech.<span style={{ color: '#4cb4fd', fontSize: '1.5rem' }}>tech</span></h1>
+          Bibliotech.<span>tech</span>
         </LogoText>
       </LogoContainer>
 
