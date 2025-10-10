@@ -360,41 +360,58 @@ const SelectStaffBook = () => {
               </div>
             ) : (
               <div className={styles.bookList}>
-                {currentBooks.map(book => (
-                  <div key={book.id} className={styles.bookItem}>
-                    <div className={styles.bookInfo}>
-                      <h3 className={styles.bookTitle}>{book.title}</h3>
-                                              <p className={styles.bookCode}>Código: {getDisplayCode(book)}</p>
-                      {book.authors && (Array.isArray(book.authors) ? book.authors.length > 0 : book.authors) && (
-                        <p className={styles.bookAuthors}>
-                          Autores: {Array.isArray(book.authors) ? book.authors.join(', ') : book.authors}
-                        </p>
-                      )}
-                      {book.publisher && (
-                        <p className={styles.bookPublisher}>
-                          Editora: {book.publisher}
-                        </p>
-                      )}
-                      {book.genres && book.genres.length > 0 && (
-                        <div className={styles.bookGenres}>
-                          {book.genres.map((genre, index) => (
-                            <span key={index} className={styles.genreTag}>
-                              {genre}
-                            </span>
-                          ))}
+                {currentBooks.map(book => {
+                  const allCodes = getAllCodes(book);
+                  const availableCodes = book.availableCodes || [];
+                  const isFullyBorrowed = allCodes.length > 0 && availableCodes.length === 0;
+                  
+                  return (
+                    <div key={book.id} className={`${styles.bookItem} ${isFullyBorrowed ? styles.bookItemBorrowed : ''}`}>
+                      {isFullyBorrowed && (
+                        <div className={styles.borrowedBadge}>
+                          Esgotado
                         </div>
                       )}
+                      <div className={styles.bookInfo}>
+                        <h3 className={styles.bookTitle}>{book.title}</h3>
+                        <p className={styles.bookCode}>Código: {getDisplayCode(book)}</p>
+                        {availableCodes.length > 0 && (
+                          <p className={styles.availableInfo}>
+                            {availableCodes.length} de {allCodes.length} disponível(is)
+                          </p>
+                        )}
+                        {book.authors && (Array.isArray(book.authors) ? book.authors.length > 0 : book.authors) && (
+                          <p className={styles.bookAuthors}>
+                            Autores: {Array.isArray(book.authors) ? book.authors.join(', ') : book.authors}
+                          </p>
+                        )}
+                        {book.publisher && (
+                          <p className={styles.bookPublisher}>
+                            Editora: {book.publisher}
+                          </p>
+                        )}
+                        {book.genres && book.genres.length > 0 && (
+                          <div className={styles.bookGenres}>
+                            {book.genres.map((genre, index) => (
+                              <span key={index} className={styles.genreTag}>
+                                {genre}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className={styles.bookActions}>
+                        <button
+                          className={styles.selectButton}
+                          onClick={() => handleSelectBook(book.id, book.title)}
+                          disabled={isFullyBorrowed}
+                        >
+                          {isFullyBorrowed ? 'Indisponível' : 'Selecionar'}
+                        </button>
+                      </div>
                     </div>
-                    <div className={styles.bookActions}>
-                      <button
-                        className={styles.selectButton}
-                        onClick={() => handleSelectBook(book.id, book.title)}
-                      >
-                        Selecionar
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

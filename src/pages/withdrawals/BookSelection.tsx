@@ -121,13 +121,9 @@ const BookSelection = () => {
         })
       );
       
-      // Filtrar apenas livros que têm pelo menos um código disponível
-      const availableBooks = booksWithAvailability.filter(book => 
-        book.availableCodes && book.availableCodes.length > 0
-      );
-      
-      setBooks(availableBooks);
-      setFilteredBooks(availableBooks);
+      // Mostrar todos os livros, mesmo os sem códigos disponíveis
+      setBooks(booksWithAvailability);
+      setFilteredBooks(booksWithAvailability);
     } catch (error) {
       console.error('Erro ao buscar livros:', error);
     } finally {
@@ -344,48 +340,61 @@ const BookSelection = () => {
               </div>
             ) : (
               <div className={styles.bookList}>
-                {currentBooks.map(book => (
-                  <div key={book.id} className={styles.bookItem}>
-                    <div className={styles.bookInfo}>
-                      <h3 className={styles.bookTitle}>{book.title}</h3>
-                                              <p className={styles.bookCode}>Código: {getDisplayCode(book)}</p>
-                      {book.authors && (
-                        <p className={styles.bookAuthors}>
-                          Autores: {Array.isArray(book.authors) ? book.authors.join(', ') : book.authors}
-                        </p>
-                      )}
-                      {book.publisher && (
-                        <p className={styles.bookPublisher}>Editora: {book.publisher}</p>
-                      )}
-                      {book.shelf && (
-                        <p className={styles.bookShelf}>Estante: {book.shelf}</p>
-                      )}
-                      {book.collection && (
-                        <p className={styles.bookCollection}>Coleção: {book.collection}</p>
-                      )}
-                      {book.quantity !== undefined && (
-                        <p className={styles.bookQuantity}>Quantidade disponível: {book.quantity}</p>
-                      )}
-                      {book.genres && book.genres.length > 0 && (
-                        <div className={styles.bookGenres}>
-                          {book.genres.map((genre, index) => (
-                            <span key={index} className={styles.genreTag}>{genre}</span>
-                          ))}
+                {currentBooks.map(book => {
+                  const allCodes = getAllCodes(book);
+                  const availableCodes = book.availableCodes || [];
+                  const isFullyBorrowed = allCodes.length > 0 && availableCodes.length === 0;
+                  
+                  return (
+                    <div key={book.id} className={`${styles.bookItem} ${isFullyBorrowed ? styles.bookItemBorrowed : ''}`}>
+                      {isFullyBorrowed && (
+                        <div className={styles.borrowedBadge}>
+                          Esgotado
                         </div>
                       )}
+                      <div className={styles.bookInfo}>
+                        <h3 className={styles.bookTitle}>{book.title}</h3>
+                        <p className={styles.bookCode}>Código: {getDisplayCode(book)}</p>
+                        {availableCodes.length > 0 && (
+                          <p className={styles.availableInfo}>
+                            {availableCodes.length} de {allCodes.length} disponível(is)
+                          </p>
+                        )}
+                        {book.authors && (
+                          <p className={styles.bookAuthors}>
+                            Autores: {Array.isArray(book.authors) ? book.authors.join(', ') : book.authors}
+                          </p>
+                        )}
+                        {book.publisher && (
+                          <p className={styles.bookPublisher}>Editora: {book.publisher}</p>
+                        )}
+                        {book.shelf && (
+                          <p className={styles.bookShelf}>Estante: {book.shelf}</p>
+                        )}
+                        {book.collection && (
+                          <p className={styles.bookCollection}>Coleção: {book.collection}</p>
+                        )}
+                        {book.genres && book.genres.length > 0 && (
+                          <div className={styles.bookGenres}>
+                            {book.genres.map((genre, index) => (
+                              <span key={index} className={styles.genreTag}>{genre}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className={styles.bookActions}>
+                        <button 
+                          className={styles.selectButton}
+                          onClick={() => handleSelectBook(book.id, book.title)}
+                          disabled={isFullyBorrowed}
+                        >
+                          <HandRaisedIcon className={styles.buttonIcon} />
+                          {isFullyBorrowed ? 'Indisponível' : 'Escolher'}
+                        </button>
+                      </div>
                     </div>
-                    <div className={styles.bookActions}>
-                      <button 
-                        className={styles.selectButton}
-                        onClick={() => handleSelectBook(book.id, book.title)}
-                        disabled={book.quantity === 0}
-                      >
-                        <HandRaisedIcon className={styles.buttonIcon} />
-                        Escolher
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
