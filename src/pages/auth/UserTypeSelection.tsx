@@ -8,7 +8,7 @@ const UserTypeSelection: React.FC = () => {
   const navigate = useNavigate();
 
   const handleGoBack = () => {
-    navigate(-1);
+    navigate(ROUTES.HOME);
   };
 
   const handleStudentSelection = () => {
