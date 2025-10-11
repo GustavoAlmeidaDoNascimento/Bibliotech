@@ -67,7 +67,7 @@ const Login: React.FC = () => {
   };
 
   const handleGoBack = () => {
-    navigate(-1);
+    navigate('/select-user-type');
   };
 
   const handleGuestLogin = async () => {
