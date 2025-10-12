@@ -5,57 +5,42 @@ import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTags } from '../../contexts/TagsContext';
 import { useInfiniteScroll, useBarcodeGenerator } from '../../hooks';
+import { useOptimizedSearch, type Book } from '../../hooks/useOptimizedSearch';
 import { PlusIcon, TrashIcon, FunnelIcon, XMarkIcon, ListBulletIcon, Squares2X2Icon, ArrowsUpDownIcon, ArrowDownTrayIcon, PrinterIcon } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import styles from './Books.module.css';
-
-interface Book {
-  id: string;
-  code?: string;
-  codes?: string[];
-  title: string;
-  genres?: string[];
-  tags?: string[]; // Array de IDs das tags
-  authors?: string[] | string;
-  publisher?: string;
-  acquisitionDate?: string;
-  shelf?: string;
-  collection?: string;
-  quantity?: number;
-  createdAt?: number;
-  description?: string;
-}
-
-interface Filters {
-  title: string;
-  code: string;
-  author: string;
-  tags: string[]; // Array de IDs das tags selecionadas para filtro
-}
 
 type SortOption = 'alphabetical' | 'dateAdded';
 
 const Books = () => {
   const [books, setBooks] = useState<Book[]>([]);
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooks, setSelectedBooks] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
-  const [filtersApplied, setFiltersApplied] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [sortBy, setSortBy] = useState<SortOption>('dateAdded');
-  const [filters, setFilters] = useState<Filters>({
-    title: '',
-    code: '',
-    author: '',
-    tags: []
-  });
   
   const { currentUser } = useAuth();
   const { getTagsByIds, tags } = useTags();
   const navigate = useNavigate();
   const { generatePDF, isGenerating } = useBarcodeGenerator();
+
+  // Hook de busca otimizada
+  const {
+    filters,
+    filteredBooks,
+    hasActiveFilters,
+    isSearching,
+    updateFilter,
+    clearFilters: clearSearchFilters,
+    addTagFilter,
+    removeTagFilter,
+    filteredCount
+  } = useOptimizedSearch({
+    books,
+    debounceMs: 300
+  });
 
   const getDisplayCode = (book: Book): string => {
     if (book.codes && book.codes.length > 0) {
@@ -123,6 +108,7 @@ const Books = () => {
     fetchBooks();
   }, [fetchBooks]);
 
+  // Ordenação dos livros filtrados
   const sortBooks = useCallback((booksToSort: Book[]) => {
     const booksCopy = [...booksToSort];
 
@@ -140,14 +126,7 @@ const Books = () => {
     }
   }, [sortBy]);
 
-  const currentBooks = filtersApplied ? filteredBooks : books;
-  const sortedBooks = useMemo(() => sortBooks(currentBooks), [currentBooks, sortBooks]);
-
-  console.log('Books pagination debug:', {
-    totalBooks: books.length,
-    sortedBooks: sortedBooks.length,
-    filtersApplied
-  });
+  const sortedBooks = useMemo(() => sortBooks(filteredBooks), [filteredBooks, sortBooks]);
 
   // Hook de paginação com scroll infinito
   const {
@@ -162,107 +141,10 @@ const Books = () => {
     enabled: !loading
   });
 
-  console.log('Displayed books:', displayedBooks.length);
-
-  // Reset pagination when filters change
+  // Reset pagination when filters or sort change
   useEffect(() => {
     resetPagination();
-  }, [filtersApplied, filteredBooks, books, sortBy, resetPagination]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    applyFilters();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      applyFilters();
-    }
-  };
-
-  const applyFilters = () => {
-    let result = [...books];
-    const hasActiveFilters = filters.title || filters.code || filters.author || filters.tags.length > 0;
-    
-    if (!hasActiveFilters) {
-      setFilteredBooks([]);
-      setFiltersApplied(false);
-      return;
-    }
-
-    if (filters.title) {
-      result = result.filter(book => 
-        book.title.toLowerCase().includes(filters.title.toLowerCase())
-      );
-    }
-
-    if (filters.code) {
-      result = result.filter(book => 
-        getAllCodes(book).some(code => 
-          code.toLowerCase().includes(filters.code.toLowerCase())
-        )
-      );
-    }
-
-    if (filters.author) {
-      result = result.filter(book => {
-        if (!book.authors) return false;
-        
-        if (Array.isArray(book.authors)) {
-          return book.authors.some(author => 
-            author.toLowerCase().includes(filters.author.toLowerCase())
-          );
-        } else {
-          return book.authors.toLowerCase().includes(filters.author.toLowerCase());
-        }
-      });
-    }
-
-    if (filters.tags.length > 0) {
-      result = result.filter(book => {
-        if (!book.tags || book.tags.length === 0) return false;
-        // Verifica se o livro tem pelo menos uma das tags selecionadas
-        return filters.tags.some(selectedTagId => book.tags!.includes(selectedTagId));
-      });
-    }
-
-    setFilteredBooks(result);
-    setFiltersApplied(true);
-  };
-
-  const handleFilterChange = (field: keyof Filters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleTagSelect = (tagId: string) => {
-    if (!tagId || filters.tags.includes(tagId)) return;
-    
-    setFilters(prev => ({
-      ...prev,
-      tags: [...prev.tags, tagId]
-    }));
-  };
-
-  const removeSelectedTag = (tagId: string) => {
-    setFilters(prev => ({
-      ...prev,
-      tags: prev.tags.filter(id => id !== tagId)
-    }));
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      title: '',
-      code: '',
-      author: '',
-      tags: []
-    });
-    setFilteredBooks([]);
-    setFiltersApplied(false);
-  };
+  }, [filteredBooks, sortBy, resetPagination]);
 
   const toggleBookSelection = (bookId: string) => {
     setSelectedBooks(prev => 
@@ -496,15 +378,14 @@ const Books = () => {
 
       {showFilters && (
         <div className={styles.filters}>
-          <form onSubmit={handleSubmit} className={styles.filterGrid}>
+          <div className={styles.filterGrid}>
             <div className={styles.filterGroup}>
               <label htmlFor="title">Título</label>
               <input
                 type="text"
                 id="title"
                 value={filters.title}
-                onChange={(e) => handleFilterChange('title', e.target.value)}
-                onKeyDown={handleKeyDown}
+                onChange={(e) => updateFilter('title', e.target.value)}
                 placeholder="Filtrar por título..."
               />
             </div>
@@ -515,8 +396,7 @@ const Books = () => {
                 type="text"
                 id="code"
                 value={filters.code}
-                onChange={(e) => handleFilterChange('code', e.target.value)}
-                onKeyDown={handleKeyDown}
+                onChange={(e) => updateFilter('code', e.target.value)}
                 placeholder="Filtrar por código..."
               />
             </div>
@@ -527,8 +407,7 @@ const Books = () => {
                 type="text"
                 id="author"
                 value={filters.author}
-                onChange={(e) => handleFilterChange('author', e.target.value)}
-                onKeyDown={handleKeyDown}
+                onChange={(e) => updateFilter('author', e.target.value)}
                 placeholder="Filtrar por autor..."
               />
             </div>
@@ -538,7 +417,7 @@ const Books = () => {
               <select
                 id="tags"
                 value=""
-                onChange={(e) => handleTagSelect(e.target.value)}
+                onChange={(e) => addTagFilter(e.target.value)}
               >
                 <option value="">Selecionar tag...</option>
                 {tags
@@ -571,7 +450,7 @@ const Books = () => {
                           <button
                             type="button"
                             className={styles.removeTagButton}
-                            onClick={() => removeSelectedTag(tagId)}
+                            onClick={() => removeTagFilter(tagId)}
                             aria-label={`Remover ${tag.name}`}
                           >
                             ×
@@ -583,19 +462,23 @@ const Books = () => {
                 </div>
               )}
             </div>
-          </form>
+          </div>
 
           <div className={styles.filterActions}>
-            <button
-              className={styles.applyFiltersButton}
-              onClick={applyFilters}
-            >
-              Aplicar Filtros
-            </button>
+            {isSearching && (
+              <span className={styles.searchingIndicator}>
+                Buscando... 🔍
+              </span>
+            )}
+            {hasActiveFilters && !isSearching && (
+              <span className={styles.resultsCount}>
+                {filteredCount} {filteredCount === 1 ? 'resultado' : 'resultados'} encontrado{filteredCount === 1 ? '' : 's'}
+              </span>
+            )}
             <button
               className={styles.clearFiltersButton}
-              onClick={clearFilters}
-              disabled={!filters.title && !filters.code && !filters.author && filters.tags.length === 0}
+              onClick={clearSearchFilters}
+              disabled={!hasActiveFilters}
             >
               Limpar Filtros
             </button>
@@ -735,12 +618,12 @@ const Books = () => {
                 </div>
               </div>
             )}
-            {!loading && filteredBooks.length === 0 && filtersApplied && (
+            {!loading && filteredBooks.length === 0 && hasActiveFilters && (
               <div className={styles.noResults}>
                 <p>Nenhum livro encontrado com os filtros aplicados.</p>
                 <button
                   className={styles.clearFiltersButton}
-                  onClick={clearFilters}
+                  onClick={clearSearchFilters}
                 >
                   Limpar Filtros
                 </button>

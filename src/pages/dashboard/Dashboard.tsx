@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, getDocs, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, query, getDocs, where, orderBy, limit, Timestamp, getCountFromServer } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardCache } from '../../hooks/useDashboardCache';
 import { useCacheInvalidation } from '../../hooks/useCacheInvalidation';
+import { useIncrementalSync } from '../../hooks/useIncrementalSync';
+import { useLazySection } from '../../hooks/useLazySection';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import EmbeddedDateFilter from '../../components/ui/EmbeddedDateFilter';
 
@@ -147,6 +149,18 @@ const Dashboard = () => {
   const cache = useDashboardCache(currentUser?.uid || '');
   const [initialLoading, setInitialLoading] = useState(!cache.hasCache);
   const [backgroundLoading, setBackgroundLoading] = useState(false);
+  
+  // Ref para evitar carregamentos duplicados
+  const isLoadingRef = useRef(false);
+  const loadingIdRef = useRef(0);
+  
+  // Sincronização incremental
+  const { syncLoans, syncBooks, syncStudents, mergeData } = useIncrementalSync();
+  
+  // Lazy loading de seções
+  const genreChartSection = useLazySection();
+  const monthlyChartSection = useLazySection();
+  const rankingsSection = useLazySection();
   
   // Estados para filtros de data dos rankings
   const [studentRankingFilter, setStudentRankingFilter] = useState({
@@ -353,15 +367,176 @@ const Dashboard = () => {
     }
   }, [currentUser?.uid]);
 
+  // Função auxiliar: busca binária para encontrar aluno por ID (estável, sem dependências)
+  const binarySearchStudent = useMemo(() => {
+    return (students: Student[], studentId: string): Student | null => {
+      let left = 0;
+      let right = students.length - 1;
+      
+      while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        const comparison = students[mid].id.localeCompare(studentId);
+        
+        if (comparison === 0) {
+          return students[mid];
+        } else if (comparison < 0) {
+          left = mid + 1;
+        } else {
+          right = mid - 1;
+        }
+      }
+      
+      return null;
+    };
+  }, []);
+
+  // Função otimizada: busca apenas empréstimos ativos com query específica
+  const fetchActiveLoansOptimized = useCallback(async () => {
+    if (!currentUser) return { active: 0, overdue: 0 };
+
+    try {
+      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
+      const activeQuery = query(loansRef, where('status', '==', 'active'));
+      const snapshot = await getDocs(activeQuery);
+      
+      const now = new Date();
+      let overdueCount = 0;
+      
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        const dueDate = data.dueDate?.toDate ? data.dueDate.toDate() : new Date();
+        if (dueDate < now) {
+          overdueCount++;
+        }
+      });
+      
+      return { active: snapshot.size, overdue: overdueCount };
+    } catch (error) {
+      console.error('Erro ao buscar empréstimos ativos:', error);
+      return { active: 0, overdue: 0 };
+    }
+  }, [currentUser]);
+
+  // Função otimizada: conta total de livros usando aggregation
+  const fetchBooksCountOptimized = useCallback(async () => {
+    if (!currentUser) return 0;
+
+    try {
+      const booksRef = collection(db, `users/${currentUser.uid}/books`);
+      const snapshot = await getCountFromServer(booksRef);
+      return snapshot.data().count;
+    } catch (error) {
+      console.error('Erro ao contar livros:', error);
+      // Fallback: busca normal se aggregation não disponível
+      const booksRefFallback = collection(db, `users/${currentUser.uid}/books`);
+      const snapshotFallback = await getDocs(booksRefFallback);
+      return snapshotFallback.size;
+    }
+  }, [currentUser]);
+
+  // Função otimizada: conta total de alunos usando aggregation
+  const fetchStudentsCountOptimized = useCallback(async () => {
+    if (!currentUser) return 0;
+
+    try {
+      const studentsRef = collection(db, `users/${currentUser.uid}/students`);
+      const snapshot = await getCountFromServer(studentsRef);
+      return snapshot.data().count;
+    } catch (error) {
+      console.error('Erro ao contar alunos:', error);
+      // Fallback
+      const studentsRefFallback = collection(db, `users/${currentUser.uid}/students`);
+      const snapshotFallback = await getDocs(studentsRefFallback);
+      return snapshotFallback.size;
+    }
+  }, [currentUser]);
+
+  // Função otimizada: busca empréstimos dos últimos 6 meses para gráficos
+  const fetchRecentLoansForCharts = useCallback(async () => {
+    if (!currentUser) return [];
+
+    try {
+      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
+      const sixMonthsAgo = subMonths(new Date(), 6);
+      
+      const recentQuery = query(
+        loansRef,
+        where('borrowDate', '>=', Timestamp.fromDate(sixMonthsAgo)),
+        orderBy('borrowDate', 'desc')
+      );
+      
+      const snapshot = await getDocs(recentQuery);
+      console.log(`📊 Buscou ${snapshot.size} empréstimos dos últimos 6 meses (otimizado)`);
+      
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          borrowDate: data.borrowDate?.toDate ? data.borrowDate.toDate() : new Date(),
+          dueDate: data.dueDate?.toDate ? data.dueDate.toDate() : new Date(),
+          returnDate: data.returnDate?.toDate ? data.returnDate.toDate() : undefined,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+        } as Loan;
+      });
+    } catch (error) {
+      console.error('Erro ao buscar empréstimos recentes:', error);
+      return [];
+    }
+  }, [currentUser]);
+
+  // Função para buscar TODOS os empréstimos necessários para estatísticas principais
+  const fetchAllLoansForStats = useCallback(async () => {
+    if (!currentUser) return [];
+
+    try {
+      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
+      
+      // Busca TODOS os empréstimos (sem filtro de data)
+      const allLoansQuery = query(
+        loansRef,
+        orderBy('borrowDate', 'desc')
+      );
+      
+      const snapshot = await getDocs(allLoansQuery);
+      console.log(`📊 Buscou ${snapshot.size} empréstimos para estatísticas principais`);
+      
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          borrowDate: data.borrowDate?.toDate ? data.borrowDate.toDate() : new Date(),
+          dueDate: data.dueDate?.toDate ? data.dueDate.toDate() : new Date(),
+          returnDate: data.returnDate?.toDate ? data.returnDate.toDate() : undefined,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+        } as Loan;
+      });
+    } catch (error) {
+      console.error('Erro ao buscar todos os empréstimos:', error);
+      return [];
+    }
+  }, [currentUser]);
+
   const fetchDashboardData = useCallback(async (options: { forceRefresh?: boolean; startDate?: Date; endDate?: Date } = {}) => {
     const { forceRefresh = false, startDate: filterStartDate, endDate: filterEndDate } = options;
     if (!currentUser) return;
+
+    // Previne carregamentos duplicados/concorrentes
+    if (isLoadingRef.current && !forceRefresh) {
+      console.log('⏭️ Carregamento já em andamento, pulando...');
+      return;
+    }
 
     try {
       // Se não é force refresh e temos cache válido, não faz nada
       if (!forceRefresh && cache.hasCache && !cache.shouldRevalidate) {
         return;
       }
+
+      // Marca como carregando
+      const loadingId = ++loadingIdRef.current;
+      isLoadingRef.current = true;
 
       // Se temos cache, carrega em background
       const isBackground = cache.hasCache;
@@ -373,108 +548,161 @@ const Dashboard = () => {
         setInitialLoading(true);
       }
       
-      // 1. pega todos os livros
-      const booksRef = collection(db, `users/${currentUser.uid}/books`);
-      const booksSnapshot = await getDocs(booksRef);
-      const books = booksSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Book[];
+      console.log('🚀 Iniciando carregamento otimizado do dashboard...');
+      const startTime = performance.now();
       
-      setTotalBooksCount(books.length);
+      // FASE 1: Estatísticas principais com queries otimizadas (paralelo)
+      const [loansStats, booksCount, studentsCount, allLoansForStats] = await Promise.all([
+        fetchActiveLoansOptimized(),
+        fetchBooksCountOptimized(),
+        fetchStudentsCountOptimized(),
+        fetchAllLoansForStats() // Busca TODOS os empréstimos para estatísticas corretas
+      ]);
       
-      // 2. pega todos os empréstimos
-      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
-      const loansSnapshot = await getDocs(loansRef);
-      const loans = loansSnapshot.docs.map(doc => {
-        const data = doc.data();
+      setActiveLoansCount(loansStats.active);
+      setOverdueLoansCount(loansStats.overdue);
+      setTotalBooksCount(booksCount);
+      setTotalReadersCount(studentsCount);
+      
+      console.log(`✅ Estatísticas principais carregadas: ${loansStats.active} ativos, ${loansStats.overdue} atrasados`);
+      
+      // FASE 2: Sincronização incremental ou busca completa
+      let loans: Loan[];
+      let books: Book[];
+      let students: Student[];
+      
+      const useIncrementalSync = cache.lastSyncTimestamp > 0 && !forceRefresh;
+      
+      if (useIncrementalSync) {
+        console.log('📡 Usando sincronização incremental...');
         
-        // Converter timestamps para Date de forma mais robusta
-        const convertTimestampToDate = (timestamp: any): Date => {
-          if (!timestamp) return new Date();
+        // Busca apenas dados modificados
+        const [newLoans, newBooks, newStudents] = await Promise.all([
+          syncLoans({ userId: currentUser.uid, lastSyncTimestamp: cache.lastSyncTimestamp }),
+          syncBooks({ userId: currentUser.uid, lastSyncTimestamp: cache.lastSyncTimestamp }),
+          syncStudents({ userId: currentUser.uid, lastSyncTimestamp: cache.lastSyncTimestamp })
+        ]);
+        
+        // Mescla com cache existente
+        const cachedData = cache.cachedData;
+        if (cachedData) {
+          // Para empréstimos, precisamos buscar todos para gráficos (apenas recentes)
+          const recentLoans = await fetchRecentLoansForCharts();
+          loans = recentLoans;
           
-          if (timestamp instanceof Timestamp) {
-            return timestamp.toDate();
-          } else if (timestamp.toDate && typeof timestamp.toDate === 'function') {
-            return timestamp.toDate();
-          } else if (timestamp.seconds) {
-            // Para o formato { seconds: number, nanoseconds: number }
-            return new Date(timestamp.seconds * 1000);
-          } else if (timestamp instanceof Date) {
-            return timestamp;
-          } else if (typeof timestamp === 'string') {
-            return new Date(timestamp);
-          }
+          // Livros: usa apenas os do cache (estatísticas de gênero não precisam ser atualizadas sempre)
+          books = newBooks.length > 0 ? newBooks as Book[] : [];
           
-          return new Date();
-        };
+          // Alunos: mescla incremental
+          const mergedStudents = mergeData(
+            (cachedData as any).allStudents || [],
+            newStudents as Student[]
+          );
+          students = mergedStudents.merged;
+          
+          console.log(`🔄 Dados mesclados: ${newLoans.length} novos loans, ${newBooks.length} novos books, ${newStudents.length} novos students`);
+        } else {
+          // Fallback se não tem cache
+          loans = newLoans as Loan[];
+          books = newBooks as Book[];
+          students = newStudents as Student[];
+        }
+      } else {
+        console.log('📥 Carregamento completo (primeira vez ou force refresh)...');
         
-        // Converter todas as datas usando a nova função
-        const borrowDate = convertTimestampToDate(data.borrowDate);
-        const dueDate = convertTimestampToDate(data.dueDate);
-        const returnDate = data.returnDate ? convertTimestampToDate(data.returnDate) : undefined;
-        const createdAt = convertTimestampToDate(data.createdAt);
+        // Carregamento completo otimizado: apenas empréstimos recentes
+        const recentLoans = await fetchRecentLoansForCharts();
+        loans = recentLoans;
         
-        return {
-          id: doc.id,
-          ...data,
-          borrowDate,
-          dueDate,
-          returnDate,
-          createdAt
-        };
-      }) as Loan[];
+        // Busca todos os livros e alunos em paralelo
+        const [allBooks, allStudents] = await Promise.all([
+          (async () => {
+            const booksRef = collection(db, `users/${currentUser.uid}/books`);
+            const booksSnapshot = await getDocs(booksRef);
+            return booksSnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            })) as Book[];
+          })(),
+          (async () => {
+            const studentsRef = collection(db, `users/${currentUser.uid}/students`);
+            const studentsSnapshot = await getDocs(studentsRef);
+            return studentsSnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            })) as Student[];
+          })()
+        ]);
+        
+        books = allBooks;
+        students = allStudents;
+        
+        setTotalReadersCount(students.length);
+      }
       
-      // 3. pega todos os alunos
-      const studentsRef = collection(db, `users/${currentUser.uid}/students`);
-      const studentsSnapshot = await getDocs(studentsRef);
-      const students = studentsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Student[];
+      // FASE 3: Processa estatísticas e gráficos
+      console.log('📊 Processando dados para gráficos...');
       
-      // total de leitores registrados
-      setTotalReadersCount(students.length);
+      // Ordena alunos para busca binária
+      const sortedStudents = [...students].sort((a, b) => a.id.localeCompare(b.id));
       
-      // 4. calcula estatísticas principais
-      processMainStats(loans, students);
+      // Calcula estatísticas principais usando TODOS os empréstimos
+      processMainStats(allLoansForStats, sortedStudents);
       
-      // 5. processa dados para os gráficos
+      // Processa dados para os gráficos (usar sortedStudents para busca binária)
       processGenreData(loans, books);
       processTopBooks(loans);
-      processTopStudents(loans, students, filterStartDate, filterEndDate);
-      processClassroomPerformance(loans, students, filterStartDate, filterEndDate);
+      processTopStudents(loans, sortedStudents, filterStartDate, filterEndDate);
+      processClassroomPerformance(loans, sortedStudents, filterStartDate, filterEndDate);
       processMonthlyLoanData(loans);
       processCompletionRateData(loans);
+      
+      const endTime = performance.now();
+      const loadTime = ((endTime - startTime) / 1000).toFixed(2);
+      console.log(`✅ Dashboard carregado com sucesso em ${loadTime}s`);
 
-      // Aguarda um pouco para que todos os states sejam atualizados
-      // e então salva no cache
+      // Salva no cache com timestamp de sincronização
       setTimeout(() => {
         const dashboardData = {
-          activeLoansCount,
-          overdueLoansCount,
-          totalBooksCount,
+          activeLoansCount: loansStats.active,
+          overdueLoansCount: loansStats.overdue,
+          totalBooksCount: booksCount,
           activeReadersCount,
           totalBooksRead,
-          totalReadersCount,
+          totalReadersCount: studentsCount,
           genreData,
           topBooks,
           topStudents,
           classroomPerformance,
           monthlyLoanData,
-          completionRateData
+          completionRateData,
+          // Armazena dados completos para merge incremental
+          allStudents: students
         };
-        cache.saveToCache(dashboardData);
+        cache.saveToCache(dashboardData as any, Date.now());
       }, 100);
       
     } catch (error) {
-      console.error('Erro ao buscar dados do dashboard:', error);
+      console.error('❌ Erro ao buscar dados do dashboard:', error);
     } finally {
+      isLoadingRef.current = false;
       setInitialLoading(false);
       setBackgroundLoading(false);
       cache.setIsValidating(false);
     }
-  }, [currentUser, cache]);
+  }, [
+    currentUser, 
+    cache, 
+    fetchActiveLoansOptimized, 
+    fetchBooksCountOptimized, 
+    fetchStudentsCountOptimized,
+    fetchRecentLoansForCharts,
+    fetchAllLoansForStats,
+    syncLoans,
+    syncBooks,
+    syncStudents,
+    mergeData
+  ]);
 
   // Cache invalidation quando dados importantes mudam
   useCacheInvalidation({
@@ -485,29 +713,56 @@ const Dashboard = () => {
     }
   });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-
-  // Atualizar dados a cada 5 minutos enquanto o dashboard estiver aberto
+  // Carregamento inicial e gerenciamento de atualizações
   useEffect(() => {
     if (!currentUser) return;
     
-    // Configurar atualização periódica
+    // Carregamento inicial
+    fetchDashboardData();
+    
+    // Configurar atualização periódica (5 minutos)
     const intervalId = setInterval(() => {
-      fetchDashboardData({ forceRefresh: true }); // Force refresh no background
-    }, 300000); // 5 minutos (300000 millisegundos)
+      console.log('🔄 Atualização automática do dashboard (5 min)');
+      fetchDashboardData({ forceRefresh: true });
+    }, 300000);
     
     // limpa o intervalo quando o componente for desmontado
     return () => clearInterval(intervalId);
-  }, [fetchDashboardData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.uid]); // Apenas quando o usuário mudar
 
-  // Força atualização quando dados ficam stale
+  // Recarrega dados quando o usuário volta para o dashboard (navegação entre páginas)
   useEffect(() => {
-    if (cache.isStale && !cache.isValidating) {
+    if (!currentUser) return;
+    
+    // Força recarregamento sempre que o componente é montado (volta da navegação)
+    console.log('🔄 Dashboard montado, verificando dados...');
+    
+    // Pequeno delay para permitir que os estados sejam inicializados
+    const timeoutId = setTimeout(() => {
+      // Verifica se os dados específicos estão zerados (indicando cache corrompido)
+      const hasInvalidData = activeReadersCount === 0 && totalBooksRead === 0 &&
+                            totalBooksCount > 0 && totalReadersCount > 0; // Mas tem dados de contagem
+      
+      if (hasInvalidData) {
+        console.log('🔄 Dados inválidos detectados, recarregando dashboard...');
+        fetchDashboardData({ forceRefresh: true });
+      } else {
+        console.log('✅ Dados válidos encontrados no cache');
+      }
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [currentUser, activeLoansCount, overdueLoansCount, activeReadersCount, totalBooksRead, totalBooksCount, totalReadersCount, fetchDashboardData]);
+
+  // Força atualização quando dados ficam stale (mas não cria loop)
+  useEffect(() => {
+    if (cache.isStale && !cache.isValidating && !isLoadingRef.current) {
+      console.log('📡 Cache stale detectado, recarregando...');
       fetchDashboardData();
     }
-  }, [cache.isStale, cache.isValidating, fetchDashboardData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cache.isStale]);
 
   const processMainStats = (loans: Loan[], students: Student[]) => {
     // Contagem de empréstimos ativos
@@ -676,7 +931,7 @@ const Dashboard = () => {
       };
     });
     
-    // Processar empréstimos
+    // Processar empréstimos (com busca binária otimizada)
     loans.forEach(loan => {
       // Filtrar por data se os filtros estiverem ativos
       if (startDate && endDate) {
@@ -686,7 +941,8 @@ const Dashboard = () => {
         }
       }
       
-      const student = students.find(s => s.id === loan.studentId);
+      // Usa busca binária se alunos estão ordenados
+      const student = binarySearchStudent(students, loan.studentId);
       if (student) {
         const classroom = student.classroom || 'Sem Turma';
         
@@ -906,7 +1162,7 @@ const Dashboard = () => {
       
       <div className={styles.charts}>
         {/* Gráfico de Empréstimos por Categoria */}
-        <div className={styles.chartCard}>
+        <div ref={genreChartSection.elementRef} className={styles.chartCard}>
           <h3>Empréstimos por Categoria</h3>
           {genreData.length > 0 ? (
             <div className={styles.chartContainer}>
@@ -1011,7 +1267,7 @@ const Dashboard = () => {
       
       <div className={styles.charts}>
         {/* Gráfico de Evolução Mensal */}
-        <div className={styles.chartCard}>
+        <div ref={monthlyChartSection.elementRef} className={styles.chartCard}>
           <h3>Evolução Mensal</h3>
           {monthlyLoanData.labels.length > 0 ? (
             <div className={styles.chartContainer}>
@@ -1134,7 +1390,7 @@ const Dashboard = () => {
       
       <div className={styles.charts}>
         {/* Top Alunos */}
-        <div className={styles.chartCard}>
+        <div ref={rankingsSection.elementRef} className={styles.chartCard}>
           <div className={styles.chartHeader}>
             <h3>Ranking de Alunos</h3>
             <EmbeddedDateFilter

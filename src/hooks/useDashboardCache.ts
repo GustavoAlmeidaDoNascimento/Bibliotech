@@ -4,6 +4,7 @@ import { useLocalStorage } from './useLocalStorage';
 interface CacheMetadata {
   timestamp: number;
   lastUpdate: number;
+  lastSyncTimestamp: number; // Timestamp da última sincronização com BD
   version: string;
 }
 
@@ -37,7 +38,7 @@ interface CachedDashboard {
   metadata: CacheMetadata;
 }
 
-const CACHE_VERSION = '1.0.0';
+const CACHE_VERSION = '2.0.0'; // Atualizado para suportar sincronização incremental
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos em millisegundos
 const STALE_WHILE_REVALIDATE_DURATION = 30 * 60 * 1000; // 30 minutos
 
@@ -80,12 +81,14 @@ export function useDashboardCache(userId: string) {
   }, [cachedData, isCacheValid, isCacheFresh]);
 
   // Salva dados no cache
-  const saveToCache = useCallback((data: DashboardCacheData) => {
+  const saveToCache = useCallback((data: DashboardCacheData, lastSyncTimestamp?: number) => {
+    const now = Date.now();
     const cacheEntry: CachedDashboard = {
       data,
       metadata: {
-        timestamp: Date.now(),
-        lastUpdate: Date.now(),
+        timestamp: now,
+        lastUpdate: now,
+        lastSyncTimestamp: lastSyncTimestamp || now,
         version: CACHE_VERSION
       }
     };
@@ -159,6 +162,7 @@ export function useDashboardCache(userId: string) {
     
     // Metadados
     lastUpdate: cachedData?.metadata.lastUpdate || 0,
+    lastSyncTimestamp: cachedData?.metadata.lastSyncTimestamp || 0,
     cacheAge: cachedData ? Date.now() - cachedData.metadata.timestamp : 0
   };
 }

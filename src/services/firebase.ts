@@ -11,6 +11,7 @@ import {
   doc,
   getDoc
 } from 'firebase/firestore';
+import { getAuthErrorMessage } from '../utils/authErrorMessages';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBaukjjy1nr7HognROeHmdQADjfbvSmu64",
@@ -30,16 +31,31 @@ export const db = getFirestore(app);
 // Auth services
 export const authService = {
   login: async (email: string, password: string): Promise<User> => {
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    return result.user;
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return result.user;
+    } catch (error) {
+      const friendlyMessage = getAuthErrorMessage(error);
+      throw new Error(friendlyMessage);
+    }
   },
 
   logout: async (): Promise<void> => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch (error) {
+      const friendlyMessage = getAuthErrorMessage(error);
+      throw new Error(friendlyMessage);
+    }
   },
 
   resetPassword: async (email: string): Promise<void> => {
-    await sendPasswordResetEmail(auth, email);
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      const friendlyMessage = getAuthErrorMessage(error);
+      throw new Error(friendlyMessage);
+    }
   },
 };
 
