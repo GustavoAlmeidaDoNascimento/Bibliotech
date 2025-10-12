@@ -3,8 +3,9 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: linear-gradient(135deg, #0a1628 0%, #0f2847 100%);
   position: relative;
+  padding: 20px 20px 40px 20px;
 }
 
 .backButton {
@@ -15,24 +16,23 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 2px solid var(--primary-color, #4285f4);
-  border-radius: 25px;
-  color: var(--primary-color, #4285f4);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
 
 .backButton:hover {
-  background-color: var(--primary-color, #4285f4);
-  color: white;
-  transform: translateX(-4px);
-  box-shadow: 0 4px 16px rgba(66, 133, 244, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .backButton:active {
@@ -50,37 +50,41 @@
 }
 
 .loginCard {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   padding: 40px;
   width: 100%;
   max-width: 400px;
   text-align: center;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 20px 0;
 }
 
 .logo {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   margin: 0 auto 20px;
-  background-color: var(--primary-color, #4285f4);
+  background: linear-gradient(135deg, #0369a1, #0284c7);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 30px;
   color: white;
+  box-shadow: 0 8px 20px rgba(3, 105, 161, 0.4);
 }
 
 .loginCard h2 {
   margin-bottom: 24px;
-  color: #333;
+  color: #2c3e50;
   font-size: 1.8rem;
 }
 
 .loginCard h3 {
   margin-bottom: 20px;
-  color: #555;
+  color: #6c7686;
   font-size: 1.3rem;
 }
 
@@ -111,31 +115,44 @@
   display: block;
   margin-bottom: 8px;
   font-size: 0.9rem;
-  color: #555;
+  color: #2c3e50;
 }
 
 .inputGroup input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
   font-size: 1rem;
+  background-color: #fafbfc;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.inputGroup input:focus {
+  outline: none;
+  border-color: #0369a1;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.1);
 }
 
 .loginButton {
   width: 100%;
-  padding: 12px;
-  background-color: var(--primary-color, #4285f4);
+  padding: 16px;
+  background: linear-gradient(135deg, #0369a1, #0284c7);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(3, 105, 161, 0.4);
 }
 
 .loginButton:hover {
-  background-color: var(--primary-color-hover, #3367d6);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(3, 105, 161, 0.5);
+  background: linear-gradient(135deg, #0284c7, #0369a1);
 }
 
 .loginButton:disabled {
@@ -150,19 +167,23 @@
 
 .guestLoginButton {
   width: 100%;
-  padding: 12px;
-  background-color: #6c757d;
+  padding: 16px;
+  background: linear-gradient(135deg, #6c757d, #5a6268);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 8px;
+  box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
 }
 
 .guestLoginButton:hover {
-  background-color: #5a6268;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.5);
+  background: linear-gradient(135deg, #5a6268, #6c757d);
 }
 
 .guestLoginButton:disabled {
@@ -173,7 +194,7 @@
 .guestLoginText {
   margin: 0;
   font-size: 0.85rem;
-  color: #6c757d;
+  color: #6c7686;
   font-style: italic;
 }
 
@@ -183,13 +204,13 @@
 }
 
 .links a {
-  color: var(--primary-color, #4285f4);
+  color: #0369a1;
   text-decoration: none;
   transition: color 0.3s;
 }
 
 .links a:hover {
-  color: var(--primary-color-hover, #3367d6);
+  color: #0284c7;
   text-decoration: underline;
 }
 
@@ -372,7 +393,7 @@
 /* Responsividade */
 @media (max-width: 768px) {
   .container {
-    padding: 10px;
+    padding: 15px 15px 30px 15px;
   }
   
   .loginCard {
@@ -417,9 +438,14 @@
 }
 
 @media (max-width: 480px) {
+  .container {
+    padding: 10px 10px 25px 10px;
+  }
+  
   .loginCard {
     padding: 25px 15px;
     max-width: 320px;
+    margin: 10px 0;
   }
   
   .studentLoginButton {
