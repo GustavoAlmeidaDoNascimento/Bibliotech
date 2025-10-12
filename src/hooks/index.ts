@@ -11,4 +11,5 @@ export { useIncrementalSync } from './useIncrementalSync';
 export { useLazySection, useMultipleLazySections } from './useLazySection';
 export { useOptimizedSearch } from './useOptimizedSearch';
 export { useResponsiveChart } from './useResponsiveChart';
-export { useDistinctCodes } from './useDistinctCodes'; 
+export { useDistinctCodes } from './useDistinctCodes';
+export { useFirestorePagination } from './useFirestorePagination'; 

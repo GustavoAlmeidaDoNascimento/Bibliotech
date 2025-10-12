@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { collection, query, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTags } from '../../contexts/TagsContext';
-import { useInfiniteScroll, useBarcodeGenerator } from '../../hooks';
+import { useBarcodeGenerator } from '../../hooks';
+import { useFirestorePagination } from '../../hooks/useFirestorePagination';
 import { useOptimizedSearch, type Book } from '../../hooks/useOptimizedSearch';
-import { PlusIcon, TrashIcon, FunnelIcon, XMarkIcon, ListBulletIcon, Squares2X2Icon, ArrowsUpDownIcon, ArrowDownTrayIcon, PrinterIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, FunnelIcon, XMarkIcon, ListBulletIcon, Squares2X2Icon, ArrowsUpDownIcon, ArrowDownTrayIcon, PrinterIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import styles from './Books.module.css';
 
 type SortOption = 'alphabetical' | 'dateAdded';
 
 const Books = () => {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedBooks, setSelectedBooks] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
@@ -25,6 +24,34 @@ const Books = () => {
   const { getTagsByIds, tags } = useTags();
   const navigate = useNavigate();
   const { generatePDF, isGenerating } = useBarcodeGenerator();
+
+  // Estado para controlar se carregou todos os livros para busca
+  const [allBooksLoaded, setAllBooksLoaded] = useState(false);
+
+  // Paginação real do Firestore (carrega apenas 50 por vez)
+  const {
+    items: books,
+    loading,
+    hasMore,
+    loadMore,
+    reload,
+    loadAll,
+    loadAllAndUpdate,
+    totalLoaded
+  } = useFirestorePagination<Book>({
+    collectionPath: `users/${currentUser?.uid}/books`,
+    pageSize: 50,
+    orderByField: 'createdAt',
+    orderDirection: 'desc'
+  });
+
+  // Carregar primeira página ao montar
+  useEffect(() => {
+    if (currentUser) {
+      reload();
+      setAllBooksLoaded(false);
+    }
+  }, [currentUser, reload]);
 
   // Hook de busca otimizada
   const {
@@ -41,6 +68,14 @@ const Books = () => {
     books,
     debounceMs: 300
   });
+
+  // Quando ativar filtros, carregar TODOS os livros automaticamente
+  useEffect(() => {
+    if (hasActiveFilters && !allBooksLoaded) {
+      loadAllAndUpdate();
+      setAllBooksLoaded(true);
+    }
+  }, [hasActiveFilters, allBooksLoaded, loadAllAndUpdate]);
 
   const getDisplayCode = (book: Book): string => {
     if (book.codes && book.codes.length > 0) {
@@ -82,32 +117,6 @@ const Books = () => {
     );
   };
 
-  const fetchBooks = useCallback(async () => {
-    if (!currentUser) return;
-    
-    try {
-      setLoading(true);
-      const booksRef = collection(db, `users/${currentUser.uid}/books`);
-      const q = query(booksRef);
-      const querySnapshot = await getDocs(q);
-      
-      const fetchedBooks = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Book[];
-      
-      setBooks(fetchedBooks);
-    } catch (error) {
-      console.error('Error fetching books:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
-    fetchBooks();
-  }, [fetchBooks]);
-
   // Ordenação dos livros filtrados
   const sortBooks = useCallback((booksToSort: Book[]) => {
     const booksCopy = [...booksToSort];
@@ -126,25 +135,8 @@ const Books = () => {
     }
   }, [sortBy]);
 
-  const sortedBooks = useMemo(() => sortBooks(filteredBooks), [filteredBooks, sortBooks]);
-
-  // Hook de paginação com scroll infinito
-  const {
-    displayedItems: displayedBooks,
-    isLoading: isLoadingMore,
-    loadingRef,
-    resetPagination
-  } = useInfiniteScroll({
-    items: sortedBooks,
-    itemsPerPage: 30,
-    threshold: 200,
-    enabled: !loading
-  });
-
-  // Reset pagination when filters or sort change
-  useEffect(() => {
-    resetPagination();
-  }, [filteredBooks, sortBy, resetPagination]);
+  // Livros a serem exibidos (filtrados e ordenados)
+  const displayedBooks = useMemo(() => sortBooks(filteredBooks), [filteredBooks, sortBooks]);
 
   const toggleBookSelection = (bookId: string) => {
     setSelectedBooks(prev => 
@@ -172,7 +164,7 @@ const Books = () => {
         const bookRef = doc(db, `users/${currentUser.uid}/books/${bookId}`);
         await deleteDoc(bookRef);
       }
-      await fetchBooks();
+      await reload(); // Recarrega a primeira página
       setSelectedBooks([]);
     } catch (error) {
       console.error('Error deleting books:', error);
@@ -211,10 +203,13 @@ const Books = () => {
     }
   };
 
-  const handleExportToExcel = () => {
+  const handleExportToExcel = async () => {
     try {
+      // Carregar TODOS os livros para exportação
+      const allBooks = await loadAll();
+      
       // Preparar os dados para exportação
-      const dataToExport = books.map((book, index) => {
+      const dataToExport = allBooks.map((book, index) => {
         const bookTags = book.tags ? getTagsByIds(book.tags).map(tag => tag.name).join(', ') : '';
         const bookAuthors = book.authors 
           ? (Array.isArray(book.authors) ? book.authors.join(', ') : book.authors)
@@ -271,7 +266,7 @@ const Books = () => {
       XLSX.writeFile(wb, nomeArquivo);
       
       // Mostrar mensagem de sucesso
-      alert(`Arquivo exportado com sucesso! ${books.length} livros foram incluídos no arquivo "${nomeArquivo}".`);
+      alert(`Arquivo exportado com sucesso! ${allBooks.length} livros foram incluídos no arquivo "${nomeArquivo}".`);
     } catch (error) {
       console.error('Erro ao exportar para Excel:', error);
       alert('Erro ao exportar dados. Tente novamente.');
@@ -358,8 +353,8 @@ const Books = () => {
               <button
                 className={styles.exportButton}
                 onClick={handleExportToExcel}
-                disabled={books.length === 0}
-                title="Exportar todos os livros para Excel"
+                disabled={totalLoaded === 0}
+                title="Exportar TODOS os livros do acervo para Excel"
               >
                 <ArrowDownTrayIcon className={styles.buttonIcon} />
                 Exportar Excel
@@ -487,9 +482,9 @@ const Books = () => {
       )}
 
       <div className={styles.content}>
-        {loading ? (
+        {loading && books.length === 0 ? (
           <div className={styles.loading}>Carregando...</div>
-        ) : books.length === 0 ? (
+        ) : books.length === 0 && !loading ? (
           <div className={styles.empty}>
             <p>Nenhum livro registrado ainda.</p>
             <button 
@@ -549,13 +544,10 @@ const Books = () => {
                       )}
                       {renderTags(book)}
                     </Link>
-                  </div>
-                ))}
-                <div ref={loadingRef} className={styles.loadingMore}>
-                  {isLoadingMore ? 'Carregando mais livros...' : ''}
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ) : (
+              ) : (
               <div className={styles.booksList}>
                 <table>
                   <thead>
@@ -613,11 +605,27 @@ const Books = () => {
                     ))}
                   </tbody>
                 </table>
-                <div ref={loadingRef} className={styles.loadingMore}>
-                  {isLoadingMore ? 'Carregando mais livros...' : ''}
-                </div>
               </div>
             )}
+
+            {/* Botão Carregar Mais (apenas quando não há filtros ativos) */}
+            {!loading && !hasActiveFilters && hasMore && (
+              <div className={styles.loadMoreContainer}>
+                <button
+                  className={styles.loadMoreButton}
+                  onClick={loadMore}
+                  disabled={loading}
+                >
+                  <ChevronDownIcon className={styles.buttonIcon} />
+                  Carregar Mais Livros
+                </button>
+                <span className={styles.loadMoreInfo}>
+                  {totalLoaded} livros carregados
+                </span>
+              </div>
+            )}
+
+
             {!loading && filteredBooks.length === 0 && hasActiveFilters && (
               <div className={styles.noResults}>
                 <p>Nenhum livro encontrado com os filtros aplicados.</p>
