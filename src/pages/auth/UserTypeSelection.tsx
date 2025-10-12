@@ -41,7 +41,7 @@ const UserTypeSelection: React.FC = () => {
         </div>
         
         <h1 className={styles.title}>
-          Biblio<span style={{ color: '#0078d4' }}>tech</span> Beta
+          Bibliotech <span style={{ color: '#0369a1' }}>Beta</span>
         </h1>
         
         <p className={styles.subtitle}>
@@ -58,7 +58,7 @@ const UserTypeSelection: React.FC = () => {
               <AcademicCapIcon />
             </div>
             <div className={styles.optionContent}>
-              <h3 className={styles.optionTitle}>Sou Aluno</h3>
+              <h3 className={styles.optionTitle}>Sou <span style={{ color: '#0369a1' }}>Aluno</span></h3>
               <p className={styles.optionDescription}>
                 Acesse sua área estudantil com seu ID de estudante
               </p>
@@ -74,7 +74,7 @@ const UserTypeSelection: React.FC = () => {
               <UserGroupIcon />
             </div>
             <div className={styles.optionContent}>
-              <h3 className={styles.optionTitle}>Sou Gestor</h3>
+              <h3 className={styles.optionTitle}>Sou <span style={{ color: '#0369a1' }}>Gestor</span></h3>
               <p className={styles.optionDescription}>
                 Faça login com suas credenciais de administrador
               </p>
@@ -88,7 +88,7 @@ const UserTypeSelection: React.FC = () => {
           </div>
           
           <p className={styles.betaQuestion}>
-            Quer participar do Biblio<span style={{ color: '#0078d4' }}>tech</span> beta?
+            Quer participar do Bibliotech<span style={{ color: '#0369a1' }}> beta</span>?
           </p>
           
           <button 

@@ -1,10 +1,10 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+  background: linear-gradient(135deg, #0a1628 0%, #0f2847 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 20px 20px 40px 20px;
   position: relative;
 }
 
@@ -46,18 +46,19 @@
   max-width: 500px;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 20px 0;
 }
 
 .logo {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #0078d4, #4db5ff);
+  background: linear-gradient(135deg, #0369a1, #0284c7);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px;
-  box-shadow: 0 8px 20px rgba(0, 120, 212, 0.3);
+  box-shadow: 0 8px 20px rgba(3, 105, 161, 0.4);
 }
 
 .title {
@@ -97,15 +98,15 @@
 }
 
 .optionButton:hover {
-  border-color: #0078d4;
+  border-color: #0369a1;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 120, 212, 0.15);
+  box-shadow: 0 8px 25px rgba(3, 105, 161, 0.2);
 }
 
 .optionIcon {
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #0078d4, #4db5ff);
+  background: linear-gradient(135deg, #0369a1, #0284c7);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -207,7 +208,7 @@
 /* Responsividade */
 @media (max-width: 768px) {
   .container {
-    padding: 15px;
+    padding: 15px 15px 30px 15px;
   }
   
   .selectionCard {
@@ -239,8 +240,13 @@
 }
 
 @media (max-width: 480px) {
+  .container {
+    padding: 10px 10px 25px 10px;
+  }
+  
   .selectionCard {
     padding: 25px 20px;
+    margin: 10px 0;
   }
   
   .title {
