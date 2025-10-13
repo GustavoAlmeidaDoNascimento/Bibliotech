@@ -147,21 +147,18 @@ const Layout: React.FC = () => {
     
     // Verificar se deve usar formato para responsáveis
     if (settings.useGuardianContact) {
-      const message = `📚 *Lembrete de Devolução - ${settings.schoolName}*
+      const message = `*Lembrete de Devolucao - ${settings.schoolName}*
 
-Prezado(a) responsável,
+Prezado(a) responsavel,
 
 O(a) aluno(a) *${notification.studentName}* retirou o livro "*${notification.bookTitle}*" da biblioteca ${borrowDateText ? `no dia ${borrowDateText}` : ''}.
 
-${daysOverdue > 0 
-  ? `⚠️ O prazo de devolução já passou há ${daysOverdue} ${daysOverdue === 1 ? 'dia' : 'dias'}.` 
-  : '⏰ O prazo de devolução está se aproximando.'
-}
+${daysOverdue > 0 ? `O prazo de devolucao ja passou ha ${daysOverdue} ${daysOverdue === 1 ? 'dia' : 'dias'}.` : 'O prazo de devolucao esta se aproximando.'}
 
-Por favor, lembre o(a) aluno(a) de retornar o livro à biblioteca da escola.
+Por favor, lembre o(a) aluno(a) de retornar o livro a biblioteca da escola.
 
-📍 *${settings.schoolName}*
-💻 *Feito através do Bibliotech*`;
+*${settings.schoolName}*
+*Feito atraves do Bibliotech*`;
 
       return message;
     }
@@ -169,28 +166,25 @@ Por favor, lembre o(a) aluno(a) de retornar o livro à biblioteca da escola.
     // Formato original para contato direto com o aluno
     let statusMessage = '';
     if (daysOverdue > 0) {
-      statusMessage = `🔴 *Status:* Atrasado há ${daysOverdue} ${daysOverdue === 1 ? 'dia' : 'dias'}`;
+      statusMessage = `*Status:* Atrasado ha ${daysOverdue} ${daysOverdue === 1 ? 'dia' : 'dias'}`;
     } else {
-      statusMessage = `⚠️ *Status:* Prazo de devolução próximo`;
+      statusMessage = `*Status:* Prazo de devolucao proximo`;
     }
     
-    const message = `📚 *Lembrete de Devolução - Bibliotech*
+    const message = `*LEMBRETE DE DEVOLUCAO - BIBLIOTECH*
 
-👤 *Aluno:* ${notification.studentName}
-📖 *Livro:* ${notification.bookTitle}
-${borrowDateText ? `\n📅 *Data de Retirada:* ${borrowDateText}` : ''}
+*Aluno:* ${notification.studentName}
+*Livro:* ${notification.bookTitle}
+${borrowDateText ? `\n*Data de Retirada:* ${borrowDateText}` : ''}
 
 ${statusMessage}
 
-${daysOverdue > 0 
-  ? '🔴 Por favor, retornar à biblioteca.' 
-  : '🟡 Lembre-se de devolver o livro no prazo.'
-}
+${daysOverdue > 0 ? 'Por favor, retornar a biblioteca.' : 'Lembre-se de devolver o livro no prazo.'}
 
-Você pode acessar suas métricas pelo link: https://bibliotech.tech/student-dashboard/${notification.studentId}
+Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashboard/${notification.studentId}
 
-📍 *Biblioteca Escolar*
-💻 *Feito através do Bibliotech*`;
+*Biblioteca Escolar*
+*Feito atraves do Bibliotech*`;
 
     return message;
   };

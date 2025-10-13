@@ -160,25 +160,18 @@ const StudentLoanDetail = () => {
     if (settings.useGuardianContact) {
       const overdueDays = Math.abs(daysLeft);
       
-      const message = `📚 *Lembrete de Devolução - ${settings.schoolName}*
+      const message = `*Lembrete de Devolucao - ${settings.schoolName}*
 
-Prezado(a) responsável,
+Prezado(a) responsavel,
 
 O(a) aluno(a) *${loan.studentName}* retirou o livro "*${loan.bookTitle}*" da biblioteca no dia ${borrowDate}.
 
-${daysLeft < 0 
-  ? `⚠️ O prazo de devolução já passou há ${overdueDays} ${overdueDays === 1 ? 'dia' : 'dias'}.` 
-  : daysLeft === 0
-    ? '⚠️ O prazo de devolução é hoje.'
-    : daysLeft === 1
-      ? '⏰ O prazo de devolução é amanhã.'
-      : `⏰ O prazo de devolução é ${dueDate}.`
-}
+${daysLeft < 0 ? `O prazo de devolucao ja passou ha ${overdueDays} ${overdueDays === 1 ? 'dia' : 'dias'}.` : daysLeft === 0 ? 'O prazo de devolucao e hoje.' : daysLeft === 1 ? 'O prazo de devolucao e amanha.' : `O prazo de devolucao e ${dueDate}.`}
 
-Por favor, lembre o(a) aluno(a) de retornar o livro à biblioteca da escola.
+Por favor, lembre o(a) aluno(a) de retornar o livro a biblioteca da escola.
 
-📍 *${settings.schoolName}*
-💻 *Feito através do Bibliotech*`;
+*${settings.schoolName}*
+*Feito atraves do Bibliotech*`;
 
       return encodeURIComponent(message);
     }
@@ -188,36 +181,31 @@ Por favor, lembre o(a) aluno(a) de retornar o livro à biblioteca da escola.
     
     if (daysLeft < 0) {
       const overdueDays = Math.abs(daysLeft);
-      statusMessage = `📅 *Status:* Atrasado há ${overdueDays} ${overdueDays === 1 ? 'dia' : 'dias'}`;
+      statusMessage = `*Status:* Atrasado ha ${overdueDays} ${overdueDays === 1 ? 'dia' : 'dias'}`;
     } else if (daysLeft === 0) {
-      statusMessage = `⚠️ *Status:* Vence hoje`;
+      statusMessage = `*Status:* Vence hoje`;
     } else if (daysLeft === 1) {
-      statusMessage = `⏰ *Status:* Vence amanhã`;
+      statusMessage = `*Status:* Vence amanha`;
     } else {
-      statusMessage = `✅ *Status:* ${daysLeft} ${daysLeft === 1 ? 'dia restante' : 'dias restantes'}`;
+      statusMessage = `*Status:* ${daysLeft} ${daysLeft === 1 ? 'dia restante' : 'dias restantes'}`;
     }
     
-    const message = `📚 *Lembrete de Devolução - Bibliotech*
+    const message = `*LEMBRETE DE DEVOLUCAO - BIBLIOTECH*
 
-👤 *Aluno:* ${loan.studentName}
-📖 *Livro:* ${loan.bookTitle}
-🏷️ *Código:* ${loan.bookCode || 'N/A'}
-📅 *Data de Retirada:* ${borrowDateTime}
-📆 *Prazo de devolução:* ${dueDate}
+*Aluno:* ${loan.studentName}
+*Livro:* ${loan.bookTitle}
+*Codigo:* ${loan.bookCode || 'N/A'}
+*Data de Retirada:* ${borrowDateTime}
+*Prazo de devolucao:* ${dueDate}
 
 ${statusMessage}
 
-${daysLeft < 0 
-  ? '🔴 Por favor, retornar à biblioteca.' 
-  : daysLeft <= 3 
-    ? '🟡 Lembre-se de devolver o livro no prazo.' 
-    : '🟢 Aproveite sua leitura!'
-}
+${daysLeft < 0 ? 'Por favor, retornar a biblioteca.' : daysLeft <= 3 ? 'Lembre-se de devolver o livro no prazo.' : 'Aproveite sua leitura!'}
 
-Você pode acessar suas métricas pelo link: https://bibliotech.tech/student-dashboard/${loan.studentId}
+Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashboard/${loan.studentId}
 
-📍 *Biblioteca Escolar*
-💻 *Feito através do Bibliotech*`;
+*Biblioteca Escolar*
+*Feito atraves do Bibliotech*`;
 
     return encodeURIComponent(message);
   };
