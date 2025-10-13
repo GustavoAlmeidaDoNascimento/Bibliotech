@@ -214,7 +214,7 @@ ${daysLeft < 0
     : '🟢 Aproveite sua leitura!'
 }
 
-Você pode acessar suas métricas e etc pelo link: https://bibliotech.tech/student-dashboard/${loan.studentId}
+Você pode acessar suas métricas pelo link: https://bibliotech.tech/student-dashboard/${loan.studentId}
 
 📍 *Biblioteca Escolar*
 💻 *Feito através do Bibliotech*`;

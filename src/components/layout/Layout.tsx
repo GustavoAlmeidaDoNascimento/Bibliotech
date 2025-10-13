@@ -187,7 +187,7 @@ ${daysOverdue > 0
   : '🟡 Lembre-se de devolver o livro no prazo.'
 }
 
-Você pode acessar suas métricas e etc pelo link: https://bibliotech.tech/student-dashboard/${notification.studentId}
+Você pode acessar suas métricas pelo link: https://bibliotech.tech/student-dashboard/${notification.studentId}
 
 📍 *Biblioteca Escolar*
 💻 *Feito através do Bibliotech*`;
