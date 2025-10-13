@@ -10,6 +10,56 @@ import {
 import { db } from './firebase';
 import { Student } from '../types/common';
 
+// Cache de escola do aluno em localStorage
+const SCHOOL_CACHE_KEY = 'bibliotech_student_school_cache';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 horas
+
+interface SchoolCacheEntry {
+  schoolId: string;
+  cachedAt: number;
+}
+
+const getCachedSchoolId = (studentId: string): string | null => {
+  try {
+    const cacheStr = localStorage.getItem(SCHOOL_CACHE_KEY);
+    if (!cacheStr) return null;
+    
+    const cache: { [key: string]: SchoolCacheEntry } = JSON.parse(cacheStr);
+    const entry = cache[studentId];
+    
+    if (!entry) return null;
+    
+    // Verificar se o cache ainda é válido
+    const now = Date.now();
+    if (now - entry.cachedAt > CACHE_DURATION) {
+      console.log(`⏰ Cache expirado para aluno ${studentId}`);
+      return null;
+    }
+    
+    console.log(`✅ Usando escola em cache: ${entry.schoolId} para aluno ${studentId}`);
+    return entry.schoolId;
+  } catch {
+    return null;
+  }
+};
+
+const setCachedSchoolId = (studentId: string, schoolId: string): void => {
+  try {
+    const cacheStr = localStorage.getItem(SCHOOL_CACHE_KEY);
+    const cache: { [key: string]: SchoolCacheEntry } = cacheStr ? JSON.parse(cacheStr) : {};
+    
+    cache[studentId] = {
+      schoolId,
+      cachedAt: Date.now()
+    };
+    
+    localStorage.setItem(SCHOOL_CACHE_KEY, JSON.stringify(cache));
+    console.log(`💾 Escola ${schoolId} salva em cache para aluno ${studentId}`);
+  } catch (error) {
+    console.warn('Erro ao salvar cache:', error);
+  }
+};
+
 // Interfaces para o dashboard do aluno
 export interface StudentLoan {
   id: string;
@@ -49,7 +99,39 @@ export const studentService = {
    */
   findStudentById: async (studentId: string): Promise<Student | null> => {
     try {
-      // Lista conhecida de escolas para garantir que busque em todas
+      // Verificar cache primeiro
+      const cachedSchoolId = getCachedSchoolId(studentId);
+      
+      if (cachedSchoolId) {
+        console.log(`🚀 Tentando buscar aluno ${studentId} na escola em cache: ${cachedSchoolId}`);
+        try {
+          const studentRef = doc(db, `users/${cachedSchoolId}/students/${studentId}`);
+          const studentDoc = await getDoc(studentRef);
+          
+          if (studentDoc.exists()) {
+            const studentData = studentDoc.data();
+            console.log(`✅ Aluno encontrado na escola em cache ${cachedSchoolId}!`);
+            return {
+              id: studentDoc.id,
+              name: studentData.name,
+              className: studentData.classroom || studentData.className || studentData.class || studentData.turma,
+              educationalLevelId: studentData.educationalLevelId,
+              userId: cachedSchoolId,
+              username: studentData.username,
+              hasCredentials: studentData.hasCredentials,
+              tempPassword: studentData.tempPassword,
+              createdAt: studentData.createdAt,
+              updatedAt: studentData.updatedAt,
+            };
+          } else {
+            console.log(`⚠️ Aluno não encontrado na escola em cache, buscando em todas...`);
+          }
+        } catch (error) {
+          console.log(`⚠️ Erro ao buscar na escola em cache, buscando em todas...`);
+        }
+      }
+      
+      // Se não tem cache ou não encontrou, buscar em todas as escolas
       const knownSchoolIds = [
         '9PKyLnC37EP5cV6n7cdbLqcF2vI3',
         'rkCZozqfmoPspakPwswFA4qWqAo1',
@@ -71,6 +153,10 @@ export const studentService = {
             const studentData = studentDoc.data();
             console.log(`✅ Aluno encontrado na escola ${schoolId}!`);
             console.log(`📋 Dados completos do aluno:`, studentData);
+            
+            // Salvar escola no cache para próximas buscas
+            setCachedSchoolId(studentId, schoolId);
+            
             return {
               id: studentDoc.id,
               name: studentData.name,
@@ -111,6 +197,10 @@ export const studentService = {
               const studentData = studentDoc.data();
               console.log(`✅ Aluno encontrado na escola ${userDoc.id} via busca geral!`);
               console.log(`📋 Dados completos do aluno (busca geral):`, studentData);
+              
+              // Salvar escola no cache para próximas buscas
+              setCachedSchoolId(studentId, userDoc.id);
+              
               return {
                 id: studentDoc.id,
                 name: studentData.name,
@@ -306,6 +396,29 @@ export const studentService = {
         throw new Error('Erro de permissão: As regras do Firebase precisam ser atualizadas para permitir acesso aos livros.');
       }
       throw new Error('Erro ao buscar dados dos livros.');
+    }
+  },
+
+  /**
+   * Limpa o cache de escola para um aluno específico ou todos
+   * @param studentId ID do aluno (opcional - se não fornecido, limpa tudo)
+   */
+  clearSchoolCache: (studentId?: string): void => {
+    try {
+      if (studentId) {
+        const cacheStr = localStorage.getItem(SCHOOL_CACHE_KEY);
+        if (cacheStr) {
+          const cache: { [key: string]: SchoolCacheEntry } = JSON.parse(cacheStr);
+          delete cache[studentId];
+          localStorage.setItem(SCHOOL_CACHE_KEY, JSON.stringify(cache));
+          console.log(`🗑️ Cache removido para aluno ${studentId}`);
+        }
+      } else {
+        localStorage.removeItem(SCHOOL_CACHE_KEY);
+        console.log(`🗑️ Todo cache de escolas removido`);
+      }
+    } catch (error) {
+      console.warn('Erro ao limpar cache:', error);
     }
   }
 };

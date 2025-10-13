@@ -1,0 +1,126 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { User, BookMarked, MessageCircle, LogOut } from 'lucide-react';
+import BottomNavigation from '../../components/student/BottomNavigation';
+import { studentService, StudentDashboardData } from '../../services/studentService';
+import styles from './StudentProfile.module.css';
+
+const StudentProfile: React.FC = () => {
+  const navigate = useNavigate();
+  const { studentId } = useParams<{ studentId: string }>();
+  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!studentId) {
+      navigate('/student-id-input');
+      return;
+    }
+
+    const loadData = async () => {
+      try {
+        const data = await studentService.getStudentDashboardData(studentId);
+        if (data) {
+          setDashboardData(data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [studentId, navigate]);
+
+  const handleMyBooksClick = () => {
+    navigate(`/student-dashboard/${studentId}/my-books`);
+  };
+
+
+  const handleLogout = () => {
+    navigate('/student-id-input');
+  };
+
+  const handleWhatsAppSupport = () => {
+    const phoneNumber = '5551997188572'; // Número do suporte (formato internacional)
+    const message = encodeURIComponent('Olá! Preciso de ajuda com o sistema Bibliotech.');
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner}></div>
+          <p>Carregando perfil...</p>
+        </div>
+        <BottomNavigation studentId={studentId || ''} activePage="profile" />
+      </div>
+    );
+  }
+
+  const student = dashboardData?.student;
+
+  return (
+    <div className={styles.container}>
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
+          <h1>Perfil</h1>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className={styles.main}>
+        {/* User Info */}
+        <div className={styles.userCard}>
+          <div className={styles.avatar}>
+            {student?.name ? getInitials(student.name) : 'AL'}
+          </div>
+          <div className={styles.userInfo}>
+            <h2>{student?.name || 'Aluno Exemplo'}</h2>
+            <p>{student?.id ? `ID: ${student.id}` : 'aluno@escola.com'}</p>
+          </div>
+        </div>
+
+        {/* Menu Options */}
+        <div className={styles.menuSection}>
+          <button className={styles.menuItem} onClick={handleMyBooksClick}>
+            <div className={styles.menuItemIcon}>
+              <BookMarked size={20} />
+            </div>
+            <span className={styles.menuItemLabel}>Meus Livros Reservados</span>
+          </button>
+
+          <button className={styles.menuItem} onClick={handleWhatsAppSupport}>
+            <div className={styles.menuItemIcon}>
+              <MessageCircle size={20} />
+            </div>
+            <span className={styles.menuItemLabel}>Suporte via WhatsApp</span>
+          </button>
+        </div>
+
+        {/* Logout Button */}
+        <button className={styles.logoutButton} onClick={handleLogout}>
+          <LogOut size={20} />
+          <span>Sair</span>
+        </button>
+      </main>
+
+      <BottomNavigation studentId={studentId || ''} activePage="profile" />
+    </div>
+  );
+};
+
+export default StudentProfile;
+

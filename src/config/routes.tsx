@@ -35,6 +35,12 @@ import UpdateNotification from '../pages/admin/UpdateNotification';
 import Home from '../pages/Home';
 import StudentIdInput from '../pages/student/StudentIdInput';
 import StudentDashboard from '../pages/student/StudentDashboard';
+import StudentHome from '../pages/student/StudentHome';
+import StudentStats from '../pages/student/StudentStats';
+import StudentProfile from '../pages/student/StudentProfile';
+import BookDetails from '../pages/student/BookDetails';
+import BookSearch from '../pages/student/BookSearch';
+import MyBooks from '../pages/student/MyBooks';
 import { ROUTES } from '../constants';
 
 // redireciona com base no estado de autenticação
@@ -72,6 +78,30 @@ export const publicRoutes = [
   {
     path: "/student-dashboard/:studentId",
     element: <StudentDashboard />,
+  },
+  {
+    path: "/student-dashboard/:studentId/home",
+    element: <StudentHome />,
+  },
+  {
+    path: "/student-dashboard/:studentId/stats",
+    element: <StudentStats />,
+  },
+  {
+    path: "/student-dashboard/:studentId/profile",
+    element: <StudentProfile />,
+  },
+  {
+    path: "/student-dashboard/:studentId/book/:bookId",
+    element: <BookDetails />,
+  },
+  {
+    path: "/student-dashboard/:studentId/search",
+    element: <BookSearch />,
+  },
+  {
+    path: "/student-dashboard/:studentId/my-books",
+    element: <MyBooks />,
   },
 ];
 
