@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import AppProviders from './providers/AppProviders';
 import PrivateRoute from './components/auth/PrivateRoute';
 import Layout from './components/layout/Layout';
@@ -37,6 +38,7 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to={ROUTES.HOME} />} />
         </Routes>
       </Router>
+      <Analytics />
     </AppProviders>
   );
 };
