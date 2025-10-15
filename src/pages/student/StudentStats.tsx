@@ -516,8 +516,8 @@ const StudentStats: React.FC = () => {
               </div>
             </div>
 
-            {/* Card de Conquista */}
-            <div className={styles.achievementCard}>
+            {/* Card de Conquista - Temporariamente desabilitado */}
+            {/* <div className={styles.achievementCard}>
               <div className={styles.achievementIcon}>
                 <Trophy size={40} />
               </div>
@@ -525,7 +525,7 @@ const StudentStats: React.FC = () => {
                 <h3>Parabéns, Leitor!</h3>
                 <p>Você está entre os 10% de leitores mais ativos</p>
               </div>
-            </div>
+            </div> */}
           </>
         ) : (
           <>
