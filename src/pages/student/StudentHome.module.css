@@ -254,6 +254,7 @@
   padding: 0.5rem 0 1rem 0;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .booksScroll::-webkit-scrollbar {
@@ -300,6 +301,7 @@
 
 .navButton:active {
   transform: scale(0.95);
+  transition: transform 0.1s ease;
 }
 
 .navButton:disabled {
@@ -321,7 +323,7 @@
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, transform 0.2s ease;
   scroll-snap-align: start;
 }
 

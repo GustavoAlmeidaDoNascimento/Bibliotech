@@ -93,11 +93,15 @@ const StudentHome: React.FC = () => {
     const carousel = document.querySelector(`[data-carousel="${sectionIndex}"]`) as HTMLElement;
     if (carousel) {
       const scrollAmount = 200; // Quantidade de pixels para scroll
-      if (direction === 'left') {
-        carousel.scrollLeft -= scrollAmount;
-      } else {
-        carousel.scrollLeft += scrollAmount;
-      }
+      const currentScroll = carousel.scrollLeft;
+      const targetScroll = direction === 'left' 
+        ? currentScroll - scrollAmount 
+        : currentScroll + scrollAmount;
+      
+      carousel.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
+      });
     }
   };
 
