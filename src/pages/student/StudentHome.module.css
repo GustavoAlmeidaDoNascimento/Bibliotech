@@ -384,10 +384,14 @@
 
 /* Responsividade */
 @media (min-width: 640px) {
-  .headerContent,
-  .main {
+  .headerContent {
     max-width: 640px;
     margin: 0 auto;
+  }
+
+  .main {
+    max-width: 100%;
+    padding: 1.5rem 1rem;
   }
 
   .bookCard {
@@ -396,11 +400,15 @@
 }
 
 @media (min-width: 768px) {
-  .headerContent,
-  .main {
+  .headerContent {
     max-width: 768px;
     padding-left: 2rem;
     padding-right: 2rem;
+  }
+
+  .main {
+    max-width: 100%;
+    padding: 1.5rem 2rem;
   }
 
   .booksScroll {
@@ -413,6 +421,30 @@
 
   .sectionTitle {
     font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main {
+    padding: 1.5rem 3rem;
+  }
+
+  .booksScroll {
+    gap: 2rem;
+  }
+
+  .bookCard {
+    flex: 0 0 220px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .main {
+    padding: 1.5rem 4rem;
+  }
+
+  .bookCard {
+    flex: 0 0 240px;
   }
 }
 
