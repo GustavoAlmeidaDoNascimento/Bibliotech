@@ -7,6 +7,7 @@ import { useTags } from '../../contexts/TagsContext';
 import { useDistinctCodes } from '../../hooks/useDistinctCodes';
 import AutocompleteInput from '../../components/AutocompleteInput';
 import TagAutocomplete from '../../components/TagAutocomplete';
+import { searchGoogleBooks, truncateText, FormattedBookResult } from '../../services/googleBooksService';
 
 import styles from './RegisterBook.module.css'; // Reusando os estilos do RegisterBook
 
@@ -29,6 +30,8 @@ interface BookForm {
   collection: string;
   quantity: number;
   description: string;
+  synopsis?: string; // Sinopse do livro para os alunos (da API do Google Books)
+  coverUrl?: string; // URL da capa do livro
 }
 
 interface LoanHistory {
@@ -59,7 +62,9 @@ const EditBook = () => {
     shelf: '',
     collection: '',
     quantity: 1,
-    description: ''
+    description: '',
+    synopsis: '',
+    coverUrl: ''
   });
   
   const [currentCode, setCurrentCode] = useState('');
@@ -76,6 +81,13 @@ const EditBook = () => {
   const [showWriteOffModal, setShowWriteOffModal] = useState(false);
   const [codeToWriteOff, setCodeToWriteOff] = useState<string>('');
   const [writeOffReason, setWriteOffReason] = useState('');
+  
+  // Estados para integração com Google Books API
+  const [googleSearchQuery, setGoogleSearchQuery] = useState('');
+  const [googleBooksResults, setGoogleBooksResults] = useState<FormattedBookResult[]>([]);
+  const [showGoogleResults, setShowGoogleResults] = useState(false);
+  const [isSearchingGoogle, setIsSearchingGoogle] = useState(false);
+  const [googleSearchError, setGoogleSearchError] = useState('');
   
   const { currentUser } = useAuth();
   const { genres, addGenre, capitalizeTag } = useTags();
@@ -273,7 +285,10 @@ const EditBook = () => {
             // Garante que tags seja um array
             tags: bookData.tags || [],
             // Garante que description seja uma string (compatibilidade com livros antigos)
-            description: bookData.description || ''
+            description: bookData.description || '',
+            // Garante que synopsis e coverUrl sejam strings
+            synopsis: bookData.synopsis || '',
+            coverUrl: bookData.coverUrl || ''
           } as BookForm;
           
           setFormData(formattedData);
@@ -611,6 +626,59 @@ const EditBook = () => {
       console.error('Erro ao restaurar código:', err);
       setError('Erro ao restaurar código. Tente novamente.');
     }
+  };
+
+  // Funções para integração com Google Books API
+  const handleGoogleBooksSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!googleSearchQuery.trim()) {
+      setGoogleSearchError('Digite um termo de busca');
+      return;
+    }
+    
+    setIsSearchingGoogle(true);
+    setGoogleSearchError('');
+    setShowGoogleResults(false);
+    
+    try {
+      const results = await searchGoogleBooks(googleSearchQuery);
+      setGoogleBooksResults(results);
+      setShowGoogleResults(true);
+      
+      if (results.length === 0) {
+        setGoogleSearchError('Nenhum livro encontrado. Tente outro termo de busca.');
+      }
+    } catch (err) {
+      console.error('Erro ao buscar no Google Books:', err);
+      setGoogleSearchError('Erro ao buscar livros. Verifique sua conexão e tente novamente.');
+    } finally {
+      setIsSearchingGoogle(false);
+    }
+  };
+  
+  const handleSelectGoogleBook = (book: FormattedBookResult) => {
+    // Preencher dados do livro com informações da API
+    setFormData(prev => ({
+      ...prev,
+      coverUrl: book.coverUrl,
+      synopsis: book.synopsis
+    }));
+    
+    // Fechar dropdown
+    setShowGoogleResults(false);
+    setGoogleSearchQuery('');
+    
+    // Limpar mensagens de erro
+    setGoogleSearchError('');
+    clearMessages();
+  };
+  
+  const handleClearGoogleSearch = () => {
+    setGoogleSearchQuery('');
+    setGoogleBooksResults([]);
+    setShowGoogleResults(false);
+    setGoogleSearchError('');
   };
 
   // Função para excluir código permanentemente
@@ -976,6 +1044,141 @@ const EditBook = () => {
           </button>
         </div>
       </form>
+
+      {/* Seção de Catálogo de Reservas - Google Books API */}
+      <div className={styles.catalogSection}>
+        <h3>Catálogo de Reservas</h3>
+        <p className={styles.catalogDescription}>
+          Adicione uma capa e sinopse ao livro para que os alunos possam visualizá-los no catálogo.
+          Busque o livro na base do Google Books para preencher automaticamente.
+        </p>
+        
+        {/* Busca do Google Books */}
+        <form onSubmit={handleGoogleBooksSearch} className={styles.googleSearchForm}>
+          <div className={styles.googleSearchWrapper}>
+            <input
+              type="text"
+              value={googleSearchQuery}
+              onChange={(e) => setGoogleSearchQuery(e.target.value)}
+              placeholder="Digite o título do livro para buscar..."
+              className={styles.googleSearchInput}
+            />
+            <button
+              type="submit"
+              className={styles.googleSearchButton}
+              disabled={isSearchingGoogle}
+            >
+              {isSearchingGoogle ? 'Buscando...' : 'Buscar no Google Books'}
+            </button>
+            {googleSearchQuery && (
+              <button
+                type="button"
+                onClick={handleClearGoogleSearch}
+                className={styles.clearSearchButton}
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+        </form>
+        
+        {/* Mensagem de erro */}
+        {googleSearchError && (
+          <div className={styles.googleSearchError}>
+            {googleSearchError}
+          </div>
+        )}
+        
+        {/* Dropdown de Resultados */}
+        {showGoogleResults && googleBooksResults.length > 0 && (
+          <div className={styles.resultsDropdown}>
+            <p className={styles.resultsCount}>
+              {googleBooksResults.length} resultado(s) encontrado(s)
+            </p>
+            {googleBooksResults.map((book) => (
+              <div
+                key={book.id}
+                className={styles.bookResult}
+                onClick={() => handleSelectGoogleBook(book)}
+              >
+                <div className={styles.bookResultThumbnail}>
+                  {book.thumbnail ? (
+                    <img src={book.thumbnail} alt={book.title} />
+                  ) : (
+                    <div className={styles.noThumbnail}>📚</div>
+                  )}
+                </div>
+                <div className={styles.bookResultInfo}>
+                  <h4>{book.title}</h4>
+                  {book.authors.length > 0 && (
+                    <p className={styles.bookResultAuthors}>
+                      {book.authors.join(', ')}
+                    </p>
+                  )}
+                  <p className={styles.bookResultDescription}>
+                    {truncateText(book.synopsis, 150)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* Preview da Capa e Sinopse Selecionadas */}
+        <div className={styles.catalogPreviewSection}>
+          <div className={styles.catalogPreviewGrid}>
+            {/* Campo de Capa */}
+            <div className={styles.catalogField}>
+              <label htmlFor="coverUrl">Capa do Livro</label>
+              <div className={styles.coverPreviewWrapper}>
+                {formData.coverUrl ? (
+                  <div className={styles.coverPreview}>
+                    <img src={formData.coverUrl} alt="Capa do livro" />
+                    <button
+                      type="button"
+                      className={styles.removeCoverButton}
+                      onClick={() => setFormData(prev => ({ ...prev, coverUrl: '' }))}
+                      title="Remover capa"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.noCoverPreview}>
+                    <span>📚</span>
+                    <p>Nenhuma capa selecionada</p>
+                    <small>Busque um livro acima para adicionar</small>
+                  </div>
+                )}
+              </div>
+              <input
+                type="url"
+                id="coverUrl"
+                value={formData.coverUrl || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, coverUrl: e.target.value }))}
+                placeholder="Ou cole a URL da capa aqui"
+                className={styles.coverUrlInput}
+              />
+            </div>
+            
+            {/* Campo de Sinopse */}
+            <div className={styles.catalogField}>
+              <label htmlFor="synopsis">Sinopse do Livro</label>
+              <textarea
+                id="synopsis"
+                value={formData.synopsis || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, synopsis: e.target.value }))}
+                placeholder="A sinopse aparecerá para os alunos no catálogo. Busque um livro acima ou digite manualmente."
+                className={styles.synopsisTextarea}
+                rows={8}
+              />
+              <small className={styles.fieldHint}>
+                {formData.synopsis ? `${formData.synopsis.length} caracteres` : 'Sinopse vazia'}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Seção de Histórico de Retiradas */}
       <div className={styles.historySection}>

@@ -45,6 +45,8 @@ export interface Book extends BaseEntity {
   availableCopies: number;
   userId: string;
   description?: string;
+  synopsis?: string; // Sinopse do livro para os alunos (da API do Google Books)
+  coverUrl?: string; // URL da capa do livro
 }
 
 export interface Class extends BaseEntity {
