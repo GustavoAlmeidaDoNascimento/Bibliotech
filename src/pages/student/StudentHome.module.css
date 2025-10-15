@@ -540,3 +540,28 @@
   }
 }
 
+/* Mobile: 2 colunas no grid de busca */
+@media (max-width: 480px) {
+  .booksGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .bookCard {
+    flex: 0 0 auto;
+  }
+  
+  .bookTitle {
+    font-size: 0.8rem;
+    -webkit-line-clamp: 2;
+  }
+  
+  .bookAuthor {
+    font-size: 0.7rem;
+  }
+  
+  .bookInfo {
+    padding: 0.5rem;
+  }
+}
+
