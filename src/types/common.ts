@@ -40,6 +40,7 @@ export interface Book extends BaseEntity {
   isbn?: string;
   category: string;
   tags: string[]; // Array de IDs das tags
+  genres?: string[]; // Array de nomes dos gêneros
   available: boolean;
   totalCopies: number;
   availableCopies: number;

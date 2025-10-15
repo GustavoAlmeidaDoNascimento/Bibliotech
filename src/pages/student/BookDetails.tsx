@@ -127,17 +127,17 @@ const BookDetails: React.FC = () => {
               {book.author || 'Autor não informado'}
             </p>
 
-            {/* Tags */}
-            {book.tags && book.tags.length > 0 && (
+            {/* Genres */}
+            {book.genres && book.genres.length > 0 && (
               <div className={styles.tagsSection}>
                 <h3>
                   <Tag size={16} />
                   Gêneros
                 </h3>
                 <div className={styles.tagsList}>
-                  {book.tags.map((tag, index) => (
+                  {book.genres.map((genre, index) => (
                     <span key={index} className={styles.tag}>
-                      {tag}
+                      {genre}
                     </span>
                   ))}
                 </div>
