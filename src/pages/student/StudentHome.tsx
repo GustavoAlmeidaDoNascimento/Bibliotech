@@ -4,19 +4,24 @@ import { Search, BookOpen, TrendingUp, Star, Clock, Sparkles, ChevronLeft, Chevr
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService, StudentDashboardData } from '../../services/studentService';
 import { bookRecommendationService, RecommendationSection, BookWithStats } from '../../services/bookRecommendationService';
+import { useStudentHomeCache } from '../../hooks/useStudentHomeCache';
 import styles from './StudentHome.module.css';
 
 const StudentHome: React.FC = () => {
   const navigate = useNavigate();
   const { studentId } = useParams<{ studentId: string }>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
-  const [recommendationSections, setRecommendationSections] = useState<RecommendationSection[]>([]);
-  const [allBooks, setAllBooks] = useState<BookWithStats[]>([]);
+  
+  // Usar o hook de cache
+  const { cachedData, isLoading: cacheLoading, setCachedData } = useStudentHomeCache(studentId || '');
+  
+  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(cachedData?.dashboardData || null);
+  const [recommendationSections, setRecommendationSections] = useState<RecommendationSection[]>(cachedData?.recommendationSections || []);
+  const [allBooks, setAllBooks] = useState<BookWithStats[]>(cachedData?.allBooks || []);
   const [searchResults, setSearchResults] = useState<BookWithStats[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(cacheLoading);
 
   useEffect(() => {
     if (!studentId) {
@@ -24,8 +29,21 @@ const StudentHome: React.FC = () => {
       return;
     }
 
+    // Se já tem dados em cache, usar eles
+    if (cachedData) {
+      setDashboardData(cachedData.dashboardData);
+      setRecommendationSections(cachedData.recommendationSections);
+      setAllBooks(cachedData.allBooks);
+      setLoading(false);
+      console.log('✅ Usando dados do catálogo em cache');
+      return;
+    }
+
+    // Se não tem cache, buscar do servidor
     const loadData = async () => {
       try {
+        console.log('🔄 Buscando dados do catálogo do servidor...');
+        
         // Buscar dados do aluno para obter schoolId
         const student = await studentService.findStudentById(studentId);
         if (!student) {
@@ -35,15 +53,22 @@ const StudentHome: React.FC = () => {
 
         // Buscar dados do dashboard (para estatísticas do aluno)
         const dashboardData = await studentService.getStudentDashboardData(studentId);
-        if (dashboardData) {
-          setDashboardData(dashboardData);
-        }
-
+        
         // Buscar todos os livros da escola e gerar recomendações
         const booksData = await bookRecommendationService.getAllBooksWithStats(student.userId);
         const recommendations = bookRecommendationService.generateRecommendations(booksData);
-        setAllBooks(booksData);
+        
+        // Atualizar estado
+        setDashboardData(dashboardData);
         setRecommendationSections(recommendations);
+        setAllBooks(booksData);
+
+        // Salvar no cache
+        setCachedData({
+          dashboardData,
+          recommendationSections: recommendations,
+          allBooks: booksData
+        });
 
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
@@ -53,7 +78,7 @@ const StudentHome: React.FC = () => {
     };
 
     loadData();
-  }, [studentId, navigate]);
+  }, [studentId, navigate, cachedData, setCachedData]);
 
   const getSectionIcon = (title: string) => {
     if (title.includes('Mais Retirados') || title.includes('Popular')) return <TrendingUp size={20} />;
