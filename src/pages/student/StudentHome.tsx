@@ -262,7 +262,7 @@ const StudentHome: React.FC = () => {
           <section key={index} className={styles.section}>
             <h2 className={styles.sectionTitle}>
               {getSectionIcon(section.title)}
-              {section.emoji} {section.title}
+              {section.title}
             </h2>
             <div className={styles.carouselContainer}>
               <button
