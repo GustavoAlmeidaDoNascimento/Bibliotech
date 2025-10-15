@@ -392,7 +392,7 @@ const StudentStats: React.FC = () => {
                               '#10B981',
                               '#F59E0B',
                               '#EF4444',
-                              '#8B5CF6'
+                              '#1D4ED8'
                             ],
                             borderWidth: 0
                           }

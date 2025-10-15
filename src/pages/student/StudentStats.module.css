@@ -136,7 +136,7 @@
 .statIcon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.2) 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -172,7 +172,7 @@
 
 /* Achievement Card */
 .achievementCard {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(29, 78, 216, 0.15) 100%);
   border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 16px;
   padding: 1.5rem;

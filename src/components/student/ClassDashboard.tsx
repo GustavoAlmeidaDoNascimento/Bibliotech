@@ -444,8 +444,8 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
                     {
                       data: Object.values(classStats.genreStats),
                       backgroundColor: [
-                        '#4285f4', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
-                        '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1'
+                        '#3B82F6', '#ef4444', '#10b981', '#f59e0b', '#1D4ED8',
+                        '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#2563EB'
                       ],
                       borderWidth: 2,
                       borderColor: '#ffffff'

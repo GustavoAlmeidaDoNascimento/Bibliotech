@@ -91,7 +91,7 @@
 
 .retryButton {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -140,7 +140,7 @@
 .statIcon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.2) 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -316,7 +316,7 @@
 }
 
 .topThree {
-  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
