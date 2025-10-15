@@ -36,7 +36,7 @@
 }
 
 .navItem:hover {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(0, 120, 212, 0.1);
   color: #94A3B8;
 }
 
@@ -45,12 +45,12 @@
 }
 
 .navItemActive {
-  color: #3B82F6;
+  color: #0078d4;
 }
 
 .navItemActive:hover {
-  color: #3B82F6;
-  background: rgba(59, 130, 246, 0.15);
+  color: #0078d4;
+  background: rgba(0, 120, 212, 0.15);
 }
 
 .navIcon {
@@ -58,7 +58,7 @@
 }
 
 .navItemActive .navIcon {
-  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.4));
+  filter: drop-shadow(0 2px 4px rgba(0, 120, 212, 0.4));
 }
 
 .navLabel {
