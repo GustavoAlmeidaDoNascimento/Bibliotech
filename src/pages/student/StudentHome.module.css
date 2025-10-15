@@ -325,6 +325,9 @@
   cursor: pointer;
   transition: all 0.3s ease, transform 0.2s ease;
   scroll-snap-align: start;
+  width: 160px; /* Garantir largura fixa */
+  display: flex;
+  flex-direction: column;
 }
 
 .bookCard:hover {
@@ -340,8 +343,9 @@
 .bookCoverWrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 2 / 3; /* Proporção original de livro */
   overflow: hidden;
+  flex-shrink: 0; /* Evitar que encolha */
 }
 
 .bookCover {
@@ -439,6 +443,53 @@
   
   .carouselContainer {
     gap: 0;
+  }
+  
+  /* Garantir tamanho consistente dos cards no mobile */
+  .bookCard {
+    width: 140px !important;
+    height: 320px !important;
+    flex: 0 0 140px !important;
+    min-width: 140px;
+    max-width: 140px;
+  }
+  
+  .bookCoverWrapper {
+    height: 160px !important;
+  }
+  
+  .bookInfo {
+    padding: 0.4rem;
+    flex: 1; /* Preencher o espaço restante apenas no mobile */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 140px; /* Garantir altura mínima para o conteúdo */
+  }
+  
+  .bookTitle {
+    font-size: 0.8rem;
+    -webkit-line-clamp: 2;
+    margin: 0 0 0.2rem 0;
+  }
+  
+  .bookAuthor {
+    font-size: 0.7rem;
+    margin: 0 0 0.3rem 0;
+  }
+  
+  .bookGenres {
+    margin-bottom: 0.3rem;
+  }
+  
+  .genreTag {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.3rem;
+  }
+  
+  .bookStats {
+    font-size: 0.7rem;
+    margin-top: auto;
   }
 }
 
