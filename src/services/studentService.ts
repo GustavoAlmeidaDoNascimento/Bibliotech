@@ -351,6 +351,62 @@ export const studentService = {
   },
 
   /**
+   * Busca um livro específico por ID
+   * @param bookId ID do livro
+   * @param schoolId ID da escola
+   * @returns Promise<Book | null>
+   */
+  getBookById: async (bookId: string, schoolId: string) => {
+    try {
+      console.log(`📖 Buscando livro ${bookId} na escola ${schoolId}...`);
+      
+      const bookRef = doc(db, `users/${schoolId}/books/${bookId}`);
+      const bookSnapshot = await getDoc(bookRef);
+      
+        if (bookSnapshot.exists()) {
+          const bookData = bookSnapshot.data();
+          
+          // Calcular cópias disponíveis corretamente
+          const totalCopies = bookData.totalCopies || bookData.quantity || 1;
+          const availableCopies = bookData.availableCopies !== undefined ? bookData.availableCopies : totalCopies;
+          
+          // Um livro está disponível se tem cópias disponíveis > 0
+          const isAvailable = availableCopies > 0;
+          
+          const book = {
+            id: bookSnapshot.id,
+            title: bookData.title,
+            author: bookData.authors || bookData.author,
+            isbn: bookData.isbn,
+            category: bookData.category,
+            tags: bookData.tags || bookData.genres || [],
+            available: isAvailable,
+            totalCopies: totalCopies,
+            availableCopies: availableCopies,
+            userId: bookData.userId,
+            description: bookData.description,
+            synopsis: bookData.synopsis,
+            coverUrl: bookData.coverUrl,
+            createdAt: bookData.createdAt,
+            updatedAt: bookData.updatedAt
+          };
+        
+        console.log(`✅ Livro ${book.title} carregado com sucesso`);
+        return book;
+      }
+      
+      console.log(`❌ Livro ${bookId} não encontrado`);
+      return null;
+    } catch (error) {
+      console.error('Erro ao buscar livro:', error);
+      if (error instanceof Error && error.message.includes('permissions')) {
+        throw new Error('Erro de permissão: As regras do Firebase precisam ser atualizadas para permitir acesso aos livros.');
+      }
+      throw new Error('Erro ao buscar dados do livro.');
+    }
+  },
+
+  /**
    * Busca dados dos livros por IDs
    * @param schoolId ID da escola
    * @param bookIds Array de IDs dos livros

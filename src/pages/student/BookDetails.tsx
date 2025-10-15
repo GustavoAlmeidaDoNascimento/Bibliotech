@@ -1,57 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Tag } from 'lucide-react';
+import { ArrowLeft, BookOpen, User, Calendar, Tag, Clock, Heart } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
-import { studentService, StudentDashboardData } from '../../services/studentService';
+import { studentService } from '../../services/studentService';
+import { Book } from '../../types/common';
 import styles from './BookDetails.module.css';
 
-interface BookDetails {
-  id: string;
-  title: string;
-  author: string;
-  genres: string[];
-  synopsis: string;
-  loanCount: number;
-  available: boolean;
-  coverUrl?: string;
-}
-
-const BookDetailsPage: React.FC = () => {
+const BookDetails: React.FC = () => {
   const navigate = useNavigate();
   const { studentId, bookId } = useParams<{ studentId: string; bookId: string }>();
-  const [book, setBook] = useState<BookDetails | null>(null);
+  const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
-  const [reserving, setReserving] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!studentId || !bookId) {
-      navigate('/student-id-input');
+      navigate(`/student-dashboard/${studentId}/home`);
       return;
     }
 
     const loadBookDetails = async () => {
       try {
-        const data = await studentService.getStudentDashboardData(studentId);
-        if (data) {
-          const foundBook = data.books.find(b => b.id === bookId);
-          if (foundBook) {
-            setBook({
-              id: foundBook.id || bookId,
-              title: foundBook.title,
-              author: (foundBook.authors && foundBook.authors.length > 0) ? foundBook.authors[0] : 'Autor não informado',
-              genres: foundBook.genres || [],
-              synopsis: 'Uma história emocionante que vai prender sua atenção do início ao fim. Este livro explora temas profundos e relevantes de uma forma única e cativante.',
-              loanCount: Math.floor(Math.random() * 250) + 50,
-              available: Math.random() > 0.3,
-              coverUrl: undefined
-            });
-          } else {
-            // Livro não encontrado
-            navigate(`/student-dashboard/${studentId}/home`);
-          }
+        // Buscar dados do aluno para obter schoolId
+        const student = await studentService.findStudentById(studentId);
+        if (!student) {
+          console.error('Aluno não encontrado');
+          setError('Aluno não encontrado');
+          setLoading(false);
+          return;
+        }
+
+        // Buscar detalhes do livro
+        const bookData = await studentService.getBookById(bookId, student.userId);
+        if (bookData) {
+          setBook(bookData);
+        } else {
+          setError('Livro não encontrado');
         }
       } catch (error) {
         console.error('Erro ao carregar detalhes do livro:', error);
+        setError('Erro ao carregar detalhes do livro');
       } finally {
         setLoading(false);
       }
@@ -60,21 +48,12 @@ const BookDetailsPage: React.FC = () => {
     loadBookDetails();
   }, [studentId, bookId, navigate]);
 
-  const handleGoBack = () => {
+  const handleBack = () => {
     navigate(`/student-dashboard/${studentId}/home`);
   };
 
-  const handleReserve = async () => {
-    if (!book?.available || reserving) return;
-
-    setReserving(true);
-    
-    // Simular reserva
-    setTimeout(() => {
-      alert(`Livro "${book.title}" reservado com sucesso! Retire-o na biblioteca.`);
-      setReserving(false);
-      navigate(`/student-dashboard/${studentId}/home`);
-    }, 1500);
+  const handleReserve = () => {
+    navigate(`/student-dashboard/${studentId}/reserve/${bookId}`);
   };
 
   if (loading) {
@@ -82,22 +61,33 @@ const BookDetailsPage: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.loadingContainer}>
           <div className={styles.spinner}></div>
-          <p>Carregando detalhes...</p>
+          <p>Carregando detalhes do livro...</p>
         </div>
-        <BottomNavigation studentId={studentId || ''} activePage="home" />
       </div>
     );
   }
 
-  if (!book) {
+  if (error || !book) {
     return (
       <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <h2>Livro não encontrado</h2>
-          <button onClick={handleGoBack} className={styles.backToHomeButton}>
-            Voltar ao Catálogo
-          </button>
-        </div>
+        <header className={styles.header}>
+          <div className={styles.headerContent}>
+            <button onClick={handleBack} className={styles.backButton}>
+              <ArrowLeft size={24} />
+            </button>
+            <h1>Erro</h1>
+          </div>
+        </header>
+        <main className={styles.main}>
+          <div className={styles.errorContainer}>
+            <BookOpen size={64} className={styles.errorIcon} />
+            <h2>Livro não encontrado</h2>
+            <p>{error || 'O livro solicitado não foi encontrado.'}</p>
+            <button onClick={handleBack} className={styles.backToHomeButton}>
+              Voltar ao Início
+            </button>
+          </div>
+        </main>
         <BottomNavigation studentId={studentId || ''} activePage="home" />
       </div>
     );
@@ -108,7 +98,7 @@ const BookDetailsPage: React.FC = () => {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <button className={styles.backButton} onClick={handleGoBack}>
+          <button onClick={handleBack} className={styles.backButton}>
             <ArrowLeft size={24} />
           </button>
           <h1>Detalhes do Livro</h1>
@@ -117,51 +107,105 @@ const BookDetailsPage: React.FC = () => {
 
       {/* Main Content */}
       <main className={styles.main}>
-        {/* Book Cover */}
-        <div className={styles.coverSection}>
-          {book.coverUrl ? (
-            <img src={book.coverUrl} alt={book.title} className={styles.bookCover} />
-          ) : (
-            <div className={styles.bookCoverPlaceholder}>
-              <BookOpen size={60} />
-            </div>
-          )}
-        </div>
+        <div className={styles.bookContainer}>
+          {/* Cover Section */}
+          <div className={styles.coverSection}>
+            {book.coverUrl ? (
+              <img src={book.coverUrl} alt={book.title} className={styles.bookCover} />
+            ) : (
+              <div className={styles.coverPlaceholder}>
+                <BookOpen size={64} />
+              </div>
+            )}
+          </div>
 
-        {/* Book Info */}
-        <div className={styles.infoSection}>
-          <h2 className={styles.title}>{book.title}</h2>
-          <p className={styles.author}>{book.author}</p>
-          
-          {book.genres.length > 0 && (
-            <div className={styles.genreBadge}>
-              {book.genres[0]}
-            </div>
-          )}
+          {/* Book Info */}
+          <div className={styles.bookInfo}>
+            <h2 className={styles.bookTitle}>{book.title}</h2>
+            <p className={styles.bookAuthor}>
+              <User size={16} />
+              {book.author || 'Autor não informado'}
+            </p>
 
-          <div className={styles.stats}>
-            <BookOpen size={18} />
-            <span>{book.loanCount} retiradas</span>
+            {/* Tags */}
+            {book.tags && book.tags.length > 0 && (
+              <div className={styles.tagsSection}>
+                <h3>
+                  <Tag size={16} />
+                  Gêneros
+                </h3>
+                <div className={styles.tagsList}>
+                  {book.tags.map((tag, index) => (
+                    <span key={index} className={styles.tag}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Synopsis */}
+            {book.synopsis && (
+              <div className={styles.synopsisSection}>
+                <h3>
+                  <BookOpen size={16} />
+                  Sinopse
+                </h3>
+                <p className={styles.synopsis}>{book.synopsis}</p>
+              </div>
+            )}
+
+            {/* Book Stats */}
+            <div className={styles.statsSection}>
+              <h3>
+                <Clock size={16} />
+                Informações
+              </h3>
+              <div className={styles.statsList}>
+                <div className={styles.statItem}>
+                  <span className={styles.statLabel}>Disponível:</span>
+                  <span className={styles.statValue}>
+                    {book.available ? 'Sim' : 'Não'}
+                  </span>
+                </div>
+                <div className={styles.statItem}>
+                  <span className={styles.statLabel}>Cópias totais:</span>
+                  <span className={styles.statValue}>{book.totalCopies}</span>
+                </div>
+                <div className={styles.statItem}>
+                  <span className={styles.statLabel}>Cópias disponíveis:</span>
+                  <span className={styles.statValue}>{book.availableCopies}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Reserve Button */}
+            <button 
+              onClick={handleReserve}
+              className={styles.reserveButton}
+            >
+              <Heart size={20} />
+              {book.availableCopies > 0 ? 'Reservar para mim' : 'Entrar na fila de espera'}
+            </button>
+
+            <div className={styles.reserveInfo}>
+              {book.availableCopies > 0 ? (
+                <p className={styles.availableMessage}>
+                  ✅ Este livro está disponível! Você pode reservá-lo para pegar quando quiser.
+                </p>
+              ) : (
+                <div className={styles.waitlistInfo}>
+                  <p className={styles.waitlistMessage}>
+                    📋 Este livro está emprestado. Ao reservar, você entrará na fila de espera.
+                  </p>
+                  <p className={styles.waitlistDetails}>
+                    Quando o livro for devolvido, você será notificado para pegá-lo antes dos outros.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-        {/* Synopsis */}
-        <div className={styles.synopsisSection}>
-          <h3 className={styles.synopsisTitle}>
-            <BookOpen size={20} />
-            Sobre o livro
-          </h3>
-          <p className={styles.synopsisText}>{book.synopsis}</p>
-        </div>
-
-        {/* Reserve Button */}
-        <button
-          className={`${styles.reserveButton} ${!book.available ? styles.reserveButtonDisabled : ''}`}
-          onClick={handleReserve}
-          disabled={!book.available || reserving}
-        >
-          {reserving ? 'Reservando...' : book.available ? 'Reservar pra mim' : 'Indisponível'}
-        </button>
       </main>
 
       <BottomNavigation studentId={studentId || ''} activePage="home" />
@@ -169,5 +213,4 @@ const BookDetailsPage: React.FC = () => {
   );
 };
 
-export default BookDetailsPage;
-
+export default BookDetails;

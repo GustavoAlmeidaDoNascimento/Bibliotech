@@ -41,6 +41,7 @@ import StudentProfile from '../pages/student/StudentProfile';
 import BookDetails from '../pages/student/BookDetails';
 import BookSearch from '../pages/student/BookSearch';
 import MyBooks from '../pages/student/MyBooks';
+import ReserveBook from '../pages/student/ReserveBook';
 import { ROUTES } from '../constants';
 
 // redireciona com base no estado de autenticação
@@ -102,6 +103,10 @@ export const publicRoutes = [
   {
     path: "/student-dashboard/:studentId/my-books",
     element: <MyBooks />,
+  },
+  {
+    path: "/student-dashboard/:studentId/reserve/:bookId",
+    element: <ReserveBook />,
   },
 ];
 

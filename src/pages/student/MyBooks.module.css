@@ -45,7 +45,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  background: linear-gradient(135deg, #60A5FA, #A78BFA);
+  background: linear-gradient(135deg, #0078d4, #106ebe);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -98,7 +98,7 @@
   font-size: 2rem;
   font-weight: 700;
   margin: 0 0 1rem 0;
-  background: linear-gradient(135deg, #F59E0B, #EF4444);
+  background: linear-gradient(135deg, #0078d4, #106ebe);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -131,12 +131,12 @@
 }
 
 .featureItem svg {
-  color: #60A5FA;
+  color: #0078d4;
   flex-shrink: 0;
 }
 
 .backToProfileButton {
-  background: linear-gradient(135deg, #3B82F6, #2563EB);
+  background: linear-gradient(135deg, #0078d4, #106ebe);
   color: white;
   border: none;
   padding: 1rem 2rem;
@@ -149,9 +149,9 @@
 }
 
 .backToProfileButton:hover {
-  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  background: linear-gradient(135deg, #106ebe, #005a9e);
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 10px 25px rgba(0, 120, 212, 0.3);
 }
 
 .backToProfileButton:active {

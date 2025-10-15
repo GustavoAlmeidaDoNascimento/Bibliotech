@@ -2,26 +2,24 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
   color: #F8FAFC;
-  padding-bottom: 80px;
+  display: flex;
+  flex-direction: column;
 }
 
-.loadingContainer,
-.errorContainer {
+.loadingContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 80vh;
   gap: 1rem;
-  padding: 2rem;
-  text-align: center;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
   border: 3px solid #334155;
-  border-top-color: #3B82F6;
+  border-top-color: #0078d4;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -30,106 +28,87 @@
   to { transform: rotate(360deg); }
 }
 
-.errorContainer h2 {
-  font-size: 1.5rem;
-  color: #F8FAFC;
-  margin: 0 0 1rem 0;
-}
-
-.backToHomeButton {
-  padding: 0.75rem 1.5rem;
-  background: #3B82F6;
-  border: none;
-  border-radius: 10px;
-  color: white;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.backToHomeButton:hover {
-  background: #2563EB;
-  transform: translateY(-2px);
-}
-
 /* Header */
 .header {
   background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 50;
 }
 
 .headerContent {
   display: flex;
   align-items: center;
-  gap: 1rem;
   padding: 1rem;
-  max-width: 768px;
-  margin: 0 auto;
+  gap: 1rem;
 }
 
 .backButton {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 10px;
-  color: #3B82F6;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
 }
 
 .backButton:hover {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: #3B82F6;
-  transform: translateX(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  color: #E2E8F0;
 }
 
-.backButton:active {
-  transform: translateX(0);
-}
-
-.headerContent h1 {
-  font-size: 1.25rem;
-  font-weight: 700;
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
   margin: 0;
-  color: #F8FAFC;
+  background: linear-gradient(135deg, #0078d4, #106ebe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Main Content */
 .main {
-  padding: 1.5rem 1rem;
-  max-width: 768px;
+  flex: 1;
+  padding: 2rem 1rem;
+  max-width: 800px;
   margin: 0 auto;
+  width: 100%;
+}
+
+.bookContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 /* Cover Section */
 .coverSection {
   display: flex;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .bookCover {
-  width: 200px;
-  height: 300px;
-  object-fit: cover;
+  max-width: 300px;
+  width: 100%;
+  height: auto;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
 }
 
-.bookCoverPlaceholder {
-  width: 200px;
-  height: 300px;
-  background: linear-gradient(135deg, #1E40AF 0%, #7C3AED 100%);
+.coverPlaceholder {
+  width: 300px;
+  height: 450px;
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -138,165 +117,310 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* Info Section */
-.infoSection {
-  text-align: center;
-  margin-bottom: 1.5rem;
+/* Book Info */
+.bookInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.title {
-  font-size: 1.5rem;
+.bookTitle {
+  font-size: 2rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0;
+  margin: 0;
   color: #F8FAFC;
-  line-height: 1.3;
+  text-align: center;
+  line-height: 1.2;
 }
 
-.author {
-  font-size: 1rem;
+.bookAuthor {
+  font-size: 1.2rem;
   color: #94A3B8;
-  margin: 0 0 1rem 0;
-}
-
-.genreBadge {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background: rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 20px;
-  color: #3B82F6;
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-}
-
-.stats {
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  color: #64748B;
-  font-size: 0.95rem;
 }
 
-/* Synopsis Section */
-.synopsisSection {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  border-radius: 16px;
+/* Sections */
+.tagsSection,
+.synopsisSection,
+.statsSection {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
 }
 
-.synopsisTitle {
+.tagsSection h3,
+.synopsisSection h3,
+.statsSection h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: #E2E8F0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-  margin: 0 0 1rem 0;
-  color: #F8FAFC;
 }
 
-.synopsisText {
-  font-size: 0.95rem;
+.tagsSection h3 svg,
+.synopsisSection h3 svg,
+.statsSection h3 svg {
+  color: #0078d4;
+}
+
+/* Tags */
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  background: rgba(0, 120, 212, 0.2);
+  color: #60A5FA;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid rgba(0, 120, 212, 0.3);
+}
+
+/* Synopsis */
+.synopsis {
+  font-size: 1rem;
   line-height: 1.6;
-  color: #94A3B8;
+  color: #E2E8F0;
   margin: 0;
+  text-align: justify;
+}
+
+/* Stats */
+.statsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statItem:last-child {
+  border-bottom: none;
+}
+
+.statLabel {
+  font-size: 1rem;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 1rem;
+  color: #F8FAFC;
+  font-weight: 600;
 }
 
 /* Reserve Button */
 .reserveButton {
-  width: 100%;
-  padding: 1rem;
-  background: #3B82F6;
-  border: none;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #0078d4, #106ebe);
   color: white;
-  font-size: 1rem;
-  font-weight: 700;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
-.reserveButton:hover {
-  background: #2563EB;
+.reserveButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #106ebe, #005a9e);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 120, 212, 0.3);
 }
 
-.reserveButton:active {
+.reserveButton:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.reserveButton:disabled,
-.reserveButtonDisabled {
-  background: #334155;
-  color: #64748B;
+.reserveButton:disabled {
+  background: rgba(100, 116, 139, 0.3);
+  color: rgba(148, 163, 184, 0.5);
   cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
-.reserveButton:disabled:hover,
-.reserveButtonDisabled:hover {
-  background: #334155;
   transform: none;
   box-shadow: none;
 }
 
-/* Responsividade */
-@media (min-width: 640px) {
-  .coverSection {
-    margin-bottom: 2rem;
+.reserveInfo {
+  margin-top: 1rem;
+}
+
+.availableMessage {
+  color: #10B981;
+  font-size: 0.9rem;
+  margin: 0;
+  font-weight: 500;
+  padding: 0.75rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.waitlistInfo {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.waitlistMessage {
+  color: #F59E0B;
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+  text-align: center;
+}
+
+.waitlistDetails {
+  color: #94A3B8;
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Error States */
+.errorContainer {
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.errorIcon {
+  color: #FCA5A5;
+  margin-bottom: 1rem;
+}
+
+.errorContainer h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: #FCA5A5;
+}
+
+.errorContainer p {
+  color: #94A3B8;
+  margin: 0 0 2rem 0;
+  line-height: 1.6;
+}
+
+.backToHomeButton {
+  background: linear-gradient(135deg, #0078d4, #106ebe);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.backToHomeButton:hover {
+  background: linear-gradient(135deg, #106ebe, #005a9e);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 120, 212, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main {
+    padding: 1rem;
   }
-
-  .bookCover,
-  .bookCoverPlaceholder {
+  
+  .bookTitle {
+    font-size: 1.5rem;
+  }
+  
+  .bookAuthor {
+    font-size: 1rem;
+  }
+  
+  .bookCover {
+    max-width: 250px;
+  }
+  
+  .coverPlaceholder {
     width: 250px;
     height: 375px;
   }
-
-  .title {
-    font-size: 1.75rem;
+  
+  .tagsSection,
+  .synopsisSection,
+  .statsSection {
+    padding: 1rem;
   }
-
-  .synopsisSection {
-    padding: 2rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .headerContent {
-    padding: 1.5rem 2rem;
-  }
-
-  .headerContent h1 {
-    font-size: 1.5rem;
-  }
-
-  .main {
-    padding: 2rem;
-  }
-
-  .bookCover,
-  .bookCoverPlaceholder {
-    width: 280px;
-    height: 420px;
-  }
-
-  .title {
-    font-size: 2rem;
-  }
-
-  .author {
-    font-size: 1.125rem;
-  }
-
+  
   .reserveButton {
-    padding: 1.25rem;
-    font-size: 1.125rem;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
   }
 }
 
+@media (max-width: 480px) {
+  .headerContent {
+    padding: 0.75rem;
+  }
+  
+  .header h1 {
+    font-size: 1.25rem;
+  }
+  
+  .bookTitle {
+    font-size: 1.3rem;
+  }
+  
+  .bookCover {
+    max-width: 200px;
+  }
+  
+  .coverPlaceholder {
+    width: 200px;
+    height: 300px;
+  }
+  
+  .tagsSection,
+  .synopsisSection,
+  .statsSection {
+    padding: 0.75rem;
+  }
+  
+  .tag {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .synopsis {
+    font-size: 0.9rem;
+  }
+  
+  .statLabel,
+  .statValue {
+    font-size: 0.9rem;
+  }
+}
