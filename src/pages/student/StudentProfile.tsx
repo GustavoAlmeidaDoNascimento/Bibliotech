@@ -3,13 +3,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { User, BookMarked, MessageCircle, LogOut } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService, StudentDashboardData } from '../../services/studentService';
+import { useStudentProfileCache } from '../../hooks/useStudentProfileCache';
 import styles from './StudentProfile.module.css';
 
 const StudentProfile: React.FC = () => {
   const navigate = useNavigate();
   const { studentId } = useParams<{ studentId: string }>();
-  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Usar o hook de cache
+  const { cachedData, isLoading: cacheLoading, setCachedData } = useStudentProfileCache(studentId || '');
+  
+  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(cachedData?.dashboardData || null);
+  const [loading, setLoading] = useState(cacheLoading);
 
   useEffect(() => {
     if (!studentId) {
@@ -17,11 +22,25 @@ const StudentProfile: React.FC = () => {
       return;
     }
 
+    // Se já tem dados em cache, usar eles
+    if (cachedData) {
+      setDashboardData(cachedData.dashboardData);
+      setLoading(false);
+      console.log('✅ Usando dados do perfil em cache');
+      return;
+    }
+
     const loadData = async () => {
       try {
+        console.log('🔄 Buscando dados do perfil do servidor...');
         const data = await studentService.getStudentDashboardData(studentId);
         if (data) {
           setDashboardData(data);
+          
+          // Salvar no cache
+          setCachedData({
+            dashboardData: data
+          });
         }
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
@@ -31,7 +50,7 @@ const StudentProfile: React.FC = () => {
     };
 
     loadData();
-  }, [studentId, navigate]);
+  }, [studentId, navigate, cachedData, setCachedData]);
 
   const handleMyBooksClick = () => {
     navigate(`/student-dashboard/${studentId}/my-books`);
