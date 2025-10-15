@@ -7,7 +7,10 @@ import { Bar, Pie } from 'react-chartjs-2';
 import { 
   BookOpenIcon, 
   TrophyIcon,
-  UserGroupIcon 
+  UserGroupIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/solid';
 import styles from './ClassDashboard.module.css';
 
@@ -373,7 +376,7 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
 
         <div className={styles.statCard}>
           <div className={styles.statIcon}>
-            <BookOpenIcon />
+            <ClockIcon />
           </div>
           <div className={styles.statContent}>
             <h4>Empréstimos Ativos</h4>
@@ -383,7 +386,7 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
 
         <div className={styles.statCard}>
           <div className={styles.statIcon}>
-            <BookOpenIcon />
+            <CheckCircleIcon />
           </div>
           <div className={styles.statContent}>
             <h4>Devolvidos</h4>
@@ -393,7 +396,7 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
 
         <div className={styles.statCard}>
           <div className={styles.statIcon}>
-            <BookOpenIcon />
+            <ExclamationTriangleIcon />
           </div>
           <div className={styles.statContent}>
             <h4>Em Atraso</h4>
