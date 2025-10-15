@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, BookOpen, TrendingUp, Star, Clock, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, BookOpen, TrendingUp, Star, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
-import { studentService, StudentDashboardData } from '../../services/studentService';
+import { studentService } from '../../services/studentService';
 import { bookRecommendationService, RecommendationSection, BookWithStats } from '../../services/bookRecommendationService';
 import { useStudentHomeCache } from '../../hooks/useStudentHomeCache';
 import styles from './StudentHome.module.css';
@@ -15,7 +15,6 @@ const StudentHome: React.FC = () => {
   // Usar o hook de cache
   const { cachedData, isLoading: cacheLoading, setCachedData } = useStudentHomeCache(studentId || '');
   
-  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(cachedData?.dashboardData || null);
   const [recommendationSections, setRecommendationSections] = useState<RecommendationSection[]>(cachedData?.recommendationSections || []);
   const [allBooks, setAllBooks] = useState<BookWithStats[]>(cachedData?.allBooks || []);
   const [searchResults, setSearchResults] = useState<BookWithStats[]>([]);
@@ -31,7 +30,6 @@ const StudentHome: React.FC = () => {
 
     // Se já tem dados em cache, usar eles
     if (cachedData) {
-      setDashboardData(cachedData.dashboardData);
       setRecommendationSections(cachedData.recommendationSections);
       setAllBooks(cachedData.allBooks);
       setLoading(false);
@@ -59,7 +57,6 @@ const StudentHome: React.FC = () => {
         const recommendations = bookRecommendationService.generateRecommendations(booksData);
         
         // Atualizar estado
-        setDashboardData(dashboardData);
         setRecommendationSections(recommendations);
         setAllBooks(booksData);
 

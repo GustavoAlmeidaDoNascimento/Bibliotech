@@ -20,6 +20,7 @@ import {
   LineElement
 } from 'chart.js';
 import { useResponsiveChart } from '../../hooks/useResponsiveChart';
+import { useStudentStatsCache } from '../../hooks/useStudentStatsCache';
 import styles from './StudentStats.module.css';
 
 // Registrar componentes do Chart.js
@@ -42,28 +43,38 @@ const StudentStats: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const chartOptions = useResponsiveChart();
   const [activeTab, setActiveTab] = useState<TabType>('aluno');
-  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Usar o hook de cache
+  const { cachedData, isLoading: cacheLoading, setCachedData } = useStudentStatsCache(studentId || '');
+  
+  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(cachedData?.dashboardData || null);
+  const [loading, setLoading] = useState(cacheLoading);
 
   // Métricas do Aluno
-  const [totalBooksRead, setTotalBooksRead] = useState(0);
-  const [favoriteGenre, setFavoriteGenre] = useState('');
-  const [genrePercentage, setGenrePercentage] = useState(0);
-  const [readingSpeed, setReadingSpeed] = useState(0);
-  const [bestQuarter, setBestQuarter] = useState('');
+  const [totalBooksRead, setTotalBooksRead] = useState(cachedData?.totalBooksRead || 0);
+  const [favoriteGenre, setFavoriteGenre] = useState(cachedData?.favoriteGenre || '');
+  const [genrePercentage, setGenrePercentage] = useState(cachedData?.genrePercentage || 0);
+  const [readingSpeed, setReadingSpeed] = useState(cachedData?.readingSpeed || 0);
+  const [bestQuarter, setBestQuarter] = useState(cachedData?.bestQuarter || '');
   
   // Dados para gráficos
-  const [genresData, setGenresData] = useState<{labels: string[], data: number[]}>({ labels: [], data: [] });
+  const [genresData, setGenresData] = useState<{labels: string[], data: number[]}>(
+    cachedData?.genresData || { labels: [], data: [] }
+  );
   const [monthlyLoansData, setMonthlyLoansData] = useState<{
     labels: string[], 
     borrowed: number[],
     completed: number[]
-  }>({ 
-    labels: [], 
-    borrowed: [],
-    completed: [] 
-  });
-  const [quarterlyData, setQuarterlyData] = useState<{labels: string[], data: number[]}>({ labels: [], data: [] });
+  }>(
+    cachedData?.monthlyLoansData || { 
+      labels: [], 
+      borrowed: [],
+      completed: [] 
+    }
+  );
+  const [quarterlyData, setQuarterlyData] = useState<{labels: string[], data: number[]}>(
+    cachedData?.quarterlyData || { labels: [], data: [] }
+  );
 
   useEffect(() => {
     if (!studentId) {
@@ -71,12 +82,35 @@ const StudentStats: React.FC = () => {
       return;
     }
 
+    // Se já tem dados em cache, usar eles
+    if (cachedData) {
+      setDashboardData(cachedData.dashboardData);
+      setTotalBooksRead(cachedData.totalBooksRead);
+      setFavoriteGenre(cachedData.favoriteGenre);
+      setGenrePercentage(cachedData.genrePercentage);
+      setReadingSpeed(cachedData.readingSpeed);
+      setBestQuarter(cachedData.bestQuarter);
+      setGenresData(cachedData.genresData);
+      setMonthlyLoansData(cachedData.monthlyLoansData);
+      setQuarterlyData(cachedData.quarterlyData);
+      setLoading(false);
+      console.log('✅ Usando dados das estatísticas em cache');
+      return;
+    }
+
     const loadData = async () => {
       try {
+        console.log('🔄 Buscando dados das estatísticas do servidor...');
         const data = await studentService.getStudentDashboardData(studentId);
         if (data) {
           setDashboardData(data);
-          calculateMetrics(data.loans, data.books);
+          const metrics = calculateMetrics(data.loans, data.books);
+          
+          // Salvar no cache
+          setCachedData({
+            dashboardData: data,
+            ...metrics
+          });
         }
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
@@ -86,12 +120,13 @@ const StudentStats: React.FC = () => {
     };
 
     loadData();
-  }, [studentId, navigate]);
+  }, [studentId, navigate, cachedData, setCachedData]);
 
   const calculateMetrics = (loansData: StudentLoan[], booksData: StudentBook[]) => {
     // Total de livros lidos (devolvidos)
     const completedLoans = loansData.filter(loan => loan.status === 'returned');
-    setTotalBooksRead(completedLoans.length);
+    const totalBooksReadValue = completedLoans.length;
+    setTotalBooksRead(totalBooksReadValue);
 
     // Calcular gênero favorito e dados para gráfico de pizza
     const genreCounts: { [key: string]: number } = {};
@@ -107,18 +142,24 @@ const StudentStats: React.FC = () => {
       }
     });
 
+    let favoriteGenreValue = '';
+    let genrePercentageValue = 0;
+    let genresDataValue = { labels: [] as string[], data: [] as number[] };
+
     const sortedGenres = Object.entries(genreCounts).sort((a, b) => b[1] - a[1]);
     if (sortedGenres.length > 0) {
-      setFavoriteGenre(sortedGenres[0][0]);
-      const percentage = Math.round((sortedGenres[0][1] / totalGenreReads) * 100);
-      setGenrePercentage(percentage);
+      favoriteGenreValue = sortedGenres[0][0];
+      genrePercentageValue = Math.round((sortedGenres[0][1] / totalGenreReads) * 100);
+      setFavoriteGenre(favoriteGenreValue);
+      setGenrePercentage(genrePercentageValue);
       
       // Preparar dados para gráfico (top 5 gêneros)
       const topGenres = sortedGenres.slice(0, 5);
-      setGenresData({
+      genresDataValue = {
         labels: topGenres.map(([genre]) => genre),
         data: topGenres.map(([, count]) => count)
-      });
+      };
+      setGenresData(genresDataValue);
     }
 
     // Empréstimos por mês (últimos 6 meses)
@@ -158,11 +199,12 @@ const StudentStats: React.FC = () => {
       };
     });
 
-    setMonthlyLoansData({
+    const monthlyLoansDataValue = {
       labels: monthlyLoans.map(m => m.label),
       borrowed: monthlyLoans.map(m => m.borrowed),
       completed: monthlyLoans.map(m => m.completed)
-    });
+    };
+    setMonthlyLoansData(monthlyLoansDataValue);
 
     // Determinar melhor trimestre
     const quarters = [
@@ -181,21 +223,25 @@ const StudentStats: React.FC = () => {
       return { name: quarter.name, count };
     });
 
-    setQuarterlyData({
+    const quarterlyDataValue = {
       labels: quarterCounts.map(q => q.name),
       data: quarterCounts.map(q => q.count)
-    });
+    };
+    setQuarterlyData(quarterlyDataValue);
 
     const bestQ = quarterCounts.reduce((best, current) => 
       current.count > best.count ? current : best, 
       { name: '', count: -1 }
     );
 
+    let bestQuarterValue = '';
     if (bestQ.count > 0) {
-      setBestQuarter(bestQ.name);
+      bestQuarterValue = bestQ.name;
+      setBestQuarter(bestQuarterValue);
     }
 
     // Calcular velocidade média de leitura (dias)
+    let readingSpeedValue = 0;
     if (completedLoans.length > 0) {
       const totalDays = completedLoans.reduce((sum, loan) => {
         if (loan.returnDate) {
@@ -206,8 +252,21 @@ const StudentStats: React.FC = () => {
         return sum;
       }, 0);
 
-      setReadingSpeed(Math.round(totalDays / completedLoans.length));
+      readingSpeedValue = Math.round(totalDays / completedLoans.length);
+      setReadingSpeed(readingSpeedValue);
     }
+
+    // Retornar todos os valores calculados
+    return {
+      totalBooksRead: totalBooksReadValue,
+      favoriteGenre: favoriteGenreValue,
+      genrePercentage: genrePercentageValue,
+      readingSpeed: readingSpeedValue,
+      bestQuarter: bestQuarterValue,
+      genresData: genresDataValue,
+      monthlyLoansData: monthlyLoansDataValue,
+      quarterlyData: quarterlyDataValue
+    };
   };
 
   if (loading) {
