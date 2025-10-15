@@ -3,6 +3,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useResponsiveChart } from '../../hooks/useResponsiveChart';
+import { useClassStatsCache } from '../../hooks/useClassStatsCache';
 import { Bar, Pie } from 'react-chartjs-2';
 import { 
   BookOpenIcon, 
@@ -36,17 +37,34 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
   const { currentUser } = useAuth();
   const effectiveUserId = currentUserId || currentUser?.uid;
   const chartOptions = useResponsiveChart();
-  const [classStats, setClassStats] = useState<ClassStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Usar o hook de cache
+  const { cachedData, isLoading: cacheLoading, setCachedData } = useClassStatsCache(studentClassName, effectiveUserId);
+  
+  const [classStats, setClassStats] = useState<ClassStats | null>(cachedData);
+  const [loading, setLoading] = useState(cacheLoading);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('🏫 Estado atual:', { loading, error, hasClassStats: !!classStats });
+  console.log('🏫 Estado atual:', { loading, error, hasClassStats: !!classStats, hasCachedData: !!cachedData });
   console.log('🏫 effectiveUserId:', effectiveUserId);
 
   useEffect(() => {
     console.log('🏫 useEffect disparado - studentClassName:', studentClassName, 'effectiveUserId:', effectiveUserId);
-    fetchClassStats();
-  }, [studentClassName, effectiveUserId]);
+    
+    // Se já temos dados em cache, não precisamos buscar novamente
+    if (cachedData) {
+      console.log('✅ Usando dados do cache');
+      setClassStats(cachedData);
+      setLoading(false);
+      return;
+    }
+    
+    // Só buscar dados se não temos cache
+    if (!cachedData && effectiveUserId && studentClassName) {
+      console.log('🔄 Buscando dados do servidor...');
+      fetchClassStats();
+    }
+  }, [studentClassName, effectiveUserId, cachedData]);
 
   const fetchClassStats = async () => {
     console.log('🏫 Iniciando fetchClassStats...');
@@ -305,6 +323,13 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
       console.log('🏆 Top 3 do ranking:', studentRanking.slice(0, 3));
 
       setClassStats(finalStats);
+      
+      // Salvar no cache
+      if (effectiveUserId && studentClassName) {
+        setCachedData(finalStats);
+        console.log('💾 Dados salvos no cache');
+      }
+      
       console.log('✅ Estado atualizado com sucesso!');
 
     } catch (error) {
