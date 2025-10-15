@@ -242,6 +242,8 @@
   grid-template-columns: 1fr;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  width: 100%;
+  overflow: hidden;
 }
 
 @media (min-width: 768px) {
@@ -256,6 +258,8 @@
   border-radius: 16px;
   padding: 1.25rem;
   transition: all 0.3s ease;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .chartCard:hover {
@@ -272,8 +276,15 @@
 
 .chartWrapper {
   width: 100%;
+  max-width: 100%;
   height: 250px;
   position: relative;
+  overflow: hidden;
+}
+
+.chartWrapper canvas {
+  max-width: 100% !important;
+  height: auto !important;
 }
 
 .noData {
