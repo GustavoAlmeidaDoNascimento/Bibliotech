@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, BookOpen, TrendingUp, Star, Clock, Sparkles } from 'lucide-react';
+import { Search, BookOpen, TrendingUp, Star, Clock, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService, StudentDashboardData } from '../../services/studentService';
 import { bookRecommendationService, RecommendationSection, BookWithStats } from '../../services/bookRecommendationService';
@@ -87,6 +87,18 @@ const StudentHome: React.FC = () => {
     setSearchTerm('');
     setSearchResults([]);
     setShowSearchResults(false);
+  };
+
+  const scrollCarousel = (direction: 'left' | 'right', sectionIndex: number) => {
+    const carousel = document.querySelector(`[data-carousel="${sectionIndex}"]`) as HTMLElement;
+    if (carousel) {
+      const scrollAmount = 200; // Quantidade de pixels para scroll
+      if (direction === 'left') {
+        carousel.scrollLeft -= scrollAmount;
+      } else {
+        carousel.scrollLeft += scrollAmount;
+      }
+    }
   };
 
   if (loading) {
@@ -226,47 +238,66 @@ const StudentHome: React.FC = () => {
               {getSectionIcon(section.title)}
               {section.emoji} {section.title}
             </h2>
-            <div className={styles.booksScroll}>
-              {section.books.map((book) => (
-                <div
-                  key={book.id}
-                  className={styles.bookCard}
-                  onClick={() => handleBookClick(book.id)}
-                >
-                  <div className={styles.bookCoverWrapper}>
-                    {book.coverUrl ? (
-                      <img src={book.coverUrl} alt={book.title} className={styles.bookCover} />
-                    ) : (
-                      <div className={styles.bookCoverPlaceholder}>
-                        <BookOpen size={40} />
+            <div className={styles.carouselContainer}>
+              <button
+                className={styles.navButton}
+                onClick={() => scrollCarousel('left', index)}
+                aria-label="Voltar livros"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <div 
+                className={styles.booksScroll}
+                data-carousel={index}
+              >
+                {section.books.map((book) => (
+                  <div
+                    key={book.id}
+                    className={styles.bookCard}
+                    onClick={() => handleBookClick(book.id)}
+                  >
+                    <div className={styles.bookCoverWrapper}>
+                      {book.coverUrl ? (
+                        <img src={book.coverUrl} alt={book.title} className={styles.bookCover} />
+                      ) : (
+                        <div className={styles.bookCoverPlaceholder}>
+                          <BookOpen size={40} />
+                        </div>
+                      )}
+                      {!book.available && (
+                        <div className={styles.unavailableBadge}>Indisponível</div>
+                      )}
+                    </div>
+                    <div className={styles.bookInfo}>
+                      <h3 className={styles.bookTitle}>{book.title}</h3>
+                      <p className={styles.bookAuthor}>
+                        {book.authors.length > 0 ? book.authors.join(', ') : 'Autor não informado'}
+                      </p>
+                      {book.genres.length > 0 && (
+                        <div className={styles.bookGenres}>
+                          {book.genres.slice(0, 2).map((genre: string) => (
+                            <span key={genre} className={styles.genreTag}>{genre}</span>
+                          ))}
+                          {book.genres.length > 2 && (
+                            <span className={styles.moreGenres}>+{book.genres.length - 2}</span>
+                          )}
+                        </div>
+                      )}
+                      <div className={styles.bookStats}>
+                        <BookOpen size={14} />
+                        <span>{book.loanCount} empréstimos</span>
                       </div>
-                    )}
-                    {!book.available && (
-                      <div className={styles.unavailableBadge}>Indisponível</div>
-                    )}
-                  </div>
-                  <div className={styles.bookInfo}>
-                    <h3 className={styles.bookTitle}>{book.title}</h3>
-                    <p className={styles.bookAuthor}>
-                      {book.authors.length > 0 ? book.authors.join(', ') : 'Autor não informado'}
-                    </p>
-                    {book.genres.length > 0 && (
-                      <div className={styles.bookGenres}>
-                        {book.genres.slice(0, 2).map((genre: string) => (
-                          <span key={genre} className={styles.genreTag}>{genre}</span>
-                        ))}
-                        {book.genres.length > 2 && (
-                          <span className={styles.moreGenres}>+{book.genres.length - 2}</span>
-                        )}
-                      </div>
-                    )}
-                    <div className={styles.bookStats}>
-                      <BookOpen size={14} />
-                      <span>{book.loanCount} empréstimos</span>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <button
+                className={styles.navButton}
+                onClick={() => scrollCarousel('right', index)}
+                aria-label="Avançar livros"
+              >
+                <ChevronRight size={20} />
+              </button>
             </div>
           </section>
         ))}

@@ -240,6 +240,13 @@
   color: #F8FAFC;
 }
 
+.carouselContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .booksScroll {
   display: flex;
   gap: 1rem;
@@ -265,6 +272,46 @@
 
 .booksScroll::-webkit-scrollbar-thumb:hover {
   background: rgba(59, 130, 246, 0.7);
+}
+
+.navButton {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 50%;
+  color: #94A3B8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  z-index: 2;
+}
+
+.navButton:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #3B82F6;
+  color: #3B82F6;
+  transform: scale(1.1);
+}
+
+.navButton:active {
+  transform: scale(0.95);
+}
+
+.navButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.navButton:disabled:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(51, 65, 85, 0.5);
+  color: #94A3B8;
 }
 
 .bookCard {
@@ -382,6 +429,17 @@
   color: #64748B;
 }
 
+/* Esconder botões de navegação no mobile */
+@media (max-width: 639px) {
+  .navButton {
+    display: none;
+  }
+  
+  .carouselContainer {
+    gap: 0;
+  }
+}
+
 /* Responsividade */
 @media (min-width: 640px) {
   .headerContent {
@@ -396,6 +454,11 @@
 
   .bookCard {
     flex: 0 0 180px;
+  }
+
+  .navButton {
+    width: 44px;
+    height: 44px;
   }
 }
 
@@ -422,6 +485,15 @@
   .sectionTitle {
     font-size: 1.5rem;
   }
+
+  .navButton {
+    width: 48px;
+    height: 48px;
+  }
+
+  .carouselContainer {
+    gap: 0.75rem;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -436,6 +508,15 @@
   .bookCard {
     flex: 0 0 220px;
   }
+
+  .navButton {
+    width: 52px;
+    height: 52px;
+  }
+
+  .carouselContainer {
+    gap: 1rem;
+  }
 }
 
 @media (min-width: 1280px) {
@@ -445,6 +526,15 @@
 
   .bookCard {
     flex: 0 0 240px;
+  }
+
+  .navButton {
+    width: 56px;
+    height: 56px;
+  }
+
+  .carouselContainer {
+    gap: 1.25rem;
   }
 }
 
