@@ -991,6 +991,15 @@
   margin-top: 2rem;
 }
 
+/* Ações do catálogo (botão de salvar) */
+.catalogActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
 .catalogPreviewGrid {
   display: grid;
   grid-template-columns: 1fr 2fr;

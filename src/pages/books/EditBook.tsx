@@ -1178,6 +1178,21 @@ const EditBook = () => {
             </div>
           </div>
         </div>
+        
+        {/* Botão de Salvar na Seção de Catálogo */}
+        <div className={styles.catalogActions}>
+          <button
+            type="button"
+            className={styles.submitButton}
+            disabled={loading}
+            onClick={(e) => {
+              setIsSubmittingForm(true);
+              handleSubmit(e as any);
+            }}
+          >
+            {loading ? 'Salvando...' : 'Salvar Alterações'}
+          </button>
+        </div>
       </div>
 
       {/* Seção de Histórico de Retiradas */}
