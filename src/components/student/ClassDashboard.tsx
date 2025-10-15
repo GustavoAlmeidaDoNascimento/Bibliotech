@@ -362,7 +362,7 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
       {/* Cards de Estatísticas */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ backgroundColor: '#4285f4' }}>
+          <div className={styles.statIcon}>
             <BookOpenIcon />
           </div>
           <div className={styles.statContent}>
@@ -372,7 +372,7 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ backgroundColor: '#10b981' }}>
+          <div className={styles.statIcon}>
             <BookOpenIcon />
           </div>
           <div className={styles.statContent}>
@@ -382,7 +382,7 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ backgroundColor: '#f59e0b' }}>
+          <div className={styles.statIcon}>
             <BookOpenIcon />
           </div>
           <div className={styles.statContent}>
@@ -392,7 +392,7 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ backgroundColor: '#ef4444' }}>
+          <div className={styles.statIcon}>
             <BookOpenIcon />
           </div>
           <div className={styles.statContent}>
