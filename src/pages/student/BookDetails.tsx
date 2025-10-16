@@ -209,7 +209,7 @@ const BookDetails: React.FC = () => {
             <div className={styles.reserveInfo}>
               {book.availableCopies > 0 ? (
                 <p className={styles.availableMessage}>
-                  ✅ Este livro está disponível! Você pode reservá-lo para pegar quando quiser.
+                  ✅ Este livro está disponível à pronta entrega! Você pode reservá-lo para pegar quando quiser.
                 </p>
               ) : (
                 <div className={styles.waitlistInfo}>
@@ -217,7 +217,7 @@ const BookDetails: React.FC = () => {
                     📋 Este livro está emprestado. Ao reservar, você entrará na fila de espera.
                   </p>
                   <p className={styles.waitlistDetails}>
-                    Quando o livro for devolvido, você será notificado para pegá-lo antes dos outros.
+                    Quando o livro for devolvido, você será notificado via whatsapp para pegá-lo antes dos outros.
                   </p>
                 </div>
               )}

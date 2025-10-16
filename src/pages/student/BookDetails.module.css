@@ -4,6 +4,7 @@
   color: #F8FAFC;
   display: flex;
   flex-direction: column;
+  padding-bottom: 100px; /* Espaço para a navegação inferior */
 }
 
 .loadingContainer {
@@ -349,6 +350,10 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .container {
+    padding-bottom: 80px; /* Menos espaço em mobile */
+  }
+  
   .main {
     padding: 1rem;
   }
@@ -383,6 +388,10 @@
 }
 
 @media (max-width: 480px) {
+  .container {
+    padding-bottom: 70px; /* Espaço mínimo para telas pequenas */
+  }
+  
   .headerContent {
     padding: 0.75rem;
   }
