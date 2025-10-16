@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, BookOpen, TrendingUp, Star, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, BookOpen, TrendingUp, Star, Sparkles, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService } from '../../services/studentService';
 import { bookRecommendationService, RecommendationSection, BookWithStats } from '../../services/bookRecommendationService';
@@ -11,6 +11,7 @@ const StudentHome: React.FC = () => {
   const navigate = useNavigate();
   const { studentId } = useParams<{ studentId: string }>();
   const [searchTerm, setSearchTerm] = useState('');
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
   
   // Usar o hook de cache
   const { cachedData, setCachedData } = useStudentHomeCache(studentId || '');
@@ -21,6 +22,12 @@ const StudentHome: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [loading, setLoading] = useState(!cachedData); // Iniciar como true se não houver cache
+  
+  // Estados para o filtro
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
+  const [allCategories, setAllCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (!studentId) {
@@ -79,6 +86,40 @@ const StudentHome: React.FC = () => {
     loadData();
   }, [studentId, navigate, cachedData, setCachedData]);
 
+  // Extrair todas as categorias únicas dos livros
+  useEffect(() => {
+    if (allBooks.length > 0) {
+      const categories = new Set<string>();
+      allBooks.forEach(book => {
+        if (book.genres && Array.isArray(book.genres)) {
+          book.genres.forEach(genre => {
+            if (genre && genre.trim()) {
+              categories.add(genre.trim());
+            }
+          });
+        }
+      });
+      setAllCategories(Array.from(categories).sort());
+    }
+  }, [allBooks]);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setShowFilterDropdown(false);
+      }
+    };
+
+    if (showFilterDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFilterDropdown]);
+
   const getSectionIcon = (title: string) => {
     if (title.includes('Mais Retirados') || title.includes('Popular')) return <TrendingUp size={20} />;
     if (title.includes('Novidades')) return <Sparkles size={20} />;
@@ -90,12 +131,25 @@ const StudentHome: React.FC = () => {
     navigate(`/student-dashboard/${studentId}/book/${bookId}`);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchTerm.trim()) return;
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     
     setIsSearching(true);
-    const results = bookRecommendationService.searchBooks(allBooks, searchTerm);
+    
+    // Buscar livros com base no termo de pesquisa
+    let results = searchTerm.trim() 
+      ? bookRecommendationService.searchBooks(allBooks, searchTerm)
+      : allBooks;
+    
+    // Aplicar filtro de categoria se houver
+    if (categoryFilter) {
+      results = results.filter(book => 
+        book.genres && book.genres.some(genre => 
+          genre.toLowerCase() === categoryFilter.toLowerCase()
+        )
+      );
+    }
+    
     setSearchResults(results);
     setShowSearchResults(true);
     setIsSearching(false);
@@ -111,7 +165,32 @@ const StudentHome: React.FC = () => {
     setSearchTerm('');
     setSearchResults([]);
     setShowSearchResults(false);
+    setCategoryFilter('');
+    setCategorySearchTerm('');
   };
+
+  const handleToggleFilterDropdown = () => {
+    setShowFilterDropdown(!showFilterDropdown);
+  };
+
+  const handleSelectCategory = (category: string) => {
+    setCategoryFilter(category);
+    setShowFilterDropdown(false);
+    setCategorySearchTerm('');
+    // Aplicar a busca automaticamente
+    setTimeout(() => handleSearch(), 0);
+  };
+
+  const handleRemoveCategoryFilter = () => {
+    setCategoryFilter('');
+    // Re-aplicar a busca sem o filtro
+    setTimeout(() => handleSearch(), 0);
+  };
+
+  // Filtrar categorias com base na busca
+  const filteredCategories = allCategories.filter(category =>
+    category.toLowerCase().includes(categorySearchTerm.toLowerCase())
+  );
 
   const scrollCarousel = (direction: 'left' | 'right', sectionIndex: number) => {
     const carousel = document.querySelector(`[data-carousel="${sectionIndex}"]`) as HTMLElement;
@@ -186,39 +265,113 @@ const StudentHome: React.FC = () => {
             <BookOpen size={24} />
             <h1>Bibliotech</h1>
           </div>
-          <form className={styles.searchForm} onSubmit={handleSearch}>
-            <Search className={styles.searchIcon} size={20} />
-            <input
-              type="text"
-              placeholder="Buscar livros..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onFocus={handleSearchInputFocus}
-              className={styles.searchInput}
-            />
-            {searchTerm && (
+          <div className={styles.searchContainer}>
+            <form className={styles.searchForm} onSubmit={handleSearch}>
+              <Search className={styles.searchIcon} size={20} />
+              <input
+                type="text"
+                placeholder="Buscar livros..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={handleSearchInputFocus}
+                className={styles.searchInput}
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className={styles.clearButton}
+                >
+                  ×
+                </button>
+              )}
+              {searchTerm && (
+                <button
+                  type="submit"
+                  disabled={isSearching}
+                  className={styles.searchButton}
+                >
+                  {isSearching ? (
+                    <div className={styles.spinner}></div>
+                  ) : (
+                    <Search size={16} />
+                  )}
+                </button>
+              )}
+            </form>
+
+            {/* Botão de Filtro */}
+            <div className={styles.filterContainer} ref={filterDropdownRef}>
               <button
                 type="button"
-                onClick={handleClearSearch}
-                className={styles.clearButton}
+                onClick={handleToggleFilterDropdown}
+                className={`${styles.filterButton} ${categoryFilter ? styles.filterButtonActive : ''}`}
+                title="Filtrar por categoria"
               >
-                ×
+                <Filter size={20} />
+                {categoryFilter && <span className={styles.filterBadge}>1</span>}
               </button>
-            )}
-            {searchTerm && (
-              <button
-                type="submit"
-                disabled={isSearching}
-                className={styles.searchButton}
-              >
-                {isSearching ? (
-                  <div className={styles.spinner}></div>
-                ) : (
-                  <Search size={16} />
-                )}
-              </button>
-            )}
-          </form>
+
+              {/* Dropdown de Filtros */}
+              {showFilterDropdown && (
+                <div className={styles.filterDropdown}>
+                  <div className={styles.filterDropdownHeader}>
+                    <h4>Filtrar por Categoria</h4>
+                  </div>
+
+                  {/* Filtro selecionado */}
+                  {categoryFilter && (
+                    <div className={styles.selectedFilters}>
+                      <div className={styles.filterTag}>
+                        <span>{categoryFilter}</span>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCategoryFilter}
+                          className={styles.removeFilterButton}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Campo de busca de categorias */}
+                  <div className={styles.categorySearchContainer}>
+                    <Search size={16} className={styles.categorySearchIcon} />
+                    <input
+                      type="text"
+                      placeholder="Buscar categoria..."
+                      value={categorySearchTerm}
+                      onChange={(e) => setCategorySearchTerm(e.target.value)}
+                      className={styles.categorySearchInput}
+                    />
+                  </div>
+
+                  {/* Lista de categorias */}
+                  <div className={styles.categoriesList}>
+                    {filteredCategories.length > 0 ? (
+                      filteredCategories.map((category) => (
+                        <button
+                          key={category}
+                          type="button"
+                          onClick={() => handleSelectCategory(category)}
+                          className={`${styles.categoryItem} ${
+                            categoryFilter === category ? styles.categoryItemActive : ''
+                          }`}
+                        >
+                          {category}
+                        </button>
+                      ))
+                    ) : (
+                      <div className={styles.noCategoriesFound}>
+                        <p>Nenhuma categoria encontrada</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
@@ -228,12 +381,27 @@ const StudentHome: React.FC = () => {
         {showSearchResults && (
           <section className={styles.searchResultsSection}>
             <div className={styles.searchResultsHeader}>
-              <h2>
-                {searchResults.length > 0 
-                  ? `${searchResults.length} resultado(s) para "${searchTerm}"`
-                  : `Nenhum resultado para "${searchTerm}"`
-                }
-              </h2>
+              <div className={styles.searchResultsInfo}>
+                <h2>
+                  {searchResults.length > 0 
+                    ? `${searchResults.length} resultado(s)${searchTerm ? ` para "${searchTerm}"` : ''}`
+                    : `Nenhum resultado${searchTerm ? ` para "${searchTerm}"` : ''}`
+                  }
+                </h2>
+                {categoryFilter && (
+                  <div className={styles.activeFilter}>
+                    <span>Categoria: {categoryFilter}</span>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCategoryFilter}
+                      className={styles.removeActiveFilterButton}
+                      title="Remover filtro"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
               <button 
                 onClick={handleClearSearch}
                 className={styles.backToRecommendationsButton}
