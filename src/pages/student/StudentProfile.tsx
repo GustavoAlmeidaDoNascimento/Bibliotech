@@ -79,10 +79,41 @@ const StudentProfile: React.FC = () => {
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loadingContainer}>
-          <div className={styles.spinner}></div>
-          <p>Carregando perfil...</p>
-        </div>
+        {/* Header Skeleton */}
+        <header className={styles.header}>
+          <div className={styles.headerContent}>
+            <div className={styles.headerTitleSkeleton}></div>
+          </div>
+        </header>
+
+        {/* Main Content Skeleton */}
+        <main className={styles.main}>
+          {/* User Info Skeleton */}
+          <div className={styles.userCard}>
+            <div className={styles.avatarSkeleton}></div>
+            <div className={styles.userInfo}>
+              <div className={styles.userNameSkeleton}></div>
+              <div className={styles.userIdSkeleton}></div>
+            </div>
+          </div>
+
+          {/* Menu Options Skeleton */}
+          <div className={styles.menuSection}>
+            <div className={styles.menuItemSkeleton}>
+              <div className={styles.menuItemIconSkeleton}></div>
+              <div className={styles.menuItemLabelSkeleton}></div>
+            </div>
+
+            <div className={styles.menuItemSkeleton}>
+              <div className={styles.menuItemIconSkeleton}></div>
+              <div className={styles.menuItemLabelSkeleton}></div>
+            </div>
+          </div>
+
+          {/* Logout Button Skeleton */}
+          <div className={styles.logoutButtonSkeleton}></div>
+        </main>
+
         <BottomNavigation studentId={studentId || ''} activePage="profile" />
       </div>
     );
@@ -107,8 +138,16 @@ const StudentProfile: React.FC = () => {
             {student?.name ? getInitials(student.name) : 'AL'}
           </div>
           <div className={styles.userInfo}>
-            <h2>{student?.name || 'Aluno Exemplo'}</h2>
-            <p>{student?.id ? `ID: ${student.id}` : 'aluno@escola.com'}</p>
+            {student?.name ? (
+              <h2>{student.name}</h2>
+            ) : (
+              <div className={styles.userNameSkeleton}></div>
+            )}
+            {student?.id ? (
+              <p>ID: {student.id}</p>
+            ) : (
+              <div className={styles.userIdSkeleton}></div>
+            )}
           </div>
         </div>
 
