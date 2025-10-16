@@ -29,6 +29,193 @@
   to { transform: rotate(360deg); }
 }
 
+/* Skeleton Loading Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Skeleton Loading Styles */
+.backButtonSkeleton {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.headerTitleSkeleton {
+  width: 200px;
+  height: 24px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.bookCoverSkeleton {
+  width: 300px;
+  height: 450px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+}
+
+.bookTitleSkeleton {
+  width: 80%;
+  height: 32px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin: 0 auto;
+}
+
+.bookAuthorSkeleton {
+  width: 60%;
+  height: 20px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin: 0 auto;
+}
+
+.sectionTitleSkeleton {
+  width: 120px;
+  height: 18px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.tagsListSkeleton {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tagSkeleton {
+  width: 80px;
+  height: 32px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 20px;
+}
+
+.synopsisSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.synopsisLineSkeleton {
+  width: 100%;
+  height: 16px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.synopsisLineSkeletonShort {
+  width: 70%;
+  height: 16px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.statsListSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.statItemSkeleton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statItemSkeleton:last-child {
+  border-bottom: none;
+}
+
+.statLabelSkeleton {
+  width: 120px;
+  height: 16px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.statValueSkeleton {
+  width: 40px;
+  height: 16px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.reserveButtonSkeleton {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.reserveInfoSkeleton {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reserveInfoLineSkeleton {
+  width: 100%;
+  height: 16px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.reserveInfoLineSkeletonShort {
+  width: 80%;
+  height: 14px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
 /* Header */
 .header {
   background: rgba(15, 23, 42, 0.8);
@@ -385,6 +572,27 @@
     padding: 0.875rem 1.5rem;
     font-size: 1rem;
   }
+
+  /* Skeleton Responsive */
+  .bookCoverSkeleton {
+    width: 250px;
+    height: 375px;
+  }
+  
+  .bookTitleSkeleton {
+    width: 90%;
+    height: 28px;
+  }
+  
+  .bookAuthorSkeleton {
+    width: 70%;
+    height: 18px;
+  }
+  
+  .headerTitleSkeleton {
+    width: 150px;
+    height: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -431,5 +639,31 @@
   .statLabel,
   .statValue {
     font-size: 0.9rem;
+  }
+
+  /* Skeleton Responsive Small */
+  .bookCoverSkeleton {
+    width: 200px;
+    height: 300px;
+  }
+  
+  .bookTitleSkeleton {
+    width: 95%;
+    height: 24px;
+  }
+  
+  .bookAuthorSkeleton {
+    width: 80%;
+    height: 16px;
+  }
+  
+  .headerTitleSkeleton {
+    width: 120px;
+    height: 18px;
+  }
+  
+  .backButtonSkeleton {
+    width: 36px;
+    height: 36px;
   }
 }

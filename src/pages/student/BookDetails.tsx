@@ -77,10 +77,82 @@ const BookDetails: React.FC = () => {
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loadingContainer}>
-          <div className={styles.spinner}></div>
-          <p>Carregando detalhes do livro...</p>
-        </div>
+        {/* Header Skeleton */}
+        <header className={styles.header}>
+          <div className={styles.headerContent}>
+            <div className={styles.backButtonSkeleton}></div>
+            <div className={styles.headerTitleSkeleton}></div>
+          </div>
+        </header>
+
+        {/* Main Content Skeleton */}
+        <main className={styles.main}>
+          <div className={styles.bookContainer}>
+            {/* Cover Section Skeleton */}
+            <div className={styles.coverSection}>
+              <div className={styles.bookCoverSkeleton}></div>
+            </div>
+
+            {/* Book Info Skeleton */}
+            <div className={styles.bookInfo}>
+              {/* Title Skeleton */}
+              <div className={styles.bookTitleSkeleton}></div>
+              
+              {/* Author Skeleton */}
+              <div className={styles.bookAuthorSkeleton}></div>
+
+              {/* Genres Section Skeleton */}
+              <div className={styles.tagsSection}>
+                <div className={styles.sectionTitleSkeleton}></div>
+                <div className={styles.tagsListSkeleton}>
+                  <div className={styles.tagSkeleton}></div>
+                  <div className={styles.tagSkeleton}></div>
+                </div>
+              </div>
+
+              {/* Synopsis Section Skeleton */}
+              <div className={styles.synopsisSection}>
+                <div className={styles.sectionTitleSkeleton}></div>
+                <div className={styles.synopsisSkeleton}>
+                  <div className={styles.synopsisLineSkeleton}></div>
+                  <div className={styles.synopsisLineSkeleton}></div>
+                  <div className={styles.synopsisLineSkeleton}></div>
+                  <div className={styles.synopsisLineSkeletonShort}></div>
+                </div>
+              </div>
+
+              {/* Stats Section Skeleton */}
+              <div className={styles.statsSection}>
+                <div className={styles.sectionTitleSkeleton}></div>
+                <div className={styles.statsListSkeleton}>
+                  <div className={styles.statItemSkeleton}>
+                    <div className={styles.statLabelSkeleton}></div>
+                    <div className={styles.statValueSkeleton}></div>
+                  </div>
+                  <div className={styles.statItemSkeleton}>
+                    <div className={styles.statLabelSkeleton}></div>
+                    <div className={styles.statValueSkeleton}></div>
+                  </div>
+                  <div className={styles.statItemSkeleton}>
+                    <div className={styles.statLabelSkeleton}></div>
+                    <div className={styles.statValueSkeleton}></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Reserve Button Skeleton */}
+              <div className={styles.reserveButtonSkeleton}></div>
+
+              {/* Reserve Info Skeleton */}
+              <div className={styles.reserveInfoSkeleton}>
+                <div className={styles.reserveInfoLineSkeleton}></div>
+                <div className={styles.reserveInfoLineSkeletonShort}></div>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <BottomNavigation studentId={studentId || ''} activePage="home" />
       </div>
     );
   }
