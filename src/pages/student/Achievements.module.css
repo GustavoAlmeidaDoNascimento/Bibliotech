@@ -262,9 +262,9 @@
 }
 
 .lockIcon {
-  font-size: 1.25rem;
-  opacity: 0.5;
-  filter: grayscale(1);
+  color: #64748B;
+  opacity: 0.6;
+  transition: all 0.3s ease;
 }
 
 /* CTA Box */

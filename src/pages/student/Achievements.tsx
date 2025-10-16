@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Trophy, Star, BookOpen, Target, Flame, Crown, Award, Zap } from 'lucide-react';
+import { ArrowLeft, Trophy, Star, BookOpen, Target, Flame, Crown, Award, Zap, Lock } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import styles from './Achievements.module.css';
 
@@ -151,7 +151,7 @@ const Achievements: React.FC = () => {
                   <p>{achievement.description}</p>
                 </div>
                 <div className={styles.achievementLock}>
-                  <div className={styles.lockIcon}>🔒</div>
+                  <Lock size={20} className={styles.lockIcon} />
                 </div>
               </div>
             ))}
