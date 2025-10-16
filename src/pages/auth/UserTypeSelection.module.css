@@ -209,11 +209,15 @@
 @media (max-width: 768px) {
   .container {
     padding: 15px 15px 30px 15px;
+    align-items: flex-start;
+    min-height: 100vh;
   }
   
   .selectionCard {
     padding: 30px 25px;
     border-radius: 16px;
+    margin: 60px 0 20px 0;
+    max-width: 100%;
   }
   
   .title {
@@ -229,6 +233,8 @@
   .optionIcon {
     margin-right: 0;
     margin-bottom: 15px;
+    width: 45px;
+    height: 45px;
   }
   
   .backButton {
@@ -236,6 +242,25 @@
     left: 15px;
     padding: 8px 12px;
     font-size: 13px;
+  }
+  
+  .logo {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 15px;
+  }
+  
+  .optionsContainer {
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  
+  .betaSection {
+    margin-top: 20px;
+  }
+  
+  .divider {
+    margin: 20px 0;
   }
 }
 
@@ -246,15 +271,18 @@
   
   .selectionCard {
     padding: 25px 20px;
-    margin: 10px 0;
+    margin: 50px 0 15px 0;
+    border-radius: 12px;
   }
   
   .title {
     font-size: 1.8rem;
+    margin: 0 0 8px;
   }
   
   .subtitle {
     font-size: 1rem;
+    margin: 0 0 25px;
   }
   
   .optionTitle {
@@ -263,5 +291,114 @@
   
   .optionDescription {
     font-size: 0.85rem;
+    line-height: 1.3;
+  }
+  
+  .optionButton {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  
+  .optionIcon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+  
+  .logo {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 12px;
+  }
+  
+  .optionsContainer {
+    gap: 12px;
+    margin-bottom: 25px;
+  }
+  
+  .betaQuestion {
+    font-size: 0.95rem;
+    margin: 0 0 15px;
+  }
+  
+  .whatsappButton {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+  
+  .backButton {
+    top: 10px;
+    left: 10px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .container {
+    padding: 8px 8px 20px 8px;
+  }
+  
+  .selectionCard {
+    padding: 18px 12px;
+    margin: 40px 0 8px 0;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+    margin: 0 0 6px;
+  }
+  
+  .subtitle {
+    font-size: 0.9rem;
+    margin: 0 0 20px;
+  }
+  
+  .optionButton {
+    padding: 10px;
+  }
+  
+  .optionIcon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 8px;
+  }
+  
+  .logo {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 8px;
+  }
+  
+  .optionsContainer {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .optionTitle {
+    font-size: 1rem;
+  }
+  
+  .optionDescription {
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+  
+  .betaSection {
+    margin-top: 15px;
+  }
+  
+  .divider {
+    margin: 15px 0;
+  }
+  
+  .betaQuestion {
+    font-size: 0.9rem;
+    margin: 0 0 12px;
+  }
+  
+  .whatsappButton {
+    padding: 8px 16px;
+    font-size: 0.9rem;
   }
 }
