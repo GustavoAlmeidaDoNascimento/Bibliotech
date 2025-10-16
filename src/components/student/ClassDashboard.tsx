@@ -39,10 +39,10 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
   const chartOptions = useResponsiveChart();
   
   // Usar o hook de cache
-  const { cachedData, isLoading: cacheLoading, setCachedData } = useClassStatsCache(studentClassName, effectiveUserId);
+  const { cachedData, setCachedData } = useClassStatsCache(studentClassName, effectiveUserId);
   
   const [classStats, setClassStats] = useState<ClassStats | null>(cachedData);
-  const [loading, setLoading] = useState(cacheLoading);
+  const [loading, setLoading] = useState(!cachedData);
   const [error, setError] = useState<string | null>(null);
 
   console.log('🏫 Estado atual:', { loading, error, hasClassStats: !!classStats, hasCachedData: !!cachedData });
@@ -77,7 +77,7 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
     }
 
     try {
-      setLoading(true);
+      setLoading(true); // Garantir que loading está ativo
       setError(null);
       console.log('🔄 Iniciando carregamento...');
 
@@ -344,9 +344,63 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
 
   if (loading) {
     return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-        <p>Carregando estatísticas da turma...</p>
+      <div className={styles.classDashboard}>
+        {/* Header Skeleton */}
+        <div className={styles.header}>
+          <div className={styles.headerTitleSkeleton}></div>
+          <div className={styles.headerSubtitleSkeleton}></div>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className={styles.statsGrid}>
+          {[1, 2, 3, 4].map((index) => (
+            <div key={index} className={styles.statCardSkeleton}>
+              <div className={styles.statIconSkeleton}></div>
+              <div className={styles.statContentSkeleton}>
+                <div className={styles.statLabelSkeleton}></div>
+                <div className={styles.statValueSkeleton}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Charts Skeleton */}
+        <div className={styles.chartsGrid}>
+          {/* Chart 1 - Pie Chart Skeleton */}
+          <div className={styles.chartCardSkeleton}>
+            <div className={styles.chartTitleSkeleton}></div>
+            <div className={styles.chartWrapperSkeleton}>
+              <div className={styles.pieChartSkeleton}></div>
+            </div>
+          </div>
+
+          {/* Chart 2 - Bar Chart Skeleton */}
+          <div className={styles.chartCardSkeleton}>
+            <div className={styles.chartTitleSkeleton}></div>
+            <div className={styles.chartWrapperSkeleton}>
+              <div className={styles.barChartSkeleton}></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Ranking Skeleton */}
+        <div className={styles.rankingCardSkeleton}>
+          <div className={styles.rankingTitleSkeleton}>
+            <div className={styles.rankingIconSkeleton}></div>
+            <div className={styles.rankingTextSkeleton}></div>
+          </div>
+          <div className={styles.rankingListSkeleton}>
+            {[1, 2, 3, 4, 5].map((index) => (
+              <div key={index} className={styles.rankingItemSkeleton}>
+                <div className={styles.rankingPositionSkeleton}></div>
+                <div className={styles.rankingInfoSkeleton}>
+                  <div className={styles.studentNameSkeleton}></div>
+                  <div className={styles.bookCountSkeleton}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
