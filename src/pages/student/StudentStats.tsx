@@ -45,10 +45,10 @@ const StudentStats: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('aluno');
   
   // Usar o hook de cache
-  const { cachedData, isLoading: cacheLoading, setCachedData } = useStudentStatsCache(studentId || '');
+  const { cachedData, setCachedData } = useStudentStatsCache(studentId || '');
   
   const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(cachedData?.dashboardData || null);
-  const [loading, setLoading] = useState(cacheLoading);
+  const [loading, setLoading] = useState(!cachedData);
 
   // Métricas do Aluno
   const [totalBooksRead, setTotalBooksRead] = useState(cachedData?.totalBooksRead || 0);
@@ -100,6 +100,7 @@ const StudentStats: React.FC = () => {
 
     const loadData = async () => {
       try {
+        setLoading(true); // Garantir que loading está ativo
         console.log('🔄 Buscando dados das estatísticas do servidor...');
         const data = await studentService.getStudentDashboardData(studentId);
         if (data) {
@@ -272,10 +273,83 @@ const StudentStats: React.FC = () => {
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loadingContainer}>
-          <div className={styles.spinner}></div>
-          <p>Carregando estatísticas...</p>
+        {/* Header Skeleton */}
+        <header className={styles.header}>
+          <div className={styles.headerContent}>
+            <div className={styles.headerTitleSkeleton}></div>
+            <div className={styles.headerSubtitleSkeleton}></div>
+          </div>
+        </header>
+
+        {/* Tabs Skeleton */}
+        <div className={styles.tabsContainer}>
+          <div className={styles.tabSkeleton}></div>
+          <div className={styles.tabSkeleton}></div>
         </div>
+
+        {/* Main Content Skeleton */}
+        <main className={styles.main}>
+          {/* Stats Cards Skeleton */}
+          <div className={styles.statsGrid}>
+            {[1, 2, 3, 4].map((index) => (
+              <div key={index} className={styles.statCardSkeleton}>
+                <div className={styles.statIconSkeleton}></div>
+                <div className={styles.statContentSkeleton}>
+                  <div className={styles.statLabelSkeleton}></div>
+                  <div className={styles.statValueSkeleton}></div>
+                  <div className={styles.statDescriptionSkeleton}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Charts Skeleton */}
+          <div className={styles.chartsGrid}>
+            {/* Chart 1 - Line Chart Skeleton */}
+            <div className={styles.chartCardSkeleton}>
+              <div className={styles.chartTitleSkeleton}></div>
+              <div className={styles.chartWrapperSkeleton}>
+                <div className={styles.lineChartSkeleton}></div>
+              </div>
+            </div>
+
+            {/* Chart 2 - Pie Chart Skeleton */}
+            <div className={styles.chartCardSkeleton}>
+              <div className={styles.chartTitleSkeleton}></div>
+              <div className={styles.chartWrapperSkeleton}>
+                <div className={styles.pieChartSkeleton}></div>
+              </div>
+            </div>
+
+            {/* Chart 3 - Bar Chart Skeleton */}
+            <div className={styles.chartCardSkeleton}>
+              <div className={styles.chartTitleSkeleton}></div>
+              <div className={styles.chartWrapperSkeleton}>
+                <div className={styles.barChartSkeleton}></div>
+              </div>
+            </div>
+
+            {/* Chart 4 - Table Skeleton */}
+            <div className={styles.chartCardSkeleton}>
+              <div className={styles.chartTitleSkeleton}></div>
+              <div className={styles.tableSkeleton}>
+                <div className={styles.tableHeaderSkeleton}>
+                  <div className={styles.tableHeaderCellSkeleton}></div>
+                  <div className={styles.tableHeaderCellSkeleton}></div>
+                  <div className={styles.tableHeaderCellSkeleton}></div>
+                </div>
+                {[1, 2, 3, 4, 5].map((index) => (
+                  <div key={index} className={styles.tableRowSkeleton}>
+                    <div className={styles.tableCellSkeleton}></div>
+                    <div className={styles.tableCellSkeleton}></div>
+                    <div className={styles.tableCellSkeleton}></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+
         <BottomNavigation studentId={studentId || ''} activePage="stats" />
       </div>
     );

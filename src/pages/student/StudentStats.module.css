@@ -27,6 +27,353 @@
   to { transform: rotate(360deg); }
 }
 
+/* Skeleton Loading Styles */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Header Skeleton */
+.headerTitleSkeleton {
+  height: 28px;
+  width: 200px;
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.5) 0%,
+    rgba(51, 65, 85, 0.5) 50%,
+    rgba(30, 41, 59, 0.5) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.headerSubtitleSkeleton {
+  height: 16px;
+  width: 300px;
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.5) 0%,
+    rgba(51, 65, 85, 0.5) 50%,
+    rgba(30, 41, 59, 0.5) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 6px;
+}
+
+/* Tab Skeleton */
+.tabSkeleton {
+  flex: 1;
+  height: 48px;
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.5) 0%,
+    rgba(51, 65, 85, 0.5) 50%,
+    rgba(30, 41, 59, 0.5) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 12px;
+}
+
+/* Stat Card Skeleton */
+.statCardSkeleton {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  pointer-events: none;
+}
+
+.statIconSkeleton {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.3) 0%,
+    rgba(71, 85, 105, 0.5) 50%,
+    rgba(51, 65, 85, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.statContentSkeleton {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statLabelSkeleton {
+  height: 14px;
+  width: 80px;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.3) 0%,
+    rgba(71, 85, 105, 0.5) 50%,
+    rgba(51, 65, 85, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+.statValueSkeleton {
+  height: 28px;
+  width: 60px;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.3) 0%,
+    rgba(71, 85, 105, 0.5) 50%,
+    rgba(51, 65, 85, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 6px;
+}
+
+.statDescriptionSkeleton {
+  height: 12px;
+  width: 120px;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.3) 0%,
+    rgba(71, 85, 105, 0.5) 50%,
+    rgba(51, 65, 85, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+/* Chart Card Skeleton */
+.chartCardSkeleton {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 16px;
+  padding: 1.25rem;
+  pointer-events: none;
+}
+
+.chartTitleSkeleton {
+  height: 20px;
+  width: 150px;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.3) 0%,
+    rgba(71, 85, 105, 0.5) 50%,
+    rgba(51, 65, 85, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.chartWrapperSkeleton {
+  width: 100%;
+  height: 250px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Line Chart Skeleton */
+.lineChartSkeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.2) 0%,
+    rgba(71, 85, 105, 0.3) 50%,
+    rgba(51, 65, 85, 0.2) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 8px;
+  position: relative;
+}
+
+.lineChartSkeleton::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.3) 0%,
+    rgba(59, 130, 246, 0.6) 50%,
+    rgba(59, 130, 246, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 1px;
+}
+
+.lineChartSkeleton::after {
+  content: '';
+  position: absolute;
+  top: 60%;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.3) 0%,
+    rgba(16, 185, 129, 0.6) 50%,
+    rgba(16, 185, 129, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 1px;
+}
+
+/* Pie Chart Skeleton */
+.pieChartSkeleton {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.2) 0%,
+    rgba(71, 85, 105, 0.3) 50%,
+    rgba(51, 65, 85, 0.2) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 50%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.pieChartSkeleton::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 50%;
+}
+
+/* Bar Chart Skeleton */
+.barChartSkeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.2) 0%,
+    rgba(71, 85, 105, 0.3) 50%,
+    rgba(51, 65, 85, 0.2) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  align-items: end;
+  justify-content: space-around;
+  padding: 1rem;
+}
+
+.barChartSkeleton::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  width: 15%;
+  height: 60%;
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.3) 0%,
+    rgba(16, 185, 129, 0.6) 50%,
+    rgba(16, 185, 129, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px 4px 0 0;
+}
+
+.barChartSkeleton::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 10%;
+  width: 15%;
+  height: 40%;
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.3) 0%,
+    rgba(16, 185, 129, 0.6) 50%,
+    rgba(16, 185, 129, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px 4px 0 0;
+}
+
+/* Table Skeleton */
+.tableSkeleton {
+  width: 100%;
+}
+
+.tableHeaderSkeleton {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(51, 65, 85, 0.3);
+  border-radius: 8px;
+}
+
+.tableHeaderCellSkeleton {
+  flex: 1;
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.3) 0%,
+    rgba(71, 85, 105, 0.5) 50%,
+    rgba(51, 65, 85, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+.tableRowSkeleton {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+}
+
+.tableCellSkeleton {
+  flex: 1;
+  height: 14px;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.2) 0%,
+    rgba(71, 85, 105, 0.4) 50%,
+    rgba(51, 65, 85, 0.2) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
 /* Header */
 .header {
   background: rgba(15, 23, 42, 0.8);
@@ -399,6 +746,66 @@
 
   .bookTitle {
     max-width: 250px;
+  }
+
+  /* Skeleton responsivo */
+  .chartWrapperSkeleton {
+    height: 300px;
+  }
+
+  .pieChartSkeleton {
+    width: 250px;
+    height: 250px;
+  }
+
+  .pieChartSkeleton::before {
+    width: 125px;
+    height: 125px;
+  }
+}
+
+/* Mobile skeleton adjustments */
+@media (max-width: 640px) {
+  .headerTitleSkeleton {
+    width: 150px;
+    height: 24px;
+  }
+
+  .headerSubtitleSkeleton {
+    width: 200px;
+    height: 14px;
+  }
+
+  .statCardSkeleton {
+    padding: 1rem;
+  }
+
+  .statIconSkeleton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .statValueSkeleton {
+    height: 24px;
+    width: 50px;
+  }
+
+  .chartCardSkeleton {
+    padding: 1rem;
+  }
+
+  .chartWrapperSkeleton {
+    height: 200px;
+  }
+
+  .pieChartSkeleton {
+    width: 150px;
+    height: 150px;
+  }
+
+  .pieChartSkeleton::before {
+    width: 75px;
+    height: 75px;
   }
 }
 
