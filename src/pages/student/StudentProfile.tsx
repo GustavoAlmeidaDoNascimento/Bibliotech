@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookMarked, MessageCircle, LogOut } from 'lucide-react';
+import { BookMarked, MessageCircle, LogOut, Trophy } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService, StudentDashboardData } from '../../services/studentService';
 import { useStudentProfileCache } from '../../hooks/useStudentProfileCache';
@@ -56,6 +56,9 @@ const StudentProfile: React.FC = () => {
     navigate(`/student-dashboard/${studentId}/my-books`);
   };
 
+  const handleAchievementsClick = () => {
+    navigate(`/student-dashboard/${studentId}/achievements`);
+  };
 
   const handleLogout = () => {
     navigate('/student-id-input');
@@ -158,6 +161,13 @@ const StudentProfile: React.FC = () => {
               <BookMarked size={20} />
             </div>
             <span className={styles.menuItemLabel}>Meus Livros Reservados</span>
+          </button>
+
+          <button className={styles.menuItem} onClick={handleAchievementsClick}>
+            <div className={styles.menuItemIcon}>
+              <Trophy size={20} />
+            </div>
+            <span className={styles.menuItemLabel}>Conquistas</span>
           </button>
 
           <button className={styles.menuItem} onClick={handleWhatsAppSupport}>

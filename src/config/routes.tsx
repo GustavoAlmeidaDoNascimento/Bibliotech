@@ -42,6 +42,7 @@ import BookDetails from '../pages/student/BookDetails';
 import BookSearch from '../pages/student/BookSearch';
 import MyBooks from '../pages/student/MyBooks';
 import ReserveBook from '../pages/student/ReserveBook';
+import Achievements from '../pages/student/Achievements';
 import NotFound from '../pages/NotFound';
 import { ROUTES } from '../constants';
 
@@ -108,6 +109,10 @@ export const publicRoutes = [
   {
     path: "/student-dashboard/:studentId/reserve/:bookId",
     element: <ReserveBook />,
+  },
+  {
+    path: "/student-dashboard/:studentId/achievements",
+    element: <Achievements />,
   },
   {
     path: "*",
