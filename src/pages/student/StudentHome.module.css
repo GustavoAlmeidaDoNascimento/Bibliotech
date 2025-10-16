@@ -377,6 +377,19 @@
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
+.availableBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #10B981;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
 .bookInfo {
   padding: 0.75rem;
 }
