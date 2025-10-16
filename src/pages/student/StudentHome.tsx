@@ -25,7 +25,7 @@ const StudentHome: React.FC = () => {
   
   // Estados para o filtro
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [categoryFilters, setCategoryFilters] = useState<string[]>([]);
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [allCategories, setAllCategories] = useState<string[]>([]);
 
@@ -141,11 +141,13 @@ const StudentHome: React.FC = () => {
       ? bookRecommendationService.searchBooks(allBooks, searchTerm)
       : allBooks;
     
-    // Aplicar filtro de categoria se houver
-    if (categoryFilter) {
+    // Aplicar filtro de categorias se houver (OR - qualquer uma das categorias)
+    if (categoryFilters.length > 0) {
       results = results.filter(book => 
-        book.genres && book.genres.some(genre => 
-          genre.toLowerCase() === categoryFilter.toLowerCase()
+        book.genres && book.genres.some(bookGenre => 
+          categoryFilters.some(filterCategory =>
+            bookGenre.toLowerCase() === filterCategory.toLowerCase()
+          )
         )
       );
     }
@@ -165,7 +167,7 @@ const StudentHome: React.FC = () => {
     setSearchTerm('');
     setSearchResults([]);
     setShowSearchResults(false);
-    setCategoryFilter('');
+    setCategoryFilters([]);
     setCategorySearchTerm('');
   };
 
@@ -174,33 +176,68 @@ const StudentHome: React.FC = () => {
   };
 
   const handleSelectCategory = (category: string) => {
-    setCategoryFilter(category);
-    setShowFilterDropdown(false);
+    // Toggle categoria - adiciona se não existe, remove se já existe
+    const newFilters = categoryFilters.includes(category)
+      ? categoryFilters.filter(f => f !== category)
+      : [...categoryFilters, category];
+    
+    setCategoryFilters(newFilters);
     setCategorySearchTerm('');
     
-    // Aplicar a busca automaticamente com o filtro
+    // Aplicar a busca automaticamente com os filtros
     setIsSearching(true);
     
     let results = searchTerm.trim() 
       ? bookRecommendationService.searchBooks(allBooks, searchTerm)
       : allBooks;
     
-    // Aplicar filtro de categoria
-    results = results.filter(book => 
-      book.genres && book.genres.some(genre => 
-        genre.toLowerCase() === category.toLowerCase()
-      )
-    );
+    // Aplicar filtros de categoria (OR - qualquer uma das categorias)
+    if (newFilters.length > 0) {
+      results = results.filter(book => 
+        book.genres && book.genres.some(bookGenre => 
+          newFilters.some(filterCategory =>
+            bookGenre.toLowerCase() === filterCategory.toLowerCase()
+          )
+        )
+      );
+    }
     
     setSearchResults(results);
     setShowSearchResults(true);
     setIsSearching(false);
   };
 
-  const handleRemoveCategoryFilter = () => {
-    setCategoryFilter('');
+  const handleRemoveCategoryFilter = (categoryToRemove: string) => {
+    const newFilters = categoryFilters.filter(f => f !== categoryToRemove);
+    setCategoryFilters(newFilters);
     
-    // Re-aplicar a busca sem o filtro
+    // Re-aplicar a busca sem o filtro removido
+    setIsSearching(true);
+    
+    let results = searchTerm.trim() 
+      ? bookRecommendationService.searchBooks(allBooks, searchTerm)
+      : allBooks;
+    
+    // Aplicar filtros restantes
+    if (newFilters.length > 0) {
+      results = results.filter(book => 
+        book.genres && book.genres.some(bookGenre => 
+          newFilters.some(filterCategory =>
+            bookGenre.toLowerCase() === filterCategory.toLowerCase()
+          )
+        )
+      );
+    }
+    
+    setSearchResults(results);
+    setShowSearchResults(newFilters.length > 0 || searchTerm.trim() ? true : false);
+    setIsSearching(false);
+  };
+
+  const handleClearAllFilters = () => {
+    setCategoryFilters([]);
+    
+    // Re-aplicar a busca sem filtros
     setIsSearching(true);
     
     let results = searchTerm.trim() 
@@ -330,11 +367,11 @@ const StudentHome: React.FC = () => {
               <button
                 type="button"
                 onClick={handleToggleFilterDropdown}
-                className={`${styles.filterButton} ${categoryFilter ? styles.filterButtonActive : ''}`}
+                className={`${styles.filterButton} ${categoryFilters.length > 0 ? styles.filterButtonActive : ''}`}
                 title="Filtrar por categoria"
               >
                 <Filter size={20} />
-                {categoryFilter && <span className={styles.filterBadge}>1</span>}
+                {categoryFilters.length > 0 && <span className={styles.filterBadge}>{categoryFilters.length}</span>}
               </button>
 
               {/* Dropdown de Filtros */}
@@ -342,21 +379,32 @@ const StudentHome: React.FC = () => {
                 <div className={styles.filterDropdown}>
                   <div className={styles.filterDropdownHeader}>
                     <h4>Filtrar por Categoria</h4>
+                    {categoryFilters.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleClearAllFilters}
+                        className={styles.clearAllFiltersButton}
+                      >
+                        Limpar todos
+                      </button>
+                    )}
                   </div>
 
-                  {/* Filtro selecionado */}
-                  {categoryFilter && (
+                  {/* Filtros selecionados */}
+                  {categoryFilters.length > 0 && (
                     <div className={styles.selectedFilters}>
-                      <div className={styles.filterTag}>
-                        <span>{categoryFilter}</span>
-                        <button
-                          type="button"
-                          onClick={handleRemoveCategoryFilter}
-                          className={styles.removeFilterButton}
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
+                      {categoryFilters.map((filter) => (
+                        <div key={filter} className={styles.filterTag}>
+                          <span>{filter}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCategoryFilter(filter)}
+                            className={styles.removeFilterButton}
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
 
@@ -381,10 +429,13 @@ const StudentHome: React.FC = () => {
                           type="button"
                           onClick={() => handleSelectCategory(category)}
                           className={`${styles.categoryItem} ${
-                            categoryFilter === category ? styles.categoryItemActive : ''
+                            categoryFilters.includes(category) ? styles.categoryItemActive : ''
                           }`}
                         >
-                          {category}
+                          <span>{category}</span>
+                          {categoryFilters.includes(category) && (
+                            <span className={styles.categoryCheckmark}>✓</span>
+                          )}
                         </button>
                       ))
                     ) : (
@@ -413,17 +464,21 @@ const StudentHome: React.FC = () => {
                     : `Nenhum resultado${searchTerm ? ` para "${searchTerm}"` : ''}`
                   }
                 </h2>
-                {categoryFilter && (
-                  <div className={styles.activeFilter}>
-                    <span>Categoria: {categoryFilter}</span>
-                    <button
-                      type="button"
-                      onClick={handleRemoveCategoryFilter}
-                      className={styles.removeActiveFilterButton}
-                      title="Remover filtro"
-                    >
-                      <X size={16} />
-                    </button>
+                {categoryFilters.length > 0 && (
+                  <div className={styles.activeFilters}>
+                    {categoryFilters.map((filter) => (
+                      <div key={filter} className={styles.activeFilter}>
+                        <span>Categoria: {filter}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCategoryFilter(filter)}
+                          className={styles.removeActiveFilterButton}
+                          title="Remover filtro"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

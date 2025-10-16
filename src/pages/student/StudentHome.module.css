@@ -425,6 +425,9 @@
 .filterDropdownHeader {
   padding: 1rem;
   border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .filterDropdownHeader h4 {
@@ -432,6 +435,22 @@
   font-size: 0.95rem;
   font-weight: 600;
   color: #F8FAFC;
+}
+
+.clearAllFiltersButton {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.clearAllFiltersButton:hover {
+  color: #F87171;
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .selectedFilters {
@@ -541,6 +560,9 @@
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .categoryItem:hover {
@@ -564,6 +586,18 @@
 .noCategoriesFound p {
   margin: 0;
   font-size: 0.875rem;
+}
+
+.categoryCheckmark {
+  color: #10B981;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.activeFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .searchButton .spinner {
