@@ -346,7 +346,7 @@ const StudentDashboard = () => {
   // Gera o link de acesso do aluno
   const getStudentAccessLink = () => {
     if (!studentId) return '';
-    return `${window.location.origin}/student-login?id=${studentId}`;
+    return `https://bibliotech.tech/student-dashboard/${studentId}/`;
   };
 
   // copia o ID do aluno para a área de transferência
