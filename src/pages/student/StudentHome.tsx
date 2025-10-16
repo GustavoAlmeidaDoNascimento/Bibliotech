@@ -13,14 +13,14 @@ const StudentHome: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   
   // Usar o hook de cache
-  const { cachedData, isLoading: cacheLoading, setCachedData } = useStudentHomeCache(studentId || '');
+  const { cachedData, setCachedData } = useStudentHomeCache(studentId || '');
   
   const [recommendationSections, setRecommendationSections] = useState<RecommendationSection[]>(cachedData?.recommendationSections || []);
   const [allBooks, setAllBooks] = useState<BookWithStats[]>(cachedData?.allBooks || []);
   const [searchResults, setSearchResults] = useState<BookWithStats[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [loading, setLoading] = useState(cacheLoading);
+  const [loading, setLoading] = useState(!cachedData); // Iniciar como true se não houver cache
 
   useEffect(() => {
     if (!studentId) {
@@ -40,12 +40,14 @@ const StudentHome: React.FC = () => {
     // Se não tem cache, buscar do servidor
     const loadData = async () => {
       try {
+        setLoading(true); // Garantir que loading está ativo
         console.log('🔄 Buscando dados do catálogo do servidor...');
         
         // Buscar dados do aluno para obter schoolId
         const student = await studentService.findStudentById(studentId);
         if (!student) {
           console.error('Aluno não encontrado');
+          setLoading(false);
           return;
         }
 
@@ -130,10 +132,46 @@ const StudentHome: React.FC = () => {
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loadingContainer}>
-          <div className={styles.spinner}></div>
-          <p>Carregando catálogo...</p>
-        </div>
+        {/* Header Skeleton */}
+        <header className={styles.header}>
+          <div className={styles.headerContent}>
+            <div className={styles.logo}>
+              <BookOpen size={24} />
+              <h1>Bibliotech</h1>
+            </div>
+            <div className={styles.searchSkeleton}></div>
+          </div>
+        </header>
+
+        {/* Main Content Skeleton */}
+        <main className={styles.main}>
+          {/* Simular 4 seções de carrosséis */}
+          {[1, 2, 3, 4].map((sectionIndex) => (
+            <section key={sectionIndex} className={styles.section}>
+              <div className={styles.sectionTitleSkeleton}></div>
+              <div className={styles.carouselContainer}>
+                <div className={styles.booksScroll}>
+                  {/* Simular 6 cards de livros */}
+                  {[1, 2, 3, 4, 5, 6].map((cardIndex) => (
+                    <div key={cardIndex} className={styles.bookCardSkeleton}>
+                      <div className={styles.bookCoverSkeleton}></div>
+                      <div className={styles.bookInfoSkeleton}>
+                        <div className={styles.bookTitleSkeleton}></div>
+                        <div className={styles.bookAuthorSkeleton}></div>
+                        <div className={styles.bookGenresSkeleton}>
+                          <div className={styles.genreTagSkeleton}></div>
+                          <div className={styles.genreTagSkeleton}></div>
+                        </div>
+                        <div className={styles.bookStatsSkeleton}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ))}
+        </main>
+
         <BottomNavigation studentId={studentId || ''} activePage="home" />
       </div>
     );
