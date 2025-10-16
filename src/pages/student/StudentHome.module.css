@@ -368,13 +368,13 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #EF4444;
+  background: #3B82F6;
   color: white;
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .bookInfo {

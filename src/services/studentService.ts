@@ -4,8 +4,7 @@ import {
   doc,
   getDoc,
   query,
-  where,
-  orderBy
+  where
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Student } from '../types/common';
@@ -366,12 +365,20 @@ export const studentService = {
         if (bookSnapshot.exists()) {
           const bookData = bookSnapshot.data();
           
-          // Calcular cópias disponíveis corretamente
-          const totalCopies = bookData.totalCopies || bookData.quantity || 1;
-          const availableCopies = bookData.availableCopies !== undefined ? bookData.availableCopies : totalCopies;
-          
-          // Um livro está disponível se tem cópias disponíveis > 0
-          const isAvailable = availableCopies > 0;
+        // Buscar empréstimos ativos para calcular disponibilidade real
+        const loansRef = collection(db, `users/${schoolId}/loans`);
+        const loansQuery = query(loansRef, where('bookId', '==', bookId), where('status', '==', 'active'));
+        const loansSnapshot = await getDocs(loansQuery);
+        const activeLoansCount = loansSnapshot.size;
+        
+        console.log(`📊 Livro ${bookData.title}: ${activeLoansCount} empréstimos ativos (status: active)`);
+        
+        // Calcular cópias disponíveis baseado nos empréstimos ativos
+        const totalCopies = bookData.totalCopies || bookData.quantity || 1;
+        const availableCopies = Math.max(0, totalCopies - activeLoansCount);
+        
+        // Um livro está disponível se tem cópias disponíveis > 0
+        const isAvailable = availableCopies > 0;
           
           const book = {
             id: bookSnapshot.id,

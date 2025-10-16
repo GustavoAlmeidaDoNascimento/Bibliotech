@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, TrendingUp, Trophy, Target, Users, Clock, Calendar } from 'lucide-react';
+import { BookOpen, TrendingUp, Users, Clock, Calendar } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import ClassDashboard from '../../components/student/ClassDashboard';
 import { studentService, StudentDashboardData, StudentLoan, StudentBook } from '../../services/studentService';

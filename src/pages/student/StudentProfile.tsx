@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { User, BookMarked, MessageCircle, LogOut } from 'lucide-react';
+import { BookMarked, MessageCircle, LogOut } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService, StudentDashboardData } from '../../services/studentService';
 import { useStudentProfileCache } from '../../hooks/useStudentProfileCache';

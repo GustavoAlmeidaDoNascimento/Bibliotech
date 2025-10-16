@@ -1,15 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, User, Calendar, Tag, Clock, Heart } from 'lucide-react';
+import { ArrowLeft, BookOpen, User, Tag, Clock, Heart } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService } from '../../services/studentService';
-import { Book } from '../../types/common';
 import styles from './BookDetails.module.css';
+
+interface BookWithGenres {
+  id: string;
+  title: string;
+  author: string;
+  isbn?: string;
+  category: string;
+  tags: string[];
+  genres?: string[];
+  available: boolean;
+  totalCopies: number;
+  availableCopies: number;
+  userId: string;
+  description?: string;
+  synopsis?: string;
+  coverUrl?: string;
+  createdAt: any;
+  updatedAt: any;
+}
 
 const BookDetails: React.FC = () => {
   const navigate = useNavigate();
   const { studentId, bookId } = useParams<{ studentId: string; bookId: string }>();
-  const [book, setBook] = useState<Book | null>(null);
+  const [book, setBook] = useState<BookWithGenres | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 

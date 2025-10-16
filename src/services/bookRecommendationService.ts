@@ -49,17 +49,24 @@ export const bookRecommendationService = {
       const loansSnapshot = await getDocs(loansRef);
       
       // Calcular estatísticas de empréstimo por livro
-      const loanStats: { [bookId: string]: { count: number; lastDate?: Date } } = {};
+      const loanStats: { [bookId: string]: { count: number; activeLoans: number; lastDate?: Date } } = {};
       
+      // Contar todos os empréstimos e empréstimos ativos em uma única passagem
       loansSnapshot.docs.forEach(doc => {
         const loanData = doc.data();
         const bookId = loanData.bookId;
         
         if (!loanStats[bookId]) {
-          loanStats[bookId] = { count: 0 };
+          loanStats[bookId] = { count: 0, activeLoans: 0 };
         }
         
+        // Contar todos os empréstimos
         loanStats[bookId].count += 1;
+        
+        // Contar empréstimos ativos (status === 'active')
+        if (loanData.status === 'active') {
+          loanStats[bookId].activeLoans += 1;
+        }
         
         // Atualizar última data de empréstimo
         const borrowDate = loanData.borrowDate?.toDate ? loanData.borrowDate.toDate() : new Date();
@@ -94,6 +101,12 @@ export const bookRecommendationService = {
           }
         }
         
+        // Calcular cópias disponíveis baseado nos empréstimos ativos
+        const totalCopies = bookData.totalCopies || bookData.quantity || 1;
+        const activeLoansCount = stats.activeLoans || 0;
+        const availableCopies = Math.max(0, totalCopies - activeLoansCount);
+        const isAvailable = availableCopies > 0;
+        
         return {
           id: bookId,
           title: bookData.title || 'Título não informado',
@@ -101,7 +114,7 @@ export const bookRecommendationService = {
           genres,
           description: bookData.description,
           loanCount: stats.count,
-          available: bookData.available !== false, // Default true se não especificado
+          available: isAvailable,
           lastLoanDate: stats.lastDate,
           createdAt: bookData.createdAt?.toDate ? bookData.createdAt.toDate() : new Date(),
           coverUrl: bookData.coverUrl

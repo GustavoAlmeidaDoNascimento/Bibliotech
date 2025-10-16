@@ -221,7 +221,7 @@ const StudentHome: React.FC = () => {
                         </div>
                       )}
                       {!book.available && (
-                        <div className={styles.unavailableBadge}>Indisponível</div>
+                        <div className={styles.unavailableBadge}>Em espera</div>
                       )}
                     </div>
                     <div className={styles.bookInfo}>
@@ -291,7 +291,7 @@ const StudentHome: React.FC = () => {
                         </div>
                       )}
                       {!book.available && (
-                        <div className={styles.unavailableBadge}>Indisponível</div>
+                        <div className={styles.unavailableBadge}>Em espera</div>
                       )}
                     </div>
                     <div className={styles.bookInfo}>
