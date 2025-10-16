@@ -42,6 +42,7 @@ import BookDetails from '../pages/student/BookDetails';
 import BookSearch from '../pages/student/BookSearch';
 import MyBooks from '../pages/student/MyBooks';
 import ReserveBook from '../pages/student/ReserveBook';
+import NotFound from '../pages/NotFound';
 import { ROUTES } from '../constants';
 
 // redireciona com base no estado de autenticação
@@ -107,6 +108,10 @@ export const publicRoutes = [
   {
     path: "/student-dashboard/:studentId/reserve/:bookId",
     element: <ReserveBook />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ];
 
@@ -219,5 +224,9 @@ export const protectedRoutes = [
   {
     path: "/admin/update-notification",
     element: <UpdateNotification />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]; 

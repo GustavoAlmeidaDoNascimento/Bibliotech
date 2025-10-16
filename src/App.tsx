@@ -33,9 +33,6 @@ const App: React.FC = () => {
               ))}
             </Route>
           </Route>
-          
-          {/* Default redirect */}
-          <Route path="*" element={<Navigate to={ROUTES.HOME} />} />
         </Routes>
       </Router>
       <Analytics />
