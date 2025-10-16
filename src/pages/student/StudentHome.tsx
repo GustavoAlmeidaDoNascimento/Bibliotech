@@ -177,14 +177,39 @@ const StudentHome: React.FC = () => {
     setCategoryFilter(category);
     setShowFilterDropdown(false);
     setCategorySearchTerm('');
-    // Aplicar a busca automaticamente
-    setTimeout(() => handleSearch(), 0);
+    
+    // Aplicar a busca automaticamente com o filtro
+    setIsSearching(true);
+    
+    let results = searchTerm.trim() 
+      ? bookRecommendationService.searchBooks(allBooks, searchTerm)
+      : allBooks;
+    
+    // Aplicar filtro de categoria
+    results = results.filter(book => 
+      book.genres && book.genres.some(genre => 
+        genre.toLowerCase() === category.toLowerCase()
+      )
+    );
+    
+    setSearchResults(results);
+    setShowSearchResults(true);
+    setIsSearching(false);
   };
 
   const handleRemoveCategoryFilter = () => {
     setCategoryFilter('');
+    
     // Re-aplicar a busca sem o filtro
-    setTimeout(() => handleSearch(), 0);
+    setIsSearching(true);
+    
+    let results = searchTerm.trim() 
+      ? bookRecommendationService.searchBooks(allBooks, searchTerm)
+      : allBooks;
+    
+    setSearchResults(results);
+    setShowSearchResults(searchTerm.trim() ? true : false);
+    setIsSearching(false);
   };
 
   // Filtrar categorias com base na busca
