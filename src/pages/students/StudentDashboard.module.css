@@ -96,12 +96,28 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 15px;
+}
+
+.studentAccessInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
 }
 
 .studentIdInfo {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.studentLinkInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .studentIdLabel {
@@ -118,6 +134,19 @@
   border-radius: 4px;
   font-size: 14px;
   color: #333;
+}
+
+.studentLinkValue {
+  font-family: 'Courier New', monospace;
+  background-color: #ffffff;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #333;
+  word-break: break-all;
+  flex: 1;
+  min-width: 200px;
 }
 
 .copyButton {
@@ -139,6 +168,30 @@
 }
 
 .copyButton:active {
+  transform: scale(0.98);
+}
+
+.sendLinkButton {
+  background-color: #25D366;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.sendLinkButton:hover {
+  background-color: #128C7E;
+}
+
+.sendLinkButton:active {
   transform: scale(0.98);
 }
 
@@ -350,13 +403,30 @@
     align-items: stretch;
   }
 
+  .studentAccessInfo {
+    width: 100%;
+  }
+
   .studentIdInfo {
-    justify-content: center;
+    justify-content: flex-start;
+  }
+
+  .studentLinkInfo {
+    justify-content: flex-start;
+  }
+
+  .studentLinkValue {
+    min-width: 100%;
+    font-size: 11px;
   }
 
   .copyButton {
-    align-self: center;
     width: fit-content;
+  }
+
+  .sendLinkButton {
+    width: 100%;
+    justify-content: center;
   }
 }
 

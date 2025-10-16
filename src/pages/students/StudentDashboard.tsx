@@ -343,6 +343,12 @@ const StudentDashboard = () => {
     }
   };
 
+  // Gera o link de acesso do aluno
+  const getStudentAccessLink = () => {
+    if (!studentId) return '';
+    return `${window.location.origin}/student-login?id=${studentId}`;
+  };
+
   // copia o ID do aluno para a área de transferência
   const copyStudentId = async () => {
     if (!studentId) return;
@@ -379,6 +385,61 @@ const StudentDashboard = () => {
       // Como último recurso, mostrar o ID para o usuário copiar manualmente
       alert(`Não foi possível copiar automaticamente. ID do aluno: ${studentId}`);
     }
+  };
+
+  // Copia o link de acesso do aluno
+  const copyAccessLink = async () => {
+    const link = getStudentAccessLink();
+    if (!link) return;
+    
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(link);
+        alert('Link de acesso copiado para a área de transferência!');
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = link;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+          const successful = document.execCommand('copy');
+          if (successful) {
+            alert('Link de acesso copiado para a área de transferência!');
+          } else {
+            throw new Error('Falha ao copiar usando execCommand');
+          }
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao copiar link de acesso:', error);
+      alert(`Não foi possível copiar automaticamente. Link: ${link}`);
+    }
+  };
+
+  // Envia o link de acesso por WhatsApp
+  const sendAccessLinkWhatsApp = () => {
+    const phoneNumber = student?.contact || student?.number;
+    const link = getStudentAccessLink();
+    
+    if (!phoneNumber) {
+      alert('Número de telefone não cadastrado para este aluno.');
+      return;
+    }
+    
+    if (!link) return;
+    
+    const message = `Olá! Aqui está seu link de acesso ao portal do aluno: ${link}`;
+    const formattedNumber = phoneNumber.replace(/\D/g, '');
+    const whatsappUrl = `https://wa.me/55${formattedNumber}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
   };
   
   if (loading) {
@@ -439,19 +500,47 @@ const StudentDashboard = () => {
       </div>
 
       <div className={styles.studentIdSection}>
-        <div className={styles.studentIdInfo}>
-          <span className={styles.studentIdLabel}>ID do Aluno:</span>
-          <span className={styles.studentIdValue}>{studentId}</span>
+        <div className={styles.studentAccessInfo}>
+          <div className={styles.studentIdInfo}>
+            <span className={styles.studentIdLabel}>Código do Aluno:</span>
+            <span className={styles.studentIdValue}>{studentId}</span>
+            <button 
+              className={styles.copyButton} 
+              onClick={copyStudentId}
+              title="Copiar código para área de transferência"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.375a2.25 2.25 0 0 1-2.25-2.25V6.108c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+              </svg>
+              Copiar
+            </button>
+          </div>
+          
+          <div className={styles.studentLinkInfo}>
+            <span className={styles.studentIdLabel}>Link de Acesso:</span>
+            <span className={styles.studentLinkValue}>{getStudentAccessLink()}</span>
+            <button 
+              className={styles.copyButton} 
+              onClick={copyAccessLink}
+              title="Copiar link para área de transferência"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.375a2.25 2.25 0 0 1-2.25-2.25V6.108c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+              </svg>
+              Copiar Link
+            </button>
+          </div>
         </div>
+        
         <button 
-          className={styles.copyButton} 
-          onClick={copyStudentId}
-          title="Copiar ID para área de transferência"
+          className={styles.sendLinkButton} 
+          onClick={sendAccessLinkWhatsApp}
+          title="Enviar link por WhatsApp"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.375a2.25 2.25 0 0 1-2.25-2.25V6.108c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style={{ width: '18px', height: '18px', fill: 'white' }}>
+            <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
           </svg>
-          Copiar
+          Enviar Link
         </button>
       </div>
       
