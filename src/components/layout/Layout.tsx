@@ -16,7 +16,8 @@ import {
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   ChartBarIcon,
-  BellIcon
+  BellIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 import styles from './Layout.module.css';
 
@@ -503,6 +504,14 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
             >
               <UserGroupIcon className={styles.linkIcon} />
               Professores e Funcionários
+            </Link>
+            <Link 
+              to="/reservations" 
+              className={isActiveLink('/reservations') ? styles.activeLink : ''}
+              onClick={handleLinkClick}
+            >
+              <CalendarDaysIcon className={styles.linkIcon} />
+              Reservas
             </Link>
           </div>
 
