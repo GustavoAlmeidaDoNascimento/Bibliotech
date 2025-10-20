@@ -32,6 +32,7 @@ import StaffWithdrawalConfirmation from '../pages/withdrawals/StaffWithdrawalCon
 import SelectStaffBook from '../pages/withdrawals/SelectStaffBook';
 import Settings from '../pages/settings/Settings';
 import UpdateNotification from '../pages/admin/UpdateNotification';
+import Reservations from '../pages/admin/Reservations';
 import Home from '../pages/Home';
 import StudentIdInput from '../pages/student/StudentIdInput';
 import StudentDashboard from '../pages/student/StudentDashboard';
@@ -225,6 +226,10 @@ export const protectedRoutes = [
   {
     path: ROUTES.SETTINGS,
     element: <Settings />,
+  },
+  {
+    path: "/reservations",
+    element: <Reservations />,
   },
   {
     path: "/admin/update-notification",
