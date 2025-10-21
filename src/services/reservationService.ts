@@ -84,21 +84,10 @@ class ReservationService {
 
       // Se for waitlist, calcular e adicionar posição na fila
       if (!isAvailable) {
-        // Query mais simples para evitar erro de índice
-        const waitlistQuery = query(
-          reservationsRef,
-          where('bookId', '==', bookId),
-          where('type', '==', 'waitlist')
-        );
-        const waitlistDocs = await getDocs(waitlistQuery);
-        
-        // Filtrar no código para reservas pendentes
-        const pendingReservations = waitlistDocs.docs.filter(doc => {
-          const data = doc.data();
-          return data.status === 'pending';
-        });
-        
-        reservationData.position = pendingReservations.length + 1;
+        // Temporariamente desabilitado para evitar erro de permissões
+        // TODO: Reativar após resolver permissões do Firebase
+        console.log('⚠️ Cálculo de posição na fila desabilitado temporariamente');
+        reservationData.position = 1; // Posição padrão
       }
 
       // Se estiver pronto (disponível), adicionar apenas data de ready
