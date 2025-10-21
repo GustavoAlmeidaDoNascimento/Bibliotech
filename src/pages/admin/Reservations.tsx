@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { reservationService, Reservation } from '../../services/reservationService';
+import { studentService } from '../../services/studentService';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, BookOpenIcon, UserIcon } from '@heroicons/react/24/outline';
 import styles from './Reservations.module.css';
+
+interface DisplayReservation extends Reservation {
+  bookAvailabilityStatus?: string;
+}
 
 const Reservations: React.FC = () => {
   const { currentUser } = useAuth();
-  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [reservations, setReservations] = useState<DisplayReservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [selectedReservation, setSelectedReservation] = useState<DisplayReservation | null>(null);
 
   useEffect(() => {
     loadReservations();
@@ -23,7 +28,44 @@ const Reservations: React.FC = () => {
     try {
       setLoading(true);
       const data = await reservationService.getReservations(currentUser.uid);
-      setReservations(data);
+
+      // Para cada reserva, verificar o status do livro
+      const reservationsWithStatus = await Promise.all(data.map(async (res) => {
+        let bookAvailabilityStatus = '';
+        
+        console.log('🔍 Verificando status da reserva:', {
+          id: res.id,
+          bookTitle: res.bookTitle,
+          status: res.status,
+          type: res.type
+        });
+        
+        if (res.status === 'ready') {
+          bookAvailabilityStatus = 'Pronta entrega';
+        } else if (res.status === 'pending') {
+          // Se a reserva está pendente, o livro está emprestado
+          try {
+            const activeLoans = await studentService.getActiveLoansByBook(res.bookId, currentUser.uid);
+            console.log('📚 Empréstimos ativos encontrados:', activeLoans.length);
+            if (activeLoans.length > 0) {
+              bookAvailabilityStatus = `Com: ${activeLoans[0].studentName}`;
+            } else {
+              bookAvailabilityStatus = 'Indisponível';
+            }
+          } catch (error) {
+            console.error('Erro ao buscar empréstimos ativos:', error);
+            bookAvailabilityStatus = 'Status desconhecido';
+          }
+        } else {
+          // Status não reconhecido
+          bookAvailabilityStatus = `Status: ${res.status}`;
+        }
+        
+        console.log('✅ Status definido:', bookAvailabilityStatus);
+        return { ...res, bookAvailabilityStatus };
+      }));
+
+      setReservations(reservationsWithStatus);
     } catch (error) {
       console.error('Erro ao buscar reservas:', error);
     } finally {
@@ -51,7 +93,7 @@ const Reservations: React.FC = () => {
     }
   };
 
-  const handleMarkAsDone = (reservation: Reservation) => {
+  const handleMarkAsDone = (reservation: DisplayReservation) => {
     setSelectedReservation(reservation);
     setShowConfirmModal(true);
   };
@@ -132,6 +174,10 @@ const Reservations: React.FC = () => {
                 </div>
                 <div className={styles.reservationDate}>
                   Reservado em: {formatDate(reservation.createdAt)}
+                </div>
+                <div className={`${styles.bookStatus} ${reservation.status === 'ready' ? styles.statusReady : styles.statusPending}`}>
+                  <BookOpenIcon className={styles.statusIcon} />
+                  {reservation.bookAvailabilityStatus}
                 </div>
               </div>
 
