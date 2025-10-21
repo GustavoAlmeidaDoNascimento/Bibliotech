@@ -5,6 +5,7 @@ import { studentService } from '../../services/studentService';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CheckCircleIcon, BookOpenIcon, UserIcon } from '@heroicons/react/24/outline';
+import { BookOpen } from 'lucide-react';
 import styles from './Reservations.module.css';
 
 interface DisplayReservation extends Reservation {
@@ -155,11 +156,19 @@ const Reservations: React.FC = () => {
           {reservations.map((reservation) => (
             <div key={reservation.id} className={styles.reservationItem}>
               <div className={styles.bookInfo}>
-                <img 
-                  src={reservation.bookCoverUrl || '/path/to/default/cover.jpg'} 
-                  alt={reservation.bookTitle}
-                  className={styles.bookCover}
-                />
+                <div className={styles.bookCoverWrapper}>
+                  {reservation.bookCoverUrl ? (
+                    <img 
+                      src={reservation.bookCoverUrl} 
+                      alt={reservation.bookTitle}
+                      className={styles.bookCover}
+                    />
+                  ) : (
+                    <div className={styles.bookCoverPlaceholder}>
+                      <BookOpen size={40} />
+                    </div>
+                  )}
+                </div>
                 <div className={styles.bookDetails}>
                   <h3 className={styles.bookTitle}>{reservation.bookTitle}</h3>
                   {reservation.bookAuthor && (
@@ -205,18 +214,26 @@ const Reservations: React.FC = () => {
             </div>
             
             <div className={styles.modalBody}>
-              <div className={styles.confirmationInfo}>
-                <img 
-                  src={selectedReservation.bookCoverUrl || '/path/to/default/cover.jpg'} 
-                  alt={selectedReservation.bookTitle}
-                  className={styles.modalBookCover}
-                />
-                <div className={styles.modalBookDetails}>
-                  <h4>{selectedReservation.bookTitle}</h4>
-                  <p><strong>Aluno:</strong> {selectedReservation.studentName}</p>
-                  <p><strong>Reservado em:</strong> {formatDate(selectedReservation.createdAt)}</p>
-                </div>
-              </div>
+                    <div className={styles.confirmationInfo}>
+                      <div className={styles.modalBookCoverWrapper}>
+                        {selectedReservation.bookCoverUrl ? (
+                          <img 
+                            src={selectedReservation.bookCoverUrl} 
+                            alt={selectedReservation.bookTitle}
+                            className={styles.modalBookCover}
+                          />
+                        ) : (
+                          <div className={styles.modalBookCoverPlaceholder}>
+                            <BookOpen size={32} />
+                          </div>
+                        )}
+                      </div>
+                      <div className={styles.modalBookDetails}>
+                        <h4>{selectedReservation.bookTitle}</h4>
+                        <p><strong>Aluno:</strong> {selectedReservation.studentName}</p>
+                        <p><strong>Reservado em:</strong> {formatDate(selectedReservation.createdAt)}</p>
+                      </div>
+                    </div>
               
               <p className={styles.confirmationText}>
                 O aluno <strong>{selectedReservation.studentName}</strong> já retirou o livro 
