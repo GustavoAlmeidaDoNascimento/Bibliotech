@@ -203,7 +203,10 @@ const Reservations: React.FC = () => {
               <div className={styles.actions}>
                 <button
                   className={styles.doneButton}
-                  onClick={() => handleMarkAsDone(reservation)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMarkAsDone(reservation);
+                  }}
                   title="Marcar como retirado"
                 >
                   <CheckCircleIcon className={styles.doneIcon} />

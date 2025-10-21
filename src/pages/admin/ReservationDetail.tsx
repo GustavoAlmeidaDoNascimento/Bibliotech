@@ -14,6 +14,7 @@ import {
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { PhoneIcon } from '@heroicons/react/24/solid';
+import { BookOpen } from 'lucide-react';
 import styles from './ReservationDetail.module.css';
 
 interface LoanInfo {
@@ -41,6 +42,8 @@ const ReservationDetail: React.FC = () => {
   const [notifyingStudent, setNotifyingStudent] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
 
   useEffect(() => {
     if (reservationId && currentUser) {
@@ -138,14 +141,17 @@ const ReservationDetail: React.FC = () => {
   };
 
 
-  const handleBookRetrieved = async () => {
+  const handleBookRetrieved = () => {
     if (!reservation) return;
-    
-    const confirmed = window.confirm('Confirmar que o livro foi retirado pelo aluno?');
-    if (!confirmed) return;
+    setSelectedReservation(reservation);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmDone = async () => {
+    if (!selectedReservation) return;
 
     try {
-      await reservationService.deleteReservation(currentUser!.uid, reservation.id);
+      await reservationService.deleteReservation(currentUser!.uid, selectedReservation.id);
       navigate('/reservations');
     } catch (error) {
       console.error('Erro ao marcar como retirado:', error);
@@ -420,16 +426,70 @@ const ReservationDetail: React.FC = () => {
                 <p>O aluno <strong>{reservation.studentName}</strong> já retirou o livro?</p>
               </div>
             </div>
-            <button
-              className={styles.retrievedButton}
-              onClick={handleBookRetrieved}
-            >
-              <CheckCircleIcon />
-              Sim, foi retirado
-            </button>
+                    <button
+                      className={styles.retrievedButton}
+                      onClick={handleBookRetrieved}
+                    >
+                      <CheckCircleIcon />
+                      Feito
+                    </button>
           </div>
         </div>
       </div>
+
+      {/* Modal de Confirmação */}
+      {showConfirmModal && selectedReservation && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h3>Confirmar Retirada</h3>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <div className={styles.confirmationInfo}>
+                <div className={styles.modalBookCoverWrapper}>
+                  {selectedReservation.bookCoverUrl ? (
+                    <img 
+                      src={selectedReservation.bookCoverUrl} 
+                      alt={selectedReservation.bookTitle}
+                      className={styles.modalBookCover}
+                    />
+                  ) : (
+                    <div className={styles.modalBookCoverPlaceholder}>
+                      <BookOpen size={32} />
+                    </div>
+                  )}
+                </div>
+                <div className={styles.modalBookDetails}>
+                  <h4>{selectedReservation.bookTitle}</h4>
+                  <p><strong>Aluno:</strong> {selectedReservation.studentName}</p>
+                  <p><strong>Reservado em:</strong> {formatDate(selectedReservation.createdAt)}</p>
+                </div>
+              </div>
+              
+              <p className={styles.confirmationText}>
+                O aluno <strong>{selectedReservation.studentName}</strong> já retirou o livro 
+                <strong> "{selectedReservation.bookTitle}"</strong>?
+              </p>
+            </div>
+            
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.cancelButton}
+                onClick={() => setShowConfirmModal(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className={styles.confirmButton}
+                onClick={handleConfirmDone}
+              >
+                Sim, foi retirado
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
