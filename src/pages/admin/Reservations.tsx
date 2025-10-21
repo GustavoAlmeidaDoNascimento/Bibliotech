@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { reservationService, Reservation } from '../../services/reservationService';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import styles from './Reservations.module.css';
 
 const Reservations: React.FC = () => {
@@ -140,7 +141,8 @@ const Reservations: React.FC = () => {
                   onClick={() => handleMarkAsDone(reservation)}
                   title="Marcar como retirado"
                 >
-                  ✅ Feito
+                  <CheckCircleIcon className={styles.doneIcon} />
+                  Feito
                 </button>
               </div>
             </div>
