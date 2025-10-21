@@ -275,31 +275,30 @@ const ReservationDetail: React.FC = () => {
               <span className={styles.infoValue}>{formatDate(reservation.createdAt)}</span>
             </div>
           </div>
+          
+          {/* Book Status moved here */}
+          <div className={styles.bookStatusSection}>
+            {bookAvailable ? (
+              <div className={styles.availableStatus}>
+                <CheckCircleIcon className={styles.successIcon} />
+                <div>
+                  <h4>✅ Livro Disponível</h4>
+                  <p>O livro está disponível para retirada imediata.</p>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.unavailableStatus}>
+                <ExclamationTriangleIcon className={styles.warningIcon} />
+                <div>
+                  <h4>📚 Livro com Aluno</h4>
+                  <p>O livro está emprestado. Veja quem tem as cópias:</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Book Status */}
-      <div className={styles.statusCard}>
-        <h3>Status do Livro</h3>
-        
-        {bookAvailable ? (
-          <div className={styles.availableStatus}>
-            <CheckCircleIcon className={styles.successIcon} />
-            <div>
-              <h4>✅ Livro Disponível</h4>
-              <p>O livro está disponível para retirada imediata.</p>
-            </div>
-          </div>
-        ) : (
-          <div className={styles.unavailableStatus}>
-            <ExclamationTriangleIcon className={styles.warningIcon} />
-            <div>
-              <h4>📚 Livro com Aluno</h4>
-              <p>O livro está emprestado. Veja quem tem as cópias:</p>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* Active Loans */}
       {!bookAvailable && activeLoans.length > 0 && (
