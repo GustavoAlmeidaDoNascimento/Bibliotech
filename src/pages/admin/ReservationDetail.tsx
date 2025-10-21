@@ -294,7 +294,7 @@ const ReservationDetail: React.FC = () => {
           <div className={styles.unavailableStatus}>
             <ExclamationTriangleIcon className={styles.warningIcon} />
             <div>
-              <h4>📋 Livro Emprestado</h4>
+              <h4>📚 Livro com Aluno</h4>
               <p>O livro está emprestado. Veja quem tem as cópias:</p>
             </div>
           </div>
@@ -306,34 +306,41 @@ const ReservationDetail: React.FC = () => {
         <div className={styles.loansCard}>
           <h3>
             <CalendarDaysIcon className={styles.sectionIcon} />
-            Cópias Emprestadas ({activeLoans.length})
+            Livro com Aluno ({activeLoans.length})
           </h3>
           
           <div className={styles.loansList}>
             {activeLoans.map((loan) => (
-              <div key={loan.id} className={styles.loanItem}>
-                <div className={styles.loanInfo}>
-                  <div className={styles.studentName}>{loan.studentName}</div>
-                  <div className={styles.loanDetails}>
-                    {loan.daysOverdue ? (
-                      <span className={styles.overdue}>
-                        {loan.daysOverdue} dias atrasado
-                      </span>
-                    ) : (
-                      <span className={styles.ontime}>
-                        {loan.daysRemaining} dias restantes
-                      </span>
-                    )}
+              <div key={loan.id} className={styles.loanCard}>
+                <div className={styles.loanCardHeader}>
+                  <div className={styles.studentAvatar}>
+                    <UserIcon className={styles.avatarIcon} />
+                  </div>
+                  <div className={styles.loanCardInfo}>
+                    <h4>📚 Livro com {loan.studentName}</h4>
+                    <p className={styles.loanStatus}>
+                      {loan.daysOverdue ? (
+                        <span className={styles.overdue}>
+                          ⚠️ {loan.daysOverdue} dias atrasado
+                        </span>
+                      ) : (
+                        <span className={styles.ontime}>
+                          ✅ {loan.daysRemaining} dias restantes
+                        </span>
+                      )}
+                    </p>
                   </div>
                 </div>
-                <button
-                  className={styles.notifyButton}
-                  onClick={() => handleNotifyReturn(loan.id)}
-                  disabled={messageSent}
-                >
-                  <ChatBubbleLeftRightIcon />
-                  Notificar Devolução
-                </button>
+                <div className={styles.loanCardActions}>
+                  <button
+                    className={styles.remindButton}
+                    onClick={() => handleNotifyReturn(loan.id)}
+                    disabled={messageSent}
+                  >
+                    <ChatBubbleLeftRightIcon />
+                    Lembrar via WhatsApp
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -368,35 +375,59 @@ const ReservationDetail: React.FC = () => {
       <div className={styles.actionsCard}>
         <h3>Ações</h3>
         
-        {bookAvailable || messageSent ? (
+        {bookAvailable ? (
           <div className={styles.actionItem}>
-            <button
-              className={styles.notifyStudentButton}
-              onClick={handleNotifyStudent}
-              disabled={notifyingStudent}
-            >
-              <ChatBubbleLeftRightIcon />
-              {notifyingStudent ? 'Notificando...' : 'Notificar Aluno que Reservou'}
-            </button>
-            <p>Notificar que o livro está pronto para retirada</p>
+            <div className={styles.actionCard}>
+              <div className={styles.actionCardHeader}>
+                <div className={styles.actionIcon}>
+                  <ChatBubbleLeftRightIcon />
+                </div>
+                <div className={styles.actionCardInfo}>
+                  <h4>📱 Notificar Aluno que Reservou</h4>
+                  <p>O aluno <strong>{reservation.studentName}</strong> reservou este livro</p>
+                </div>
+              </div>
+              <button
+                className={styles.notifyStudentButton}
+                onClick={handleNotifyStudent}
+                disabled={notifyingStudent}
+              >
+                <ChatBubbleLeftRightIcon />
+                {notifyingStudent ? 'Notificando...' : 'Notificar via WhatsApp'}
+              </button>
+            </div>
           </div>
         ) : (
           <div className={styles.actionItem}>
-            <p className={styles.waitingMessage}>
-              ⏳ Aguardando devolução do livro para notificar o aluno que reservou.
-            </p>
+            <div className={styles.waitingCard}>
+              <div className={styles.waitingIcon}>⏳</div>
+              <div className={styles.waitingInfo}>
+                <h4>Aguardando Devolução</h4>
+                <p>O livro está com outro aluno. Após a devolução, você poderá notificar <strong>{reservation.studentName}</strong> que o livro está pronto para retirada.</p>
+              </div>
+            </div>
           </div>
         )}
 
         <div className={styles.actionItem}>
-          <button
-            className={styles.retrievedButton}
-            onClick={handleBookRetrieved}
-          >
-            <CheckCircleIcon />
-            Já foi retirado?
-          </button>
-          <p>Marcar como retirado e finalizar reserva</p>
+          <div className={styles.actionCard}>
+            <div className={styles.actionCardHeader}>
+              <div className={styles.actionIcon}>
+                <CheckCircleIcon />
+              </div>
+              <div className={styles.actionCardInfo}>
+                <h4>✅ Marcar como Retirado</h4>
+                <p>O aluno <strong>{reservation.studentName}</strong> já retirou o livro?</p>
+              </div>
+            </div>
+            <button
+              className={styles.retrievedButton}
+              onClick={handleBookRetrieved}
+            >
+              <CheckCircleIcon />
+              Sim, foi retirado
+            </button>
+          </div>
         </div>
       </div>
     </div>
