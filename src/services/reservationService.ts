@@ -197,7 +197,7 @@ class ReservationService {
   async deleteReservation(userId: string, reservationId: string): Promise<void> {
     try {
       console.log('🗑️ Deletando reserva do banco de dados:', reservationId);
-      const docRef = doc(db, 'student-reservations', reservationId);
+      const docRef = doc(db, `users/${userId}/reservations`, reservationId);
       await deleteDoc(docRef);
       console.log('✅ Reserva deletada com sucesso do Firebase');
     } catch (error) {
