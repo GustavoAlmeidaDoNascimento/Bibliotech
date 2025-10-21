@@ -183,6 +183,44 @@ class ReservationService {
   }
 
   /**
+   * Deleta uma reserva da coleção global (student-reservations)
+   * Função temporária para limpar dados incorretos
+   */
+  async deleteReservationFromGlobal(reservationId: string): Promise<void> {
+    try {
+      console.log('🗑️ Deletando reserva da coleção global:', reservationId);
+      const docRef = doc(db, 'student-reservations', reservationId);
+      await deleteDoc(docRef);
+      console.log('✅ Reserva deletada com sucesso da coleção global');
+    } catch (error) {
+      console.error('❌ Erro ao deletar reserva:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Deleta todas as reservas de um aluno (útil para limpar dados de teste)
+   */
+  async deleteAllStudentReservations(studentId: string): Promise<number> {
+    try {
+      console.log('🗑️ Deletando todas as reservas do aluno:', studentId);
+      const reservations = await this.getStudentReservationsFromGlobal(studentId);
+      
+      let deletedCount = 0;
+      for (const reservation of reservations) {
+        await this.deleteReservationFromGlobal(reservation.id);
+        deletedCount++;
+      }
+      
+      console.log(`✅ ${deletedCount} reservas deletadas com sucesso`);
+      return deletedCount;
+    } catch (error) {
+      console.error('❌ Erro ao deletar reservas:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Busca uma reserva específica
    */
   async getReservation(userId: string, reservationId: string): Promise<Reservation | null> {

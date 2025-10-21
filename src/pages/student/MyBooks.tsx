@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { reservationService, Reservation } from '../../services/reservationService';
+import { studentService } from '../../services/studentService';
 import styles from './MyBooks.module.css';
 
 const MyBooks: React.FC = () => {
@@ -26,51 +27,39 @@ const MyBooks: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      // Criar uma reserva de teste temporariamente para demonstrar a funcionalidade
-      console.log('🧪 Criando reserva de teste para demonstração...');
+      console.log('📚 Carregando reservas do aluno:', studentId);
       
-      // Simular dados de reserva para teste
-      const testReservations: Reservation[] = [
-        {
-          id: 'test-reservation-1',
-          studentId: studentId,
-          studentName: 'Aluno Teste',
-          bookId: 'test-book-1',
-          bookTitle: 'O Príncipe Cruel',
-          bookAuthor: 'Holly Black',
-          bookCoverUrl: 'https://covers.openlibrary.org/b/id/12345678-L.jpg',
-          userId: 'gPGYmNxF4HfZK0GaL1L73ANJRyC2',
-          status: 'ready',
-          type: 'available',
-          createdAt: new Date() as any,
-          readyAt: new Date() as any
-        },
-        {
-          id: 'test-reservation-2',
-          studentId: studentId,
-          studentName: 'Aluno Teste',
-          bookId: 'test-book-2',
-          bookTitle: 'Heartstopper - Volume 5',
-          bookAuthor: 'Alice Oseman',
-          userId: 'gPGYmNxF4HfZK0GaL1L73ANJRyC2',
-          status: 'pending',
-          type: 'waitlist',
-          position: 2,
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000) as any // 1 dia atrás
-        }
-      ];
+      // Buscar reservas da escola do aluno (mesma coleção que o gestor usa)
+      const schoolId = await getStudentSchoolId(studentId);
+      if (!schoolId) {
+        throw new Error('Escola do aluno não encontrada');
+      }
       
-      console.log('📚 Reservas de teste carregadas:', testReservations.length);
-      setReservations(testReservations);
+      console.log('🏫 Escola do aluno:', schoolId);
       
-      // Comentado temporariamente para usar dados de teste
-      // const studentReservations = await reservationService.getStudentReservationsFromGlobal(studentId);
-      // setReservations(studentReservations);
+      // Buscar todas as reservas da escola e filtrar pelo studentId
+      const allReservations = await reservationService.getReservations(schoolId);
+      const studentReservations = allReservations.filter(res => res.studentId === studentId);
+      
+      console.log('✅ Reservas carregadas:', studentReservations.length);
+      setReservations(studentReservations);
     } catch (err) {
-      console.error('Erro ao carregar reservas:', err);
+      console.error('❌ Erro ao carregar reservas:', err);
       setError('Erro ao carregar suas reservas. Tente novamente.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Função para obter o ID da escola do aluno
+  const getStudentSchoolId = async (studentId: string): Promise<string | null> => {
+    try {
+      // Usar o serviço de aluno para encontrar a escola
+      const student = await studentService.findStudentById(studentId);
+      return student?.userId || null; // userId é o schoolId
+    } catch (error) {
+      console.error('Erro ao buscar escola do aluno:', error);
+      return null;
     }
   };
 
