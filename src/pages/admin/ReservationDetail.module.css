@@ -586,9 +586,10 @@
   cursor: not-allowed;
 }
 
-.notifyStudentButton svg {
+.notifyStudentButton img {
   width: 20px;
   height: 20px;
+  margin-right: 0.5rem;
 }
 
 .retrievedButton {

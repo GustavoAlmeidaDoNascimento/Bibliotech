@@ -13,6 +13,7 @@ import {
   CalendarDaysIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
+import { PhoneIcon } from '@heroicons/react/24/solid';
 import styles from './ReservationDetail.module.css';
 
 interface LoanInfo {
@@ -136,17 +137,6 @@ const ReservationDetail: React.FC = () => {
     setSelectedLoanId(null);
   };
 
-  const handleNotifyStudent = async () => {
-    try {
-      setNotifyingStudent(true);
-      
-      // Aqui você implementaria a lógica de envio do WhatsApp para o aluno que reservou
-      console.log('Notificando aluno que reservou:', reservation?.studentName);
-      
-    } catch (error) {
-      console.error('Erro ao notificar aluno:', error);
-    }
-  };
 
   const handleBookRetrieved = async () => {
     if (!reservation) return;
@@ -161,6 +151,22 @@ const ReservationDetail: React.FC = () => {
       console.error('Erro ao marcar como retirado:', error);
       alert('Erro ao marcar como retirado');
     }
+  };
+
+  const handleNotifyStudent = () => {
+    if (!reservation) return;
+    
+    const studentPhone = '5551999999999'; // Número padrão para teste
+    const studentName = reservation.studentName;
+    const bookTitle = reservation.bookTitle;
+    const currentDate = new Date().toLocaleDateString('pt-BR');
+    
+    const message = `*Notificação de Reserva - Escola*\n\nPrezado(a) responsável,\n\nO(a) aluno(a) *${studentName}* reservou o livro "*${bookTitle}*" da biblioteca no dia ${currentDate}.\n\nO livro está pronto para retirada na biblioteca da escola.\n\n*Escola*\n*Feito através do Bibliotech*`;
+    
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://api.whatsapp.com/send/?phone=${studentPhone}&text=${encodedMessage}&type=phone_number&app_absent=0`;
+    
+    window.open(whatsappUrl, '_blank');
   };
 
   const formatDate = (timestamp: any) => {
@@ -382,14 +388,13 @@ const ReservationDetail: React.FC = () => {
                   <p>O aluno <strong>{reservation.studentName}</strong> reservou este livro</p>
                 </div>
               </div>
-              <button
-                className={styles.notifyStudentButton}
-                onClick={handleNotifyStudent}
-                disabled={notifyingStudent}
-              >
-                <ChatBubbleLeftRightIcon />
-                {notifyingStudent ? 'Notificando...' : 'Notificar via WhatsApp'}
-              </button>
+                      <button
+                        className={styles.notifyStudentButton}
+                        onClick={handleNotifyStudent}
+                      >
+                        <img src="/images/home/icone/wpp.png" alt="WhatsApp" width="20" height="20" />
+                        Notificar via WhatsApp
+                      </button>
             </div>
           </div>
         ) : (
