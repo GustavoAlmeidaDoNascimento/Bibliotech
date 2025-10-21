@@ -148,22 +148,34 @@ class ReservationService {
   }
 
   /**
-   * Busca reservas de um aluno específico
+   * Busca reservas de um aluno específico da coleção global
    */
-  async getStudentReservations(userId: string, studentId: string): Promise<Reservation[]> {
+  async getStudentReservationsFromGlobal(studentId: string): Promise<Reservation[]> {
     try {
-      const reservationsRef = collection(db, `users/${userId}/reservations`);
+      console.log('🔍 Buscando reservas do aluno:', studentId);
+      const reservationsRef = collection(db, 'student-reservations');
       const q = query(
         reservationsRef,
-        where('studentId', '==', studentId),
-        orderBy('createdAt', 'desc')
+        where('studentId', '==', studentId)
+        // Temporariamente removido orderBy para evitar erro de índice
+        // orderBy('createdAt', 'desc')
       );
       const snapshot = await getDocs(q);
       
-      return snapshot.docs.map(doc => ({
+      const reservations = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as Reservation));
+      
+      // Ordenar client-side temporariamente
+      reservations.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
+        return dateB.getTime() - dateA.getTime();
+      });
+      
+      console.log('📚 Reservas encontradas:', reservations.length);
+      return reservations;
     } catch (error) {
       console.error('Erro ao buscar reservas do aluno:', error);
       throw error;
