@@ -278,23 +278,19 @@ const ReservationDetail: React.FC = () => {
           
           {/* Book Status moved here */}
           <div className={styles.bookStatusSection}>
-            {bookAvailable ? (
-              <div className={styles.availableStatus}>
-                <CheckCircleIcon className={styles.successIcon} />
-                <div>
-                  <h4>✅ Livro Disponível</h4>
-                  <p>O livro está disponível para retirada imediata.</p>
-                </div>
+            <div className={styles.infoItem}>
+              {bookAvailable ? (
+                <CheckCircleIcon className={styles.infoIcon} style={{ color: '#10b981' }} />
+              ) : (
+                <ExclamationTriangleIcon className={styles.infoIcon} style={{ color: '#f59e0b' }} />
+              )}
+              <div>
+                <span className={styles.infoLabel}>Status:</span>
+                <span className={styles.infoValue}>
+                  {bookAvailable ? 'Pronto para Retirada' : 'Emprestado'}
+                </span>
               </div>
-            ) : (
-              <div className={styles.unavailableStatus}>
-                <ExclamationTriangleIcon className={styles.warningIcon} />
-                <div>
-                  <h4>📚 Livro com Aluno</h4>
-                  <p>O livro está emprestado. Veja quem tem as cópias:</p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
