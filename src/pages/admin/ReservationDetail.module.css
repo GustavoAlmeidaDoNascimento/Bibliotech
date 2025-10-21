@@ -418,9 +418,10 @@
   cursor: not-allowed;
 }
 
-.remindButton svg {
-  width: 18px;
-  height: 18px;
+.remindButton img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
 }
 
 .loanInfo {

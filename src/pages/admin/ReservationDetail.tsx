@@ -344,7 +344,7 @@ const ReservationDetail: React.FC = () => {
                     onClick={() => handleNotifyReturn(loan.id)}
                     disabled={messageSent}
                   >
-                    <ChatBubbleLeftRightIcon />
+                    <img src="/images/home/icone/wpp.png" alt="WhatsApp" width="20" height="20" />
                     Lembrar via WhatsApp
                   </button>
                 </div>
