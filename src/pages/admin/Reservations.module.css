@@ -340,6 +340,7 @@
   border-top: 1px solid #e2e8f0;
 }
 
+.btnDetails,
 .btnComplete,
 .btnCancel {
   display: flex;
@@ -352,6 +353,22 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.btnDetails {
+  background: #0078d4;
+  color: white;
+}
+
+.btnDetails:hover {
+  background: #106ebe;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+}
+
+.btnDetails svg {
+  width: 18px;
+  height: 18px;
 }
 
 .btnComplete {

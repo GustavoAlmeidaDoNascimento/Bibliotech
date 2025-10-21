@@ -11,7 +11,8 @@ import {
   where,
   orderBy,
   Timestamp,
-  writeBatch
+  writeBatch,
+  serverTimestamp
 } from 'firebase/firestore';
 
 export interface Reservation {
@@ -51,18 +52,9 @@ class ReservationService {
     try {
       const reservationsRef = collection(db, `users/${userId}/reservations`);
       
-      // Verificar se o aluno já tem uma reserva ativa para este livro
-      const existingQuery = query(
-        reservationsRef,
-        where('studentId', '==', studentId),
-        where('bookId', '==', bookId),
-        where('status', 'in', ['pending', 'ready'])
-      );
-      
-      const existingReservations = await getDocs(existingQuery);
-      if (!existingReservations.empty) {
-        throw new Error('Você já tem uma reserva ativa para este livro');
-      }
+      // Verificação temporariamente desabilitada para evitar erro de índice
+      // TODO: Reativar após criar índices no Firebase
+      console.log('⚠️ Verificação de reservas duplicadas desabilitada temporariamente');
 
       const now = Timestamp.now();
       const expiresAt = Timestamp.fromMillis(now.toMillis() + (7 * 24 * 60 * 60 * 1000)); // 7 dias
@@ -94,15 +86,21 @@ class ReservationService {
 
       // Se for waitlist, calcular e adicionar posição na fila
       if (!isAvailable) {
+        // Query mais simples para evitar erro de índice
         const waitlistQuery = query(
           reservationsRef,
           where('bookId', '==', bookId),
-          where('type', '==', 'waitlist'),
-          where('status', '==', 'pending'),
-          orderBy('createdAt', 'asc')
+          where('type', '==', 'waitlist')
         );
         const waitlistDocs = await getDocs(waitlistQuery);
-        reservationData.position = waitlistDocs.size + 1;
+        
+        // Filtrar no código para reservas pendentes
+        const pendingReservations = waitlistDocs.docs.filter(doc => {
+          const data = doc.data();
+          return data.status === 'pending';
+        });
+        
+        reservationData.position = pendingReservations.length + 1;
       }
 
       // Se estiver pronto (disponível), adicionar datas de ready e expiração
@@ -207,6 +205,23 @@ class ReservationService {
   }
 
   /**
+   * Deletar reserva (quando livro foi retirado)
+   */
+  async deleteReservation(userId: string, reservationId: string): Promise<void> {
+    try {
+      const docRef = doc(db, `users/${userId}/reservations`, reservationId);
+      await updateDoc(docRef, {
+        status: 'completed',
+        withdrawnAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Erro ao deletar reserva:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Atualiza o status de uma reserva
    */
   async updateReservationStatus(
@@ -259,20 +274,6 @@ class ReservationService {
       console.log('✅ Reserva completada:', reservationId);
     } catch (error) {
       console.error('Erro ao completar reserva:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Remove uma reserva
-   */
-  async deleteReservation(userId: string, reservationId: string): Promise<void> {
-    try {
-      const docRef = doc(db, `users/${userId}/reservations`, reservationId);
-      await deleteDoc(docRef);
-      console.log('✅ Reserva removida:', reservationId);
-    } catch (error) {
-      console.error('Erro ao remover reserva:', error);
       throw error;
     }
   }

@@ -350,7 +350,37 @@ export const studentService = {
   },
 
   /**
-   * Busca um livro específico por ID
+   * Busca empréstimos ativos de um livro específico
+   */
+  async getActiveLoansByBook(bookId: string, schoolId: string): Promise<any[]> {
+    try {
+      const loansRef = collection(db, `users/${schoolId}/loans`);
+      const q = query(
+        loansRef,
+        where('bookId', '==', bookId),
+        where('status', '==', 'active')
+      );
+      
+      const loansSnapshot = await getDocs(q);
+      
+      if (loansSnapshot.empty) {
+        return [];
+      }
+      
+      const loans = loansSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      console.log(`📚 Encontrados ${loans.length} empréstimos ativos para o livro ${bookId}`);
+      return loans;
+    } catch (error) {
+      console.error('Erro ao buscar empréstimos ativos do livro:', error);
+      throw error;
+    }
+  },
+
+  /**
    * @param bookId ID do livro
    * @param schoolId ID da escola
    * @returns Promise<Book | null>

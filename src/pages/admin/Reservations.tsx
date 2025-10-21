@@ -8,12 +8,15 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   CalendarDaysIcon,
-  FunnelIcon
+  FunnelIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 import styles from './Reservations.module.css';
 
 const Reservations: React.FC = () => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -270,28 +273,39 @@ const Reservations: React.FC = () => {
                 </div>
 
                 {/* Card Actions */}
-                {(reservation.status === 'ready' || reservation.status === 'pending') && (
-                  <div className={styles.cardActions}>
-                    {reservation.status === 'ready' && (
+                <div className={styles.cardActions}>
+                  <button
+                    className={styles.btnDetails}
+                    onClick={() => navigate(`/reservation-detail/${reservation.id}`)}
+                    title="Ver detalhes da reserva"
+                  >
+                    <EyeIcon />
+                    Ver Detalhes
+                  </button>
+                  
+                  {(reservation.status === 'ready' || reservation.status === 'pending') && (
+                    <>
+                      {reservation.status === 'ready' && (
+                        <button
+                          className={styles.btnComplete}
+                          onClick={() => handleCompleteReservation(reservation.id)}
+                          title="Marcar como retirado"
+                        >
+                          <CheckCircleIcon />
+                          Confirmar Retirada
+                        </button>
+                      )}
                       <button
-                        className={styles.btnComplete}
-                        onClick={() => handleCompleteReservation(reservation.id)}
-                        title="Marcar como retirado"
+                        className={styles.btnCancel}
+                        onClick={() => handleCancelReservation(reservation.id)}
+                        title="Cancelar reserva"
                       >
-                        <CheckCircleIcon />
-                        Confirmar Retirada
+                        <XCircleIcon />
+                        Cancelar
                       </button>
-                    )}
-                    <button
-                      className={styles.btnCancel}
-                      onClick={() => handleCancelReservation(reservation.id)}
-                      title="Cancelar reserva"
-                    >
-                      <XCircleIcon />
-                      Cancelar
-                    </button>
-                  </div>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
             ))}
           </div>
