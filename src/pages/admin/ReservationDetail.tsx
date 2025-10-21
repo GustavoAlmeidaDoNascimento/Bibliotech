@@ -275,11 +275,6 @@ const ReservationDetail: React.FC = () => {
               <span className={styles.infoValue}>{formatDate(reservation.createdAt)}</span>
             </div>
           </div>
-          {reservation.status === 'ready' && reservation.expiresAt && (
-            <div className={styles.expiryWarning}>
-              ⏰ Prazo para retirada: {formatDate(reservation.expiresAt)}
-            </div>
-          )}
         </div>
       </div>
 

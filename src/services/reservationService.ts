@@ -31,7 +31,6 @@ export interface Reservation {
   readyAt?: Timestamp; // quando ficou pronto para retirada
   completedAt?: Timestamp; // quando foi retirado
   cancelledAt?: Timestamp;
-  expiresAt?: Timestamp; // prazo para retirar
   notes?: string;
 }
 
@@ -57,7 +56,6 @@ class ReservationService {
       console.log('⚠️ Verificação de reservas duplicadas desabilitada temporariamente');
 
       const now = Timestamp.now();
-      const expiresAt = Timestamp.fromMillis(now.toMillis() + (7 * 24 * 60 * 60 * 1000)); // 7 dias
 
       // Se o livro está disponível, a reserva já começa como 'ready'
       // Se não, entra como 'pending' na fila de espera
@@ -103,10 +101,10 @@ class ReservationService {
         reservationData.position = pendingReservations.length + 1;
       }
 
-      // Se estiver pronto (disponível), adicionar datas de ready e expiração
+      // Se estiver pronto (disponível), adicionar apenas data de ready
       if (isAvailable) {
         reservationData.readyAt = now;
-        reservationData.expiresAt = expiresAt;
+        // Removido expiresAt - não há prazo para retirada
       }
 
       const docRef = await addDoc(reservationsRef, reservationData);
@@ -237,7 +235,6 @@ class ReservationService {
       
       if (status === 'ready') {
         updateData.readyAt = now;
-        updateData.expiresAt = Timestamp.fromMillis(now.toMillis() + (7 * 24 * 60 * 60 * 1000)); // 7 dias
       } else if (status === 'completed') {
         updateData.completedAt = now;
       } else if (status === 'cancelled') {
@@ -315,39 +312,6 @@ class ReservationService {
     }
   }
 
-  /**
-   * Verifica e expira reservas vencidas
-   */
-  async expireOldReservations(userId: string): Promise<number> {
-    try {
-      const reservationsRef = collection(db, `users/${userId}/reservations`);
-      const now = Timestamp.now();
-      
-      const expiredQuery = query(
-        reservationsRef,
-        where('status', '==', 'ready'),
-        where('expiresAt', '<=', now)
-      );
-      
-      const snapshot = await getDocs(expiredQuery);
-      const batch = writeBatch(db);
-      
-      snapshot.docs.forEach(doc => {
-        batch.update(doc.ref, { 
-          status: 'expired',
-          cancelledAt: now
-        });
-      });
-      
-      await batch.commit();
-      console.log(`✅ ${snapshot.size} reservas expiradas`);
-      
-      return snapshot.size;
-    } catch (error) {
-      console.error('Erro ao expirar reservas antigas:', error);
-      throw error;
-    }
-  }
 }
 
 export const reservationService = new ReservationService();
