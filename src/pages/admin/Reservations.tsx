@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { reservationService, Reservation } from '../../services/reservationService';
 import { studentService } from '../../services/studentService';
@@ -13,6 +14,7 @@ interface DisplayReservation extends Reservation {
 }
 
 const Reservations: React.FC = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [reservations, setReservations] = useState<DisplayReservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,6 +101,10 @@ const Reservations: React.FC = () => {
     setShowConfirmModal(true);
   };
 
+  const handleReservationClick = (reservation: DisplayReservation) => {
+    navigate(`/reservation-detail/${reservation.id}`);
+  };
+
   const handleConfirmDone = async () => {
     if (!selectedReservation) return;
 
@@ -154,7 +160,11 @@ const Reservations: React.FC = () => {
       ) : (
         <div className={styles.reservationsList}>
           {reservations.map((reservation) => (
-            <div key={reservation.id} className={styles.reservationItem}>
+            <div 
+              key={reservation.id} 
+              className={styles.reservationItem}
+              onClick={() => handleReservationClick(reservation)}
+            >
               <div className={styles.bookInfo}>
                 <div className={styles.bookCoverWrapper}>
                   {reservation.bookCoverUrl ? (
