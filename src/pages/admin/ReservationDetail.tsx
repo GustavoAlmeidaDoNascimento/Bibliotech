@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { reservationService, Reservation } from '../../services/reservationService';
 import { studentService } from '../../services/studentService';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 import {
   ArrowLeftIcon,
   BookOpenIcon,
@@ -16,6 +18,19 @@ import {
 import { PhoneIcon } from '@heroicons/react/24/solid';
 import { BookOpen } from 'lucide-react';
 import styles from './ReservationDetail.module.css';
+
+interface Student {
+  id: string;
+  name: string;
+  classroom: string;
+  contact?: string;
+  address?: string;
+  number?: string;
+  neighborhood?: string;
+  complement?: string;
+  notes?: string;
+  shift?: string;
+}
 
 interface LoanInfo {
   id: string;
@@ -125,12 +140,161 @@ const ReservationDetail: React.FC = () => {
       setNotifyingReturn(true);
       setSelectedLoanId(loanId);
       
-      // Aqui você implementaria a lógica de envio do WhatsApp
-      // Por enquanto, vou simular
-      console.log('Notificando devolução para empréstimo:', loanId);
+      // Buscar dados do empréstimo para gerar a mensagem
+      const loan = activeLoans.find(l => l.id === loanId);
+      if (!loan) {
+        console.error('Empréstimo não encontrado');
+        setNotifyingReturn(false);
+        return;
+      }
+
+      // Buscar dados completos do aluno diretamente do Firestore
+      // Primeiro tentar com a escola atual (currentUser.uid)
+      let studentData = null;
+      try {
+        const studentRef = doc(db, `users/${currentUser!.uid}/students/${loan.studentId}`);
+        const studentDoc = await getDoc(studentRef);
+        
+        if (studentDoc.exists()) {
+          studentData = { id: studentDoc.id, ...studentDoc.data() };
+          console.log('✅ Aluno encontrado na escola atual:', studentData);
+        } else {
+          // Se não encontrou na escola atual, usar o studentService como fallback
+          console.log('⚠️ Aluno não encontrado na escola atual, usando studentService...');
+          studentData = await studentService.findStudentById(loan.studentId);
+        }
+      } catch (error) {
+        console.log('⚠️ Erro ao buscar na escola atual, usando studentService...', error);
+        studentData = await studentService.findStudentById(loan.studentId);
+      }
+      
+      console.log('🔍 Dados do aluno encontrados:', studentData);
+      console.log('📱 Propriedades disponíveis:', Object.keys(studentData || {}));
+      
+      if (!studentData) {
+        alert('Dados do aluno não encontrados');
+        setNotifyingReturn(false);
+        return;
+      }
+
+      // Verificar se o aluno tem número de telefone
+      const phoneNumber = (studentData as any).contact || (studentData as any).number;
+      console.log('📞 Número de telefone encontrado:', phoneNumber);
+      
+      if (!phoneNumber) {
+        // Se não há telefone, perguntar se quer usar um número padrão ou continuar sem WhatsApp
+        const useDefaultNumber = window.confirm(
+          `O aluno ${loan.studentName} não possui número de telefone cadastrado.\n\n` +
+          `Deseja usar um número padrão para teste (55 51 99999-9999) ou continuar sem enviar WhatsApp?\n\n` +
+          `Clique em "OK" para usar número padrão ou "Cancelar" para apenas marcar como avisado.`
+        );
+        
+        if (useDefaultNumber) {
+          // Usar número padrão para teste
+          const cleanPhoneNumber = '5551999999999';
+          
+          // Gerar mensagem de devolução padrão
+          const borrowDate = loan.borrowDate.toLocaleDateString('pt-BR');
+          const dueDate = loan.dueDate.toLocaleDateString('pt-BR');
+          const daysOverdue = loan.daysOverdue || 0;
+          
+          let statusMessage = '';
+          if (daysOverdue > 0) {
+            statusMessage = `*Status:* Atrasado há ${daysOverdue} ${daysOverdue === 1 ? 'dia' : 'dias'}`;
+          } else {
+            const daysRemaining = loan.daysRemaining || 0;
+            if (daysRemaining === 0) {
+              statusMessage = `*Status:* Vence hoje`;
+            } else if (daysRemaining === 1) {
+              statusMessage = `*Status:* Vence amanhã`;
+            } else {
+              statusMessage = `*Status:* ${daysRemaining} dias restantes`;
+            }
+          }
+
+          const message = `*LEMBRETE DE DEVOLUÇÃO - BIBLIOTECH*
+
+*Aluno:* ${loan.studentName}
+*Livro:* ${reservation?.bookTitle}
+*Data de Retirada:* ${borrowDate}
+*Data de Devolução:* ${dueDate}
+
+${statusMessage}
+
+Por favor, lembre-se de devolver o livro na biblioteca da escola.
+
+*Biblioteca Escolar*
+*Feito através do Bibliotech*`;
+
+          const encodedMessage = encodeURIComponent(message);
+          
+          // Abrir WhatsApp com número padrão
+          const whatsappUrl = `https://wa.me/${cleanPhoneNumber}?text=${encodedMessage}`;
+          window.open(whatsappUrl, '_blank');
+        } else {
+          // Continuar sem WhatsApp, apenas mostrar modal de confirmação
+          setNotifyingReturn(true);
+          return;
+        }
+      } else {
+        // Processar normalmente quando há telefone
+        // Limpar número de telefone (remover caracteres não numéricos)
+        const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
+        
+        if (cleanPhoneNumber.length < 10) {
+          alert('Número de telefone inválido');
+          setNotifyingReturn(false);
+          return;
+        }
+
+        // Gerar mensagem de devolução padrão
+        const borrowDate = loan.borrowDate.toLocaleDateString('pt-BR');
+        const dueDate = loan.dueDate.toLocaleDateString('pt-BR');
+        const daysOverdue = loan.daysOverdue || 0;
+        
+        let statusMessage = '';
+        if (daysOverdue > 0) {
+          statusMessage = `*Status:* Atrasado há ${daysOverdue} ${daysOverdue === 1 ? 'dia' : 'dias'}`;
+        } else {
+          const daysRemaining = loan.daysRemaining || 0;
+          if (daysRemaining === 0) {
+            statusMessage = `*Status:* Vence hoje`;
+          } else if (daysRemaining === 1) {
+            statusMessage = `*Status:* Vence amanhã`;
+          } else {
+            statusMessage = `*Status:* ${daysRemaining} dias restantes`;
+          }
+        }
+
+        const message = `*LEMBRETE DE DEVOLUÇÃO - BIBLIOTECH*
+
+*Aluno:* ${loan.studentName}
+*Livro:* ${reservation?.bookTitle}
+*Data de Retirada:* ${borrowDate}
+*Data de Devolução:* ${dueDate}
+
+${statusMessage}
+
+Por favor, lembre-se de devolver o livro na biblioteca da escola.
+
+*Biblioteca Escolar*
+*Feito através do Bibliotech*`;
+
+        const encodedMessage = encodeURIComponent(message);
+        
+        // Adicionar código do país (55 para Brasil) se não estiver presente
+        const fullPhoneNumber = cleanPhoneNumber.startsWith('55') 
+          ? cleanPhoneNumber 
+          : `55${cleanPhoneNumber}`;
+        
+        // Abrir WhatsApp com número específico do aluno
+        const whatsappUrl = `https://wa.me/${fullPhoneNumber}?text=${encodedMessage}`;
+        window.open(whatsappUrl, '_blank');
+      }
       
     } catch (error) {
       console.error('Erro ao notificar devolução:', error);
+      setNotifyingReturn(false);
     }
   };
 
