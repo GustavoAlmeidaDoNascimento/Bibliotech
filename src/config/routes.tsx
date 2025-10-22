@@ -41,7 +41,6 @@ import StudentHome from '../pages/student/StudentHome';
 import StudentStats from '../pages/student/StudentStats';
 import StudentProfile from '../pages/student/StudentProfile';
 import BookDetails from '../pages/student/BookDetails';
-import BookSearch from '../pages/student/BookSearch';
 import MyBooks from '../pages/student/MyBooks';
 import ReserveBook from '../pages/student/ReserveBook';
 import Achievements from '../pages/student/Achievements';
@@ -99,10 +98,6 @@ export const publicRoutes = [
   {
     path: "/student-dashboard/:studentId/book/:bookId",
     element: <BookDetails />,
-  },
-  {
-    path: "/student-dashboard/:studentId/search",
-    element: <BookSearch />,
   },
   {
     path: "/student-dashboard/:studentId/my-books",

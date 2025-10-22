@@ -177,7 +177,7 @@ const MyBooks: React.FC = () => {
             </p>
 
             <button 
-              onClick={() => navigate(`/student-dashboard/${studentId}/search`)} 
+              onClick={() => navigate(`/student-dashboard/${studentId}/home`)} 
               className={styles.exploreButton}
             >
               Explorar Livros
