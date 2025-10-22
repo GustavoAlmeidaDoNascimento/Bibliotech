@@ -32,6 +32,7 @@ export interface Reservation {
   completedAt?: Timestamp; // quando foi retirado
   cancelledAt?: Timestamp;
   notes?: string;
+  notifiedStudents?: string[]; // Array de IDs dos alunos que foram avisados sobre devolução
 }
 
 class ReservationService {
@@ -427,6 +428,64 @@ class ReservationService {
     } catch (error) {
       console.error('Erro ao completar reserva:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Marca um aluno como avisado sobre devolução na reserva
+   */
+  async markStudentAsNotified(userId: string, reservationId: string, studentId: string): Promise<void> {
+    try {
+      console.log('📢 Marcando aluno como avisado:', { reservationId, studentId });
+      
+      const docRef = doc(db, `users/${userId}/reservations`, reservationId);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        throw new Error('Reserva não encontrada');
+      }
+      
+      const reservationData = docSnap.data();
+      const notifiedStudents = reservationData.notifiedStudents || [];
+      
+      // Adicionar o aluno ao array se ainda não estiver
+      if (!notifiedStudents.includes(studentId)) {
+        notifiedStudents.push(studentId);
+        
+        await updateDoc(docRef, {
+          notifiedStudents: notifiedStudents,
+          lastNotificationAt: serverTimestamp()
+        });
+        
+        console.log('✅ Aluno marcado como avisado:', studentId);
+      } else {
+        console.log('ℹ️ Aluno já estava marcado como avisado:', studentId);
+      }
+    } catch (error) {
+      console.error('Erro ao marcar aluno como avisado:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verifica se um aluno já foi avisado sobre devolução
+   */
+  async isStudentNotified(userId: string, reservationId: string, studentId: string): Promise<boolean> {
+    try {
+      const docRef = doc(db, `users/${userId}/reservations`, reservationId);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        return false;
+      }
+      
+      const reservationData = docSnap.data();
+      const notifiedStudents = reservationData.notifiedStudents || [];
+      
+      return notifiedStudents.includes(studentId);
+    } catch (error) {
+      console.error('Erro ao verificar se aluno foi avisado:', error);
+      return false;
     }
   }
 

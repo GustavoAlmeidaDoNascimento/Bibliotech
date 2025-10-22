@@ -42,6 +42,7 @@ interface LoanInfo {
   status: string;
   daysOverdue?: number;
   daysRemaining?: number;
+  isNotified?: boolean; // Se o aluno já foi avisado sobre devolução
 }
 
 const ReservationDetail: React.FC = () => {
@@ -55,7 +56,7 @@ const ReservationDetail: React.FC = () => {
   const [activeLoans, setActiveLoans] = useState<LoanInfo[]>([]);
   const [notifyingReturn, setNotifyingReturn] = useState(false);
   const [notifyingStudent, setNotifyingStudent] = useState(false);
-  const [messageSent, setMessageSent] = useState(false);
+  const [messageSent, setMessageSent] = useState<{ [loanId: string]: boolean }>({});
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
@@ -114,6 +115,13 @@ const ReservationDetail: React.FC = () => {
           const daysOverdue = Math.max(0, Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
           const daysRemaining = Math.max(0, Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
+          // Verificar se o aluno já foi avisado sobre devolução
+          const isNotified = await reservationService.isStudentNotified(
+            userId, 
+            reservationId!, 
+            loan.studentId
+          );
+
           loansWithInfo.push({
             id: loan.id,
             studentId: loan.studentId,
@@ -123,7 +131,8 @@ const ReservationDetail: React.FC = () => {
             dueDate,
             status: loan.status,
             daysOverdue: daysOverdue > 0 ? daysOverdue : undefined,
-            daysRemaining: daysOverdue === 0 ? daysRemaining : undefined
+            daysRemaining: daysOverdue === 0 ? daysRemaining : undefined,
+            isNotified // Adicionar campo para controlar o botão
           });
         }
       }
@@ -298,10 +307,47 @@ Por favor, lembre-se de devolver o livro na biblioteca da escola.
     }
   };
 
-  const handleConfirmMessageSent = () => {
-    setMessageSent(true);
-    setNotifyingReturn(false);
-    setSelectedLoanId(null);
+  const handleConfirmMessageSent = async () => {
+    try {
+      if (selectedLoanId && currentUser) {
+        // Encontrar o studentId do empréstimo selecionado
+        const loan = activeLoans.find(l => l.id === selectedLoanId);
+        if (!loan) {
+          console.error('Empréstimo não encontrado');
+          setNotifyingReturn(false);
+          setSelectedLoanId(null);
+          return;
+        }
+
+        // Marcar o aluno como avisado na reserva usando o studentId correto
+        await reservationService.markStudentAsNotified(
+          currentUser.uid, 
+          reservationId!, 
+          loan.studentId
+        );
+        console.log('✅ Aluno marcado como avisado na reserva:', loan.studentId);
+        
+        // Atualizar estado local para este empréstimo específico
+        setMessageSent(prev => ({
+          ...prev,
+          [selectedLoanId]: true
+        }));
+      }
+      
+      setNotifyingReturn(false);
+      setSelectedLoanId(null);
+    } catch (error) {
+      console.error('Erro ao marcar aluno como avisado:', error);
+      // Mesmo com erro, continuar com o fluxo normal
+      if (selectedLoanId) {
+        setMessageSent(prev => ({
+          ...prev,
+          [selectedLoanId]: true
+        }));
+      }
+      setNotifyingReturn(false);
+      setSelectedLoanId(null);
+    }
   };
 
 
@@ -506,10 +552,10 @@ Por favor, lembre-se de devolver o livro na biblioteca da escola.
                   <button
                     className={styles.remindButton}
                     onClick={() => handleNotifyReturn(loan.id)}
-                    disabled={messageSent}
+                    disabled={messageSent[loan.id] || loan.isNotified}
                   >
                     <img src="/images/home/icone/wpp.png" alt="WhatsApp" width="20" height="20" />
-                    Lembrar via WhatsApp
+                    {loan.isNotified ? 'Aluno já avisado' : messageSent[loan.id] ? 'Mensagem enviada' : 'Lembrar via WhatsApp'}
                   </button>
                 </div>
               </div>
