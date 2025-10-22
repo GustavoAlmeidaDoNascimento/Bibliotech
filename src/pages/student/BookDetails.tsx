@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, User, Tag, Clock, Heart } from 'lucide-react';
+import { ArrowLeft, BookOpen, User, Tag, Clock, Heart, CheckCircle } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService } from '../../services/studentService';
+import { reservationService, Reservation } from '../../services/reservationService';
 import styles from './BookDetails.module.css';
 
 interface BookWithGenres {
@@ -30,6 +31,8 @@ const BookDetails: React.FC = () => {
   const [book, setBook] = useState<BookWithGenres | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isAlreadyReserved, setIsAlreadyReserved] = useState(false);
+  const [reservationStatus, setReservationStatus] = useState<'pending' | 'ready' | 'completed' | 'cancelled' | 'expired' | null>(null);
 
   useEffect(() => {
     if (!studentId || !bookId) {
@@ -52,6 +55,9 @@ const BookDetails: React.FC = () => {
         const bookData = await studentService.getBookById(bookId, student.userId);
         if (bookData) {
           setBook(bookData);
+          
+          // Verificar se o aluno já reservou este livro
+          await checkIfBookIsReserved(studentId, bookId, student.userId);
         } else {
           setError('Livro não encontrado');
         }
@@ -63,6 +69,33 @@ const BookDetails: React.FC = () => {
       }
     };
 
+    const checkIfBookIsReserved = async (studentId: string, bookId: string, schoolId: string) => {
+      try {
+        console.log('🔍 Verificando se o livro já foi reservado pelo aluno:', { studentId, bookId });
+        
+        // Buscar reservas do aluno usando a nova função que tenta ambas as coleções
+        const reservations = await reservationService.getStudentReservations(studentId, schoolId);
+        
+        // Verificar se existe uma reserva para este livro
+        const existingReservation = reservations.find(reservation => reservation.bookId === bookId);
+        
+        if (existingReservation) {
+          console.log('✅ Livro já reservado pelo aluno:', existingReservation);
+          setIsAlreadyReserved(true);
+          setReservationStatus(existingReservation.status);
+        } else {
+          console.log('📚 Livro não foi reservado pelo aluno ainda');
+          setIsAlreadyReserved(false);
+          setReservationStatus(null);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar reservas do aluno:', error);
+        // Em caso de erro, assumir que não foi reservado para não bloquear o usuário
+        setIsAlreadyReserved(false);
+        setReservationStatus(null);
+      }
+    };
+
     loadBookDetails();
   }, [studentId, bookId, navigate]);
 
@@ -71,6 +104,10 @@ const BookDetails: React.FC = () => {
   };
 
   const handleReserve = () => {
+    if (isAlreadyReserved) {
+      console.log('⚠️ Tentativa de reservar livro já reservado bloqueada');
+      return;
+    }
     navigate(`/student-dashboard/${studentId}/reserve/${bookId}`);
   };
 
@@ -272,14 +309,38 @@ const BookDetails: React.FC = () => {
             {/* Reserve Button */}
             <button 
               onClick={handleReserve}
-              className={styles.reserveButton}
+              className={`${styles.reserveButton} ${isAlreadyReserved ? styles.reserveButtonDisabled : ''}`}
+              disabled={isAlreadyReserved}
             >
-              <Heart size={20} />
-              {book.availableCopies > 0 ? 'Reservar para mim' : 'Entrar na fila de espera'}
+              {isAlreadyReserved ? (
+                <>
+                  <CheckCircle size={20} />
+                  Você já reservou esse livro
+                </>
+              ) : (
+                <>
+                  <Heart size={20} />
+                  {book.availableCopies > 0 ? 'Reservar para mim' : 'Entrar na fila de espera'}
+                </>
+              )}
             </button>
 
             <div className={styles.reserveInfo}>
-              {book.availableCopies > 0 ? (
+              {isAlreadyReserved ? (
+                <div className={styles.alreadyReservedInfo}>
+                  <p className={styles.alreadyReservedMessage}>
+                    ✅ <strong>Você já possui uma reserva para este livro!</strong><br/>
+                    Status: {reservationStatus === 'ready' ? 'Pronto para retirada' : 
+                             reservationStatus === 'pending' ? 'Aguardando disponibilidade' : 
+                             reservationStatus === 'completed' ? 'Retirado' : 
+                             reservationStatus === 'cancelled' ? 'Cancelado' :
+                             reservationStatus === 'expired' ? 'Expirado' : 'Status desconhecido'}
+                  </p>
+                  <p className={styles.alreadyReservedDetails}>
+                    Acesse "Meus Livros Reservados" para acompanhar o status da sua reserva.
+                  </p>
+                </div>
+              ) : book.availableCopies > 0 ? (
                 <p className={styles.availableMessage}>
                   ✅ Este livro está disponível à pronta entrega! Você pode reservá-lo para pegar quando quiser.
                 </p>
