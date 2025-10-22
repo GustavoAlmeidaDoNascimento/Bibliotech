@@ -29,17 +29,16 @@ const MyBooks: React.FC = () => {
       
       console.log('📚 Carregando reservas do aluno:', studentId);
       
-      // Buscar reservas da escola do aluno (mesma coleção que o gestor usa)
-      const schoolId = await getStudentSchoolId(studentId);
-      if (!schoolId) {
-        throw new Error('Escola do aluno não encontrada');
+      // Buscar dados do aluno para obter schoolId
+      const student = await studentService.findStudentById(studentId);
+      if (!student) {
+        throw new Error('Aluno não encontrado');
       }
       
-      console.log('🏫 Escola do aluno:', schoolId);
+      console.log('🏫 Escola do aluno:', student.userId);
       
-      // Buscar todas as reservas da escola e filtrar pelo studentId
-      const allReservations = await reservationService.getReservations(schoolId);
-      const studentReservations = allReservations.filter(res => res.studentId === studentId);
+      // Usar a nova função que tenta buscar de ambas as coleções
+      const studentReservations = await reservationService.getStudentReservations(studentId, student.userId);
       
       console.log('✅ Reservas carregadas:', studentReservations.length);
       setReservations(studentReservations);
@@ -48,18 +47,6 @@ const MyBooks: React.FC = () => {
       setError('Erro ao carregar suas reservas. Tente novamente.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Função para obter o ID da escola do aluno
-  const getStudentSchoolId = async (studentId: string): Promise<string | null> => {
-    try {
-      // Usar o serviço de aluno para encontrar a escola
-      const student = await studentService.findStudentById(studentId);
-      return student?.userId || null; // userId é o schoolId
-    } catch (error) {
-      console.error('Erro ao buscar escola do aluno:', error);
-      return null;
     }
   };
 

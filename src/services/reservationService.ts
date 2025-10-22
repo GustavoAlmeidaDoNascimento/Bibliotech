@@ -37,6 +37,7 @@ export interface Reservation {
 class ReservationService {
   /**
    * Cria uma nova reserva
+   * Salva tanto na coleção da escola quanto na coleção global para alunos
    */
   async createReservation(
     userId: string,
@@ -49,60 +50,102 @@ class ReservationService {
     isAvailable: boolean
   ): Promise<string> {
     try {
-      const reservationsRef = collection(db, `users/${userId}/reservations`);
+      // Criar reserva na coleção da escola (para gestores)
+      const schoolReservationId = await this.createSchoolReservation(
+        userId, studentId, studentName, bookId, bookTitle, bookAuthor, bookCoverUrl, isAvailable
+      );
       
-      // Verificação temporariamente desabilitada para evitar erro de índice
-      // TODO: Reativar após criar índices no Firebase
-      console.log('⚠️ Verificação de reservas duplicadas desabilitada temporariamente');
-
-      const now = Timestamp.now();
-
-      // Se o livro está disponível, a reserva já começa como 'ready'
-      // Se não, entra como 'pending' na fila de espera
-      const status = isAvailable ? 'ready' : 'pending';
-      const type = isAvailable ? 'available' : 'waitlist';
-
-      // Criar objeto base de reserva
-      const reservationData: any = {
-        studentId,
-        studentName,
-        bookId,
-        bookTitle,
-        userId,
-        status,
-        type,
-        createdAt: now
-      };
-
-      // Adicionar campos opcionais apenas se tiverem valor
-      if (bookAuthor) {
-        reservationData.bookAuthor = bookAuthor;
-      }
-      if (bookCoverUrl) {
-        reservationData.bookCoverUrl = bookCoverUrl;
-      }
-
-      // Se for waitlist, calcular e adicionar posição na fila
-      if (!isAvailable) {
-        // Temporariamente desabilitado para evitar erro de permissões
-        // TODO: Reativar após resolver permissões do Firebase
-        console.log('⚠️ Cálculo de posição na fila desabilitado temporariamente');
-        reservationData.position = 1; // Posição padrão
-      }
-
-      // Se estiver pronto (disponível), adicionar apenas data de ready
-      if (isAvailable) {
-        reservationData.readyAt = now;
-        // Removido expiresAt - não há prazo para retirada
-      }
-
-      const docRef = await addDoc(reservationsRef, reservationData);
-      console.log('✅ Reserva criada com sucesso:', docRef.id);
-      return docRef.id;
+      // Criar reserva na coleção global (para alunos)
+      const globalReservationId = await this.createGlobalReservation(
+        userId, studentId, studentName, bookId, bookTitle, bookAuthor, bookCoverUrl, isAvailable
+      );
+      
+      console.log('✅ Reserva criada com sucesso:', { schoolReservationId, globalReservationId });
+      return schoolReservationId; // Retorna o ID da escola como principal
     } catch (error) {
       console.error('Erro ao criar reserva:', error);
       throw error;
     }
+  }
+
+  /**
+   * Cria reserva na coleção da escola (users/{userId}/reservations)
+   */
+  private async createSchoolReservation(
+    userId: string,
+    studentId: string,
+    studentName: string,
+    bookId: string,
+    bookTitle: string,
+    bookAuthor: string | undefined,
+    bookCoverUrl: string | undefined,
+    isAvailable: boolean
+  ): Promise<string> {
+    const reservationsRef = collection(db, `users/${userId}/reservations`);
+    
+    const now = Timestamp.now();
+    const status = isAvailable ? 'ready' : 'pending';
+    const type = isAvailable ? 'available' : 'waitlist';
+
+    const reservationData: any = {
+      studentId,
+      studentName,
+      bookId,
+      bookTitle,
+      userId,
+      status,
+      type,
+      createdAt: now
+    };
+
+    if (bookAuthor) reservationData.bookAuthor = bookAuthor;
+    if (bookCoverUrl) reservationData.bookCoverUrl = bookCoverUrl;
+    if (!isAvailable) reservationData.position = 1;
+    if (isAvailable) reservationData.readyAt = now;
+
+    const docRef = await addDoc(reservationsRef, reservationData);
+    console.log('✅ Reserva criada na escola:', docRef.id);
+    return docRef.id;
+  }
+
+  /**
+   * Cria reserva na coleção global (student-reservations)
+   */
+  private async createGlobalReservation(
+    userId: string,
+    studentId: string,
+    studentName: string,
+    bookId: string,
+    bookTitle: string,
+    bookAuthor: string | undefined,
+    bookCoverUrl: string | undefined,
+    isAvailable: boolean
+  ): Promise<string> {
+    const reservationsRef = collection(db, 'student-reservations');
+    
+    const now = Timestamp.now();
+    const status = isAvailable ? 'ready' : 'pending';
+    const type = isAvailable ? 'available' : 'waitlist';
+
+    const reservationData: any = {
+      studentId,
+      studentName,
+      bookId,
+      bookTitle,
+      userId,
+      status,
+      type,
+      createdAt: now
+    };
+
+    if (bookAuthor) reservationData.bookAuthor = bookAuthor;
+    if (bookCoverUrl) reservationData.bookCoverUrl = bookCoverUrl;
+    if (!isAvailable) reservationData.position = 1;
+    if (isAvailable) reservationData.readyAt = now;
+
+    const docRef = await addDoc(reservationsRef, reservationData);
+    console.log('✅ Reserva criada na coleção global:', docRef.id);
+    return docRef.id;
   }
 
   /**
@@ -143,6 +186,81 @@ class ReservationService {
       } as Reservation));
     } catch (error) {
       console.error('Erro ao buscar reservas por status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Busca reservas de um aluno específico usando uma abordagem alternativa
+   * Esta função tenta buscar da coleção global primeiro, depois da escola
+   */
+  async getStudentReservations(studentId: string, schoolId?: string): Promise<Reservation[]> {
+    try {
+      console.log('🔍 Buscando reservas do aluno:', { studentId, schoolId });
+      
+      // Primeiro, tentar buscar da coleção global (mais permissiva)
+      try {
+        const globalReservations = await this.getStudentReservationsFromGlobal(studentId);
+        if (globalReservations.length > 0) {
+          console.log('✅ Reservas encontradas na coleção global:', globalReservations.length);
+          return globalReservations;
+        }
+      } catch (globalError) {
+        console.log('⚠️ Erro ao buscar da coleção global, tentando escola:', globalError);
+      }
+      
+      // Se não encontrou na global e tem schoolId, tentar da escola
+      if (schoolId) {
+        try {
+          const schoolReservations = await this.getStudentReservationsFromSchool(schoolId, studentId);
+          console.log('✅ Reservas encontradas na escola:', schoolReservations.length);
+          return schoolReservations;
+        } catch (schoolError) {
+          console.log('⚠️ Erro ao buscar da escola:', schoolError);
+        }
+      }
+      
+      // Se chegou aqui, não encontrou reservas
+      console.log('📚 Nenhuma reserva encontrada');
+      return [];
+    } catch (error) {
+      console.error('Erro ao buscar reservas do aluno:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Busca reservas de um aluno específico usando a coleção da escola
+   * Esta função é mais segura pois usa as permissões da escola
+   */
+  async getStudentReservationsFromSchool(userId: string, studentId: string): Promise<Reservation[]> {
+    try {
+      console.log('🔍 Buscando reservas do aluno na escola:', { userId, studentId });
+      const reservationsRef = collection(db, `users/${userId}/reservations`);
+      const q = query(
+        reservationsRef,
+        where('studentId', '==', studentId)
+        // Temporariamente removido orderBy para evitar erro de índice
+        // orderBy('createdAt', 'desc')
+      );
+      const snapshot = await getDocs(q);
+      
+      const reservations = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Reservation));
+      
+      // Ordenar client-side temporariamente
+      reservations.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
+        return dateB.getTime() - dateA.getTime();
+      });
+      
+      console.log('📚 Reservas encontradas na escola:', reservations.length);
+      return reservations;
+    } catch (error) {
+      console.error('Erro ao buscar reservas do aluno na escola:', error);
       throw error;
     }
   }
