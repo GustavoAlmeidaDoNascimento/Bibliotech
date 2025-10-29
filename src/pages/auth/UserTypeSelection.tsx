@@ -20,7 +20,7 @@ const UserTypeSelection: React.FC = () => {
   };
 
   const handleWhatsAppClick = () => {
-    window.open('https://wa.me/5551997188572?text=Olá! Gostaria de participar do beta do Bibliotech!', '_blank');
+    window.open('https://wa.me/5551996468758?text=Olá! Gostaria de participar do beta do Bibliotech!', '_blank');
   };
 
   return (

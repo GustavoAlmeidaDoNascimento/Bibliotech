@@ -65,7 +65,7 @@ const StudentProfile: React.FC = () => {
   };
 
   const handleWhatsAppSupport = () => {
-    const phoneNumber = '5551997188572'; // Número do suporte (formato internacional)
+    const phoneNumber = '5551996468758'; // Número do suporte (formato internacional)
     const message = encodeURIComponent('Olá! Preciso de ajuda com o sistema Bibliotech.');
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappUrl, '_blank');

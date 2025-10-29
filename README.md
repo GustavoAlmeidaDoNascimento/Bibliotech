@@ -453,7 +453,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ### Empresa
 **Proton Software**
 - 📧 Email: proton.hello.world@gmail.com
-- 📞 WhatsApp: (51) 99718-8572
+- 📞 WhatsApp: (51) 99646-8758
 - 🌐 Website: [protonsoftware.tech](https://protonsoftware.tech)
 - 💼 LinkedIn: [Proton Software](https://www.linkedin.com/company/107289200/)
 

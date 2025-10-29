@@ -597,7 +597,7 @@ const Settings = () => {
               
               <div className={styles.supportActions}>
                 <a 
-                  href="https://wa.me/5551997188572" 
+                  href="https://wa.me/5551996468758" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className={styles.modernSupportButton}
