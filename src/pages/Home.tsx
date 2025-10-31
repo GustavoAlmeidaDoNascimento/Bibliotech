@@ -637,11 +637,18 @@ const SocialLink = styled.a`
   }
 `;
 
-const GUEST_LOGIN_ENABLED = true;
+// Configuração do login de convidado via variáveis de ambiente
+// As credenciais são definidas em .env.local (não versionado)
+const GUEST_LOGIN_ENABLED = process.env.REACT_APP_GUEST_LOGIN_ENABLED === 'true';
 const GUEST_CREDENTIALS = {
-  email: 'bibliotech.convidado@gmail.com',
-  password: 'convidado123'
+  email: process.env.REACT_APP_GUEST_EMAIL || '',
+  password: process.env.REACT_APP_GUEST_PASSWORD || ''
 };
+
+// Validação: se login de convidado está habilitado, as credenciais devem estar configuradas
+const isGuestLoginConfigured = GUEST_LOGIN_ENABLED && 
+  GUEST_CREDENTIALS.email && 
+  GUEST_CREDENTIALS.password;
 
 interface ContactFormData {
   nome: string;
@@ -661,6 +668,11 @@ const Home: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleGuestLogin = async () => {
+    if (!isGuestLoginConfigured) {
+      console.error('Login de convidado não configurado. Verifique as variáveis de ambiente.');
+      return;
+    }
+    
     try {
       await executeGuestLogin(() => login(GUEST_CREDENTIALS.email, GUEST_CREDENTIALS.password));
       navigate('/dashboard');
@@ -736,7 +748,7 @@ Aguardo retorno. Obrigado!`;
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              {GUEST_LOGIN_ENABLED && (
+              {isGuestLoginConfigured && (
                 <PrimaryButton
                   onClick={handleGuestLogin}
                   disabled={isGuestLoading}

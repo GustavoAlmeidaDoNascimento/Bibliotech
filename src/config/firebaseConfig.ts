@@ -1,5 +1,3 @@
-<<<<<<< Current (Your changes)
-=======
 import { FirebaseOptions } from 'firebase/app';
 import { firebaseConfig } from './firebase.config';
 
@@ -29,5 +27,3 @@ export const getFirebaseConfig = (): FirebaseOptions => {
 
   return firebaseConfig;
 };
-
->>>>>>> Incoming (Background Agent changes)

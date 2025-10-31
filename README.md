@@ -266,7 +266,14 @@ REACT_APP_FIREBASE_PROJECT_ID=seu_projeto_id
 REACT_APP_FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
 REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
 REACT_APP_FIREBASE_APP_ID=sua_app_id
+
+# Opcional: Login de Convidado (para demonstrações)
+REACT_APP_GUEST_LOGIN_ENABLED=true
+REACT_APP_GUEST_EMAIL=bibliotech.convidado@gmail.com
+REACT_APP_GUEST_PASSWORD=convidado123
 ```
+
+> 💡 **Nota**: Para mais informações sobre variáveis de ambiente, consulte [ENV_VARIABLES.md](./ENV_VARIABLES.md)
 
 5. **Execute o projeto em desenvolvimento**
 ```bash

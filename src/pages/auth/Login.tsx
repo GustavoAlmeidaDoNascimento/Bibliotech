@@ -8,12 +8,18 @@ import { ROUTES } from '../../constants';
 import styles from './Login.module.css';
 import { UserCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
 
-// Configuração para habilitar/desabilitar login de convidado (para facilitar remoção)
-const GUEST_LOGIN_ENABLED = true;
+// Configuração do login de convidado via variáveis de ambiente
+// As credenciais são definidas em .env.local (não versionado)
+const GUEST_LOGIN_ENABLED = process.env.REACT_APP_GUEST_LOGIN_ENABLED === 'true';
 const GUEST_CREDENTIALS = {
-  email: 'bibliotech.convidado@gmail.com',
-  password: 'convidado123'
+  email: process.env.REACT_APP_GUEST_EMAIL || '',
+  password: process.env.REACT_APP_GUEST_PASSWORD || ''
 };
+
+// Validação: se login de convidado está habilitado, as credenciais devem estar configuradas
+const isGuestLoginConfigured = GUEST_LOGIN_ENABLED && 
+  GUEST_CREDENTIALS.email && 
+  GUEST_CREDENTIALS.password;
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -71,6 +77,11 @@ const Login: React.FC = () => {
   };
 
   const handleGuestLogin = async () => {
+    if (!isGuestLoginConfigured) {
+      console.error('Login de convidado não configurado. Verifique as variáveis de ambiente.');
+      return;
+    }
+    
     try {
       await executeLogin(() => login(GUEST_CREDENTIALS.email, GUEST_CREDENTIALS.password));
       navigate(ROUTES.DASHBOARD);
@@ -145,7 +156,7 @@ const Login: React.FC = () => {
         </form>
 
 
-        {GUEST_LOGIN_ENABLED && (
+        {isGuestLoginConfigured && (
           <div className={styles.guestLogin}>
             <div className={styles.divider}>
               <span>ou</span>
