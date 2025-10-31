@@ -31,3 +31,6 @@ yarn-error.log*
 *.mov
 *.mkv
 *.webm
+
+# Firebase config (não versionar credenciais)
+src/config/firebase.config.ts
