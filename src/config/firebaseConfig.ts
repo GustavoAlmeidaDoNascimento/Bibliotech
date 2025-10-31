@@ -1,11 +1,25 @@
 import { FirebaseOptions } from 'firebase/app';
-import { firebaseConfig } from './firebase.config';
 
 /**
- * Carrega e valida as configurações do Firebase a partir do arquivo firebase.config.ts
- * @throws {Error} Se alguma configuração obrigatória estiver faltando ou se o arquivo não existir
+ * Carrega e valida as configurações do Firebase a partir de variáveis de ambiente
+ * @throws {Error} Se alguma configuração obrigatória estiver faltando
  */
 export const getFirebaseConfig = (): FirebaseOptions => {
+  // Usar variáveis de ambiente (compatível com Vercel e outras plataformas)
+  const firebaseConfig: FirebaseOptions = {
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY || '',
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || '',
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || '',
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || '',
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: process.env.REACT_APP_FIREBASE_APP_ID || '',
+  };
+
+  // Adicionar measurementId se estiver definido (opcional)
+  if (process.env.REACT_APP_FIREBASE_MEASUREMENT_ID) {
+    firebaseConfig.measurementId = process.env.REACT_APP_FIREBASE_MEASUREMENT_ID;
+  }
+
   // Validar configuração obrigatória
   const requiredFields: (keyof FirebaseOptions)[] = [
     'apiKey',
@@ -21,7 +35,7 @@ export const getFirebaseConfig = (): FirebaseOptions => {
   if (missingFields.length > 0) {
     throw new Error(
       `Configuração do Firebase incompleta. Campos faltando: ${missingFields.join(', ')}. ` +
-      'Copie src/config/firebase.config.example.ts para src/config/firebase.config.ts e preencha com suas credenciais reais.'
+      'Configure as variáveis de ambiente REACT_APP_FIREBASE_* na Vercel ou no arquivo .env.local.'
     );
   }
 
