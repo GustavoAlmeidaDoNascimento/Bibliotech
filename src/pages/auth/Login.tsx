@@ -28,7 +28,7 @@ const Login: React.FC = () => {
   });
   const [schoolName, setSchoolName] = useState('School Library System');
   
-  const { login, currentUser } = useAuth();
+  const { login, createUser, currentUser } = useAuth();
   const { execute: executeLogin, isLoading, error } = useAsync<void>();
   const navigate = useNavigate();
 
@@ -66,9 +66,23 @@ const Login: React.FC = () => {
     try {
       await executeLogin(() => login(formData.email, formData.password));
       navigate(ROUTES.DASHBOARD);
-    } catch (error) {
-      // Erro é gerenciado pelo hook useAsync
-      console.error('Failed to log in:', error);
+    } catch (error: any) {
+      // Se o erro for de usuário não encontrado ou credenciais inválidas,
+      // tenta criar o usuário automaticamente
+      const errorCode = error?.code || error?.originalError?.code;
+      if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential') {
+        try {
+          console.log('Usuário não encontrado. Tentando criar usuário automaticamente...');
+          await executeLogin(() => createUser(formData.email, formData.password));
+          navigate(ROUTES.DASHBOARD);
+        } catch (createError) {
+          // Se falhar ao criar (ex: email já existe mas senha diferente), mostra o erro
+          console.error('Erro ao criar usuário:', createError);
+        }
+      } else {
+        // Erro é gerenciado pelo hook useAsync
+        console.error('Erro no login:', error);
+      }
     }
   };
 

@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
   signOut, 
   sendPasswordResetEmail,
   User
@@ -34,7 +35,31 @@ export const authService = {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       return result.user;
-    } catch (error) {
+    } catch (error: any) {
+      // Log detalhado do erro para diagnóstico
+      console.error('Erro de login:', {
+        code: error?.code,
+        message: error?.message,
+        email
+      });
+      const friendlyMessage = getAuthErrorMessage(error);
+      const loginError: any = new Error(friendlyMessage);
+      loginError.code = error?.code; // Preserva o código original do Firebase
+      loginError.originalError = error;
+      throw loginError;
+    }
+  },
+
+  createUser: async (email: string, password: string): Promise<User> => {
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      return result.user;
+    } catch (error: any) {
+      console.error('Erro ao criar usuário:', {
+        code: error?.code,
+        message: error?.message,
+        email
+      });
       const friendlyMessage = getAuthErrorMessage(error);
       throw new Error(friendlyMessage);
     }
