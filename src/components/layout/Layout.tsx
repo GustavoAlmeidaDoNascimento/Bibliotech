@@ -7,6 +7,7 @@ import { useSettings } from '../../contexts/SettingsContext';
 import { useNotifications, Notification } from '../../contexts/NotificationsContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
+import { reservationService } from '../../services/reservationService';
 import {
   UserGroupIcon,
   AcademicCapIcon,
@@ -25,6 +26,7 @@ const Layout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [reservationsCount, setReservationsCount] = useState<number>(0);
   
   const { logout, currentUser } = useAuth();
   const navigate = useNavigate();
@@ -38,6 +40,32 @@ const Layout: React.FC = () => {
       markAllAsRead();
     }
   }, [isNotificationsOpen, unreadCount, markAllAsRead]);
+
+  // Buscar contador de reservas
+  useEffect(() => {
+    const fetchReservationsCount = async () => {
+      if (!currentUser?.uid) return;
+      
+      try {
+        const reservations = await reservationService.getReservations(currentUser.uid);
+        // Contar apenas reservas ativas (pending, ready)
+        const activeReservations = reservations.filter(
+          r => r.status === 'pending' || r.status === 'ready'
+        );
+        setReservationsCount(activeReservations.length);
+      } catch (error) {
+        console.error('Erro ao buscar contador de reservas:', error);
+        setReservationsCount(0);
+      }
+    };
+
+    fetchReservationsCount();
+    
+    // Atualizar contador quando a rota mudar para /reservations (após criar/deletar reservas)
+    const interval = setInterval(fetchReservationsCount, 30000); // Atualizar a cada 30 segundos
+    
+    return () => clearInterval(interval);
+  }, [currentUser?.uid, location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -511,7 +539,10 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
               onClick={handleLinkClick}
             >
               <CalendarDaysIcon className={styles.linkIcon} />
-              Reservas
+              <span style={{ flex: 1 }}>Reservas</span>
+              {reservationsCount > 0 && (
+                <span className={styles.reservationBadge}>{reservationsCount}</span>
+              )}
             </Link>
           </div>
 

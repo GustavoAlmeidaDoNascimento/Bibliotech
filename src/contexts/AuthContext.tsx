@@ -6,7 +6,6 @@ import { AsyncState } from '../types/common';
 interface AuthContextType {
   currentUser: User | null;
   login: (email: string, password: string) => Promise<void>;
-  createUser: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   authState: AsyncState<User>;
@@ -38,19 +37,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthState(prev => ({ ...prev, status: 'success' }));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login';
-      setAuthState(prev => ({ ...prev, status: 'error', error: errorMessage }));
-      throw error;
-    }
-  };
-
-  const createUser = async (email: string, password: string) => {
-    setAuthState(prev => ({ ...prev, status: 'loading', error: null }));
-    
-    try {
-      await authService.createUser(email, password);
-      setAuthState(prev => ({ ...prev, status: 'success' }));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar usuário';
       setAuthState(prev => ({ ...prev, status: 'error', error: errorMessage }));
       throw error;
     }
@@ -93,7 +79,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     currentUser,
     login,
-    createUser,
     logout,
     resetPassword,
     authState,
