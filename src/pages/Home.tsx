@@ -823,7 +823,7 @@ Aguardo retorno. Obrigado!`;
               >
                 {isDemoLoading ? 'Entrando...' : (
                   <>
-                    Acessar conta de demonstração 🚀
+                    Acessar conta de demonstração (IFSul) 🚀
                   </>
                 )}
               </DemoButton>
