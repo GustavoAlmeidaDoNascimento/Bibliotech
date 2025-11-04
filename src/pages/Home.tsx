@@ -140,6 +140,38 @@ const SecondaryButton = styled(motion.button)`
   }
 `;
 
+const DemoButton = styled(motion.button)`
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #0078d4 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  
+  &:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #005fa3 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 300px;
+  }
+`;
+
 
 const Section = styled.section`
   padding: 80px 20px;
@@ -660,6 +692,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { execute: executeGuestLogin, isLoading: isGuestLoading } = useAsync<void>();
+  const { execute: executeDemoLogin, isLoading: isDemoLoading } = useAsync<void>();
   const [contactForm, setContactForm] = useState<ContactFormData>({
     nome: '',
     interesse: '',
@@ -678,6 +711,15 @@ const Home: React.FC = () => {
       navigate('/dashboard');
     } catch (error) {
       console.error('Erro no login de convidado:', error);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    try {
+      await executeDemoLogin(() => login('bibliotech.convidado@gmail.com', 'convidado123'));
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Erro no login de demonstração:', error);
     }
   };
 
@@ -766,6 +808,26 @@ Aguardo retorno. Obrigado!`;
                 Conhecer o Sistema
               </SecondaryButton>
             </CTAButtons>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              style={{ display: 'flex', justifyContent: 'center', marginBottom: '60px' }}
+            >
+              <DemoButton
+                onClick={handleDemoLogin}
+                disabled={isDemoLoading}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {isDemoLoading ? 'Entrando...' : (
+                  <>
+                    Acessar conta de demonstração 🚀
+                  </>
+                )}
+              </DemoButton>
+            </motion.div>
             
             <AnimatedStatsGrid />
           </HeroContent>
