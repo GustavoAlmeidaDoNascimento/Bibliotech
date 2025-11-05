@@ -192,14 +192,28 @@ class ReservationService {
   }
 
   /**
-   * Busca reservas de um aluno específico usando uma abordagem alternativa
-   * Esta função tenta buscar da coleção global primeiro, depois da escola
+   * Busca reservas de um aluno específico
+   * Busca PRIMEIRO da coleção da escola (mesmo caminho que a bibliotecária usa)
+   * Isso garante sincronização: quando a bibliotecária deleta, o aluno também não vê
+   * Se não encontrar na escola, usa a coleção global como fallback
    */
   async getStudentReservations(studentId: string, schoolId?: string): Promise<Reservation[]> {
     try {
       console.log('🔍 Buscando reservas do aluno:', { studentId, schoolId });
       
-      // Primeiro, tentar buscar da coleção global (mais permissiva)
+      // CORREÇÃO: Buscar PRIMEIRO da coleção da escola (mesmo caminho que a bibliotecária usa)
+      // Isso garante que quando a bibliotecária deleta uma reserva, o aluno também não a verá
+      if (schoolId) {
+        try {
+          const schoolReservations = await this.getStudentReservationsFromSchool(schoolId, studentId);
+          console.log('✅ Reservas encontradas na escola:', schoolReservations.length);
+          return schoolReservations;
+        } catch (schoolError) {
+          console.log('⚠️ Erro ao buscar da escola, tentando coleção global:', schoolError);
+        }
+      }
+      
+      // Se não encontrou na escola ou não tem schoolId, tentar da coleção global como fallback
       try {
         const globalReservations = await this.getStudentReservationsFromGlobal(studentId);
         if (globalReservations.length > 0) {
@@ -207,18 +221,7 @@ class ReservationService {
           return globalReservations;
         }
       } catch (globalError) {
-        console.log('⚠️ Erro ao buscar da coleção global, tentando escola:', globalError);
-      }
-      
-      // Se não encontrou na global e tem schoolId, tentar da escola
-      if (schoolId) {
-        try {
-          const schoolReservations = await this.getStudentReservationsFromSchool(schoolId, studentId);
-          console.log('✅ Reservas encontradas na escola:', schoolReservations.length);
-          return schoolReservations;
-        } catch (schoolError) {
-          console.log('⚠️ Erro ao buscar da escola:', schoolError);
-        }
+        console.log('⚠️ Erro ao buscar da coleção global:', globalError);
       }
       
       // Se chegou aqui, não encontrou reservas
@@ -233,6 +236,7 @@ class ReservationService {
   /**
    * Busca reservas de um aluno específico usando a coleção da escola
    * Esta função é mais segura pois usa as permissões da escola
+   * Filtra apenas reservas ativas (pending ou ready), excluindo completed, cancelled e expired
    */
   async getStudentReservationsFromSchool(userId: string, studentId: string): Promise<Reservation[]> {
     try {
@@ -246,20 +250,25 @@ class ReservationService {
       );
       const snapshot = await getDocs(q);
       
-      const reservations = snapshot.docs.map(doc => ({
+      const allReservations = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as Reservation));
       
+      // Filtrar apenas reservas ativas (pending ou ready)
+      const activeReservations = allReservations.filter(res => 
+        res.status === 'pending' || res.status === 'ready'
+      );
+      
       // Ordenar client-side temporariamente
-      reservations.sort((a, b) => {
+      activeReservations.sort((a, b) => {
         const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
         const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
         return dateB.getTime() - dateA.getTime();
       });
       
-      console.log('📚 Reservas encontradas na escola:', reservations.length);
-      return reservations;
+      console.log(`📚 Reservas encontradas na escola: ${allReservations.length} total, ${activeReservations.length} ativas`);
+      return activeReservations;
     } catch (error) {
       console.error('Erro ao buscar reservas do aluno na escola:', error);
       throw error;
@@ -268,6 +277,7 @@ class ReservationService {
 
   /**
    * Busca reservas de um aluno específico da coleção global
+   * Filtra apenas reservas ativas (pending ou ready), excluindo completed, cancelled e expired
    */
   async getStudentReservationsFromGlobal(studentId: string): Promise<Reservation[]> {
     try {
@@ -281,20 +291,25 @@ class ReservationService {
       );
       const snapshot = await getDocs(q);
       
-      const reservations = snapshot.docs.map(doc => ({
+      const allReservations = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as Reservation));
       
+      // Filtrar apenas reservas ativas (pending ou ready)
+      const activeReservations = allReservations.filter(res => 
+        res.status === 'pending' || res.status === 'ready'
+      );
+      
       // Ordenar client-side temporariamente
-      reservations.sort((a, b) => {
+      activeReservations.sort((a, b) => {
         const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
         const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
         return dateB.getTime() - dateA.getTime();
       });
       
-      console.log('📚 Reservas encontradas:', reservations.length);
-      return reservations;
+      console.log(`📚 Reservas encontradas: ${allReservations.length} total, ${activeReservations.length} ativas`);
+      return activeReservations;
     } catch (error) {
       console.error('Erro ao buscar reservas do aluno:', error);
       throw error;
@@ -362,13 +377,86 @@ class ReservationService {
 
   /**
    * Deletar reserva (quando livro foi retirado)
+   * Deleta tanto da coleção da escola quanto da coleção global (student-reservations)
    */
   async deleteReservation(userId: string, reservationId: string): Promise<void> {
     try {
       console.log('🗑️ Deletando reserva do banco de dados:', reservationId);
-      const docRef = doc(db, `users/${userId}/reservations`, reservationId);
-      await deleteDoc(docRef);
-      console.log('✅ Reserva deletada com sucesso do Firebase');
+      
+      // Primeiro, buscar os dados da reserva para encontrar a correspondente na coleção global
+      const reservationRef = doc(db, `users/${userId}/reservations`, reservationId);
+      const reservationSnap = await getDoc(reservationRef);
+      
+      if (!reservationSnap.exists()) {
+        console.log('⚠️ Reserva não encontrada na coleção da escola');
+        return;
+      }
+      
+      const reservationData = reservationSnap.data() as Reservation;
+      
+      // Deletar da coleção da escola
+      await deleteDoc(reservationRef);
+      console.log('✅ Reserva deletada com sucesso da coleção da escola');
+      
+      // Buscar e deletar a reserva correspondente na coleção global
+      // Usar studentId, bookId e userId para encontrar a correspondente
+      try {
+        const globalReservationsRef = collection(db, 'student-reservations');
+        
+        // Tentar primeiro com query composta (pode precisar de índice)
+        let deleted = false;
+        try {
+          const globalQuery = query(
+            globalReservationsRef,
+            where('studentId', '==', reservationData.studentId),
+            where('bookId', '==', reservationData.bookId),
+            where('userId', '==', userId)
+          );
+          const globalSnapshot = await getDocs(globalQuery);
+          
+          if (!globalSnapshot.empty) {
+            // Deletar todas as reservas correspondentes encontradas (pode haver duplicatas)
+            const deletePromises = globalSnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deletePromises);
+            console.log(`✅ ${globalSnapshot.docs.length} reserva(s) deletada(s) da coleção global`);
+            deleted = true;
+          }
+        } catch (queryError: any) {
+          // Se a query composta falhar (falta de índice), tentar abordagem alternativa
+          console.log('⚠️ Query composta falhou, tentando abordagem alternativa:', queryError.message);
+          
+          // Buscar todas as reservas do aluno e filtrar manualmente
+          const studentQuery = query(
+            globalReservationsRef,
+            where('studentId', '==', reservationData.studentId)
+          );
+          const allStudentReservations = await getDocs(studentQuery);
+          
+          // Filtrar manualmente as reservas que correspondem
+          const matchingDocs = allStudentReservations.docs.filter(doc => {
+            const data = doc.data();
+            return data.bookId === reservationData.bookId && data.userId === userId;
+          });
+          
+          // Deletar diretamente os documentos encontrados
+          if (matchingDocs.length > 0) {
+            const deletePromises = matchingDocs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deletePromises);
+            console.log(`✅ ${matchingDocs.length} reserva(s) deletada(s) da coleção global (abordagem alternativa)`);
+            deleted = true;
+          }
+        }
+        
+        if (!deleted) {
+          console.log('⚠️ Reserva correspondente não encontrada na coleção global (pode já ter sido deletada)');
+        }
+      } catch (globalError) {
+        console.error('⚠️ Erro ao deletar da coleção global (continuando):', globalError);
+        // Não falhar se não conseguir deletar da coleção global
+        // A reserva já foi deletada da coleção da escola
+      }
+      
+      console.log('✅ Processo de deleção concluído');
     } catch (error) {
       console.error('❌ Erro ao deletar reserva:', error);
       throw error;
