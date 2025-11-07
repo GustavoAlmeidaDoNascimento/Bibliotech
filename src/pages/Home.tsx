@@ -896,7 +896,7 @@ interface PricingPlan {
 const PRICING_PLANS: PricingPlan[] = [
   {
     name: 'Bibliotech Basicão',
-    price: 'R$ 146,95',
+    price: 'R$ 192,90',
     period: '/mês',
     features: [
       'Gerenciamento de biblioteca básico (acervo, cadastros e retiradas)',
@@ -907,7 +907,7 @@ const PRICING_PLANS: PricingPlan[] = [
   },
   {
     name: 'Bibliotech Smart',
-    price: 'R$ 189,90',
+    price: 'R$ 246,90',
     period: '/mês',
     features: [
       'Tudo do Bibliotech Basicão',
@@ -923,7 +923,7 @@ const PRICING_PLANS: PricingPlan[] = [
   },
   {
     name: 'Bibliotech +',
-    price: 'R$ 259,90',
+    price: 'R$ 337,90',
     period: '/mês',
     features: [
       'Tudo do Bibliotech Smart',
