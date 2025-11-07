@@ -207,6 +207,197 @@ const SectionDescription = styled(motion.p)`
   }
 `;
 
+const PricingSection = styled.div`
+  margin: 80px 0 60px;
+`;
+
+const PricingGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+`;
+
+interface PricingCardProps {
+  $highlighted?: boolean;
+}
+
+const PricingCard = styled(motion.div)<PricingCardProps>`
+  position: relative;
+  background: ${(props) =>
+    props.$highlighted
+      ? 'linear-gradient(160deg, rgba(17, 24, 39, 0.95) 0%, rgba(17, 59, 116, 0.95) 100%)'
+      : 'rgba(17, 24, 39, 0.85)'};
+  border: 1px solid
+    ${(props) => (props.$highlighted ? 'rgba(96, 165, 250, 0.6)' : 'rgba(59, 130, 246, 0.2)')};
+  border-radius: 20px;
+  padding: 48px 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: ${(props) =>
+    props.$highlighted
+      ? '0 20px 40px rgba(59, 130, 246, 0.35)'
+      : '0 12px 30px rgba(15, 23, 42, 0.35)'};
+  min-height: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: ${(props) =>
+      props.$highlighted
+        ? '0 24px 48px rgba(59, 130, 246, 0.45)'
+        : '0 16px 36px rgba(15, 23, 42, 0.45)'};
+  }
+
+  @media (max-width: 768px) {
+    padding: 40px 28px 32px;
+  }
+`;
+
+const PricingBadge = styled.span`
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.45);
+`;
+
+const PricingHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const PricingTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+`;
+
+interface PricingPriceProps {
+  $highlighted?: boolean;
+}
+
+const PricingPrice = styled.div<PricingPriceProps>`
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: clamp(2.2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  color: ${(props) => (props.$highlighted ? '#93c5fd' : '#60a5fa')};
+  margin: 0;
+
+  strong {
+    font-weight: inherit;
+    color: inherit;
+  }
+`;
+
+const PricingPeriod = styled.span`
+  font-size: 1rem;
+  color: #94a3b8;
+`;
+
+const PricingFeatures = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex-grow: 1;
+`;
+
+interface PricingFeatureProps {
+  $highlighted?: boolean;
+}
+
+const PricingFeature = styled.li<PricingFeatureProps>`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: ${(props) => (props.$highlighted ? '#e2e8f0' : '#cbd5e1')};
+  font-size: 0.98rem;
+  line-height: 1.5;
+`;
+
+interface CheckIconProps {
+  $highlighted?: boolean;
+}
+
+const CheckIcon = styled.span<CheckIconProps>`
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: ${(props) =>
+    props.$highlighted ? 'rgba(96, 165, 250, 0.25)' : 'rgba(59, 130, 246, 0.18)'};
+  color: ${(props) => (props.$highlighted ? '#bfdbfe' : '#60a5fa')};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    stroke-width: 3;
+  }
+`;
+
+const PricingFeatureText = styled.span`
+  flex: 1;
+`;
+
+interface PricingButtonProps {
+  $highlighted?: boolean;
+}
+
+const PricingButton = styled(motion.button)<PricingButtonProps>`
+  margin-top: 24px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid
+    ${(props) => (props.$highlighted ? 'rgba(255, 255, 255, 0.2)' : 'rgba(59, 130, 246, 0.4)')};
+  background: ${(props) =>
+    props.$highlighted
+      ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+      : 'rgba(15, 23, 42, 0.9)'};
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: ${(props) =>
+      props.$highlighted
+        ? 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)'
+        : 'rgba(30, 64, 175, 0.85)'};
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+`;
+
 const FeaturesContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -688,6 +879,57 @@ interface ContactFormData {
   mensagem: string;
 }
 
+interface PricingPlan {
+  name: string;
+  price: string;
+  period: string;
+  features: string[];
+  highlighted?: boolean;
+  badge?: string;
+}
+
+const PRICING_PLANS: PricingPlan[] = [
+  {
+    name: 'Plano Básico',
+    price: 'R$ 146,95',
+    period: '/mês',
+    features: [
+      'Gerenciamento de biblioteca básico (acervo, cadastros e retiradas)',
+      'Gerenciamento de turmas',
+      'Botão de mensagem para WhatsApp',
+      'Geração de etiquetas'
+    ]
+  },
+  {
+    name: 'Plano Médio',
+    price: 'R$ 189,90',
+    period: '/mês',
+    features: [
+      'Tudo do Plano Básico',
+      'Catálogo do leitor (com integração à API do Google)',
+      'Estatísticas por turma',
+      'Estatísticas da biblioteca',
+      'Interface do aluno',
+      'Estatísticas do aluno na interface do aluno',
+      'Estatísticas de cada aluno'
+    ],
+    highlighted: true,
+    badge: 'Mais Popular'
+  },
+  {
+    name: 'Plano Avançado',
+    price: 'R$ 259,90',
+    period: '/mês',
+    features: [
+      'Tudo do Plano Médio',
+      'Conquistas',
+      'Reservas de livros',
+      'Estatísticas da turma na interface do aluno',
+      'Futuras funcionalidades de inteligência artificial'
+    ]
+  }
+];
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -1033,6 +1275,76 @@ Aguardo retorno. Obrigado!`;
               </FeatureScreenshotPlaceholder>
             </FeatureItem>
           </FeaturesContainer>
+
+        <PricingSection>
+          <SectionTitle
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            Escolha seu plano
+          </SectionTitle>
+          <SectionDescription
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            Selecione o plano ideal para sua biblioteca escolar
+          </SectionDescription>
+
+          <PricingGrid>
+            {PRICING_PLANS.map((plan, index) => (
+              <PricingCard
+                key={plan.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 * index }}
+                $highlighted={plan.highlighted}
+              >
+                {plan.badge && <PricingBadge>{plan.badge}</PricingBadge>}
+                <PricingHeader>
+                  <PricingTitle>{plan.name}</PricingTitle>
+                  <PricingPrice $highlighted={plan.highlighted}>
+                    <strong>{plan.price}</strong>
+                    <PricingPeriod>{plan.period}</PricingPeriod>
+                  </PricingPrice>
+                </PricingHeader>
+
+                <PricingFeatures>
+                  {plan.features.map((feature) => (
+                    <PricingFeature key={feature} $highlighted={plan.highlighted}>
+                      <CheckIcon $highlighted={plan.highlighted}>
+                        <svg
+                          viewBox="0 0 12 10"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="1 5.5 4.5 9 11 1"></polyline>
+                        </svg>
+                      </CheckIcon>
+                      <PricingFeatureText>{feature}</PricingFeatureText>
+                    </PricingFeature>
+                  ))}
+                </PricingFeatures>
+
+                <PricingButton
+                  onClick={() => scrollToSection('contato')}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  $highlighted={plan.highlighted}
+                >
+                  Começar agora
+                </PricingButton>
+              </PricingCard>
+            ))}
+          </PricingGrid>
+        </PricingSection>
 
           <CTASection
             initial={{ opacity: 0, y: 20 }}
