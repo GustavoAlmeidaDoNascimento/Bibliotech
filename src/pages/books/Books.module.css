@@ -30,6 +30,17 @@
   align-items: center;
 }
 
+.selectionIndicator {
+  display: none;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.selectionIndicatorVisible {
+  display: inline;
+}
+
 .buttonIcon {
   width: 1.2rem;
   height: 1.2rem;

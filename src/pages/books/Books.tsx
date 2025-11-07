@@ -277,6 +277,17 @@ const Books = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2>Acervo da Biblioteca</h2>
+        <div
+          className={`${styles.selectionIndicator} ${selectedBooks.length > 0 ? styles.selectionIndicatorVisible : ''}`}
+          aria-live="polite"
+        >
+          {selectedBooks.length > 0 && (
+            <span>
+              {selectedBooks.length}{' '}
+              {selectedBooks.length === 1 ? 'selecionado' : 'selecionados'}
+            </span>
+          )}
+        </div>
         <div className={styles.headerActions}>
           {selectedBooks.length > 0 && (
             <>
