@@ -282,13 +282,18 @@ const PricingHeader = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  text-align: center;
 `;
 
 const PricingTitle = styled.h3`
-  font-size: 1.25rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.6rem);
   font-weight: 700;
   color: white;
   margin: 0;
+`;
+
+const TechAccent = styled.span`
+  color: #3b82f6;
 `;
 
 interface PricingPriceProps {
@@ -890,7 +895,7 @@ interface PricingPlan {
 
 const PRICING_PLANS: PricingPlan[] = [
   {
-    name: 'Plano Básico',
+    name: 'Bibliotech Basicão',
     price: 'R$ 146,95',
     period: '/mês',
     features: [
@@ -901,11 +906,11 @@ const PRICING_PLANS: PricingPlan[] = [
     ]
   },
   {
-    name: 'Plano Médio',
+    name: 'Bibliotech Smart',
     price: 'R$ 189,90',
     period: '/mês',
     features: [
-      'Tudo do Plano Básico',
+      'Tudo do Bibliotech Basicão',
       'Catálogo do leitor (com integração à API do Google)',
       'Estatísticas por turma',
       'Estatísticas da biblioteca',
@@ -917,11 +922,11 @@ const PRICING_PLANS: PricingPlan[] = [
     badge: 'Mais Popular'
   },
   {
-    name: 'Plano Avançado',
+    name: 'Bibliotech +',
     price: 'R$ 259,90',
     period: '/mês',
     features: [
-      'Tudo do Plano Médio',
+      'Tudo do Bibliotech Smart',
       'Conquistas',
       'Reservas de livros',
       'Estatísticas da turma na interface do aluno',
@@ -941,6 +946,25 @@ const Home: React.FC = () => {
     mensagem: ''
   });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const renderPlanName = (name: string) => {
+    const techIndex = name.toLowerCase().indexOf('tech');
+    if (techIndex === -1) {
+      return name;
+    }
+
+    const before = name.slice(0, techIndex);
+    const tech = name.slice(techIndex, techIndex + 4);
+    const after = name.slice(techIndex + 4);
+
+    return (
+      <>
+        {before}
+        <TechAccent>{tech}</TechAccent>
+        {after}
+      </>
+    );
+  };
 
   const handleGuestLogin = async () => {
     if (!isGuestLoginConfigured) {
@@ -1306,7 +1330,7 @@ Aguardo retorno. Obrigado!`;
               >
                 {plan.badge && <PricingBadge>{plan.badge}</PricingBadge>}
                 <PricingHeader>
-                  <PricingTitle>{plan.name}</PricingTitle>
+                  <PricingTitle>{renderPlanName(plan.name)}</PricingTitle>
                   <PricingPrice $highlighted={plan.highlighted}>
                     <strong>{plan.price}</strong>
                     <PricingPeriod>{plan.period}</PricingPeriod>
