@@ -1047,7 +1047,7 @@ Aguardo retorno. Obrigado!`;
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Solicitar Demonstração
+              solicitar reunião
             </SecondaryButton>
           </CTASection>
         </Section>
