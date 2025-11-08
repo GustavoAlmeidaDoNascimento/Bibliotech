@@ -1315,7 +1315,7 @@ Aguardo retorno. Obrigado!`;
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            Selecione o plano ideal para sua biblioteca escolar
+            Selecione o plano ideal para sua biblioteca
           </SectionDescription>
 
           <PricingGrid>
