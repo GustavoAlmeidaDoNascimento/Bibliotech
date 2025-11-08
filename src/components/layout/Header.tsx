@@ -176,6 +176,12 @@ const DesktopNav = styled.div`
   }
 `;
 
+const NAV_ITEMS = [
+  { id: 'produto', label: 'Produto' },
+  { id: 'precos', label: 'Preços' },
+  { id: 'contato', label: 'Contato' }
+];
+
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isTransparent, setIsTransparent] = useState(true);
@@ -188,7 +194,7 @@ const Header: React.FC = () => {
       setIsTransparent(scrollPosition < 50);
 
       // Identificar a seção atual baseado na posição do scroll
-      const sections = ['inicio', 'produto', /* 'precos', */ 'contato'];
+      const sections = ['inicio', 'produto', 'precos', 'contato'];
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
@@ -271,34 +277,16 @@ const Header: React.FC = () => {
       <DesktopNav>
         <Nav isOpen={false}>
           <NavList>
-            <NavItem
-              isActive={activeSection === 'produto'}
-              whileHover={{ scale: 1.05 }}
-              onClick={() => scrollToSection('produto')}
-            >
-              Produto
-            </NavItem>
-            {/* <NavItem
-              isActive={activeSection === 'precos'}
-              whileHover={{ scale: 1.05 }}
-              onClick={() => scrollToSection('precos')}
-            >
-              Planos
-            </NavItem> - Comentado temporariamente junto com a seção de planos */}
-            {/* <NavItem
-              isActive={activeSection === 'sobre'}
-              whileHover={{ scale: 1.05 }}
-              onClick={() => scrollToSection('sobre')}
-            >
-              Sobre nós
-            </NavItem> */}
-            <NavItem
-              isActive={activeSection === 'contato'}
-              whileHover={{ scale: 1.05 }}
-              onClick={() => scrollToSection('contato')}
-            >
-              Contato
-            </NavItem>
+            {NAV_ITEMS.map((item) => (
+              <NavItem
+                key={item.id}
+                isActive={activeSection === item.id}
+                whileHover={{ scale: 1.05 }}
+                onClick={() => scrollToSection(item.id)}
+              >
+                {item.label}
+              </NavItem>
+            ))}
           </NavList>
         </Nav>
 
@@ -321,15 +309,15 @@ const Header: React.FC = () => {
         transition={{ duration: 0.3 }}
       >
         <NavList>
-          {['produto', /* 'precos', */ 'contato'].map((section, index) => (
+          {NAV_ITEMS.map((item, index) => (
             <NavItem 
-              key={section}
-              isActive={activeSection === section}
+              key={item.id}
+              isActive={activeSection === item.id}
               custom={index}
               variants={navItemVariants}
-              onClick={() => scrollToSection(section)}
+              onClick={() => scrollToSection(item.id)}
             >
-              {section.charAt(0).toUpperCase() + section.slice(1)}
+              {item.label}
             </NavItem>
           ))}
         </NavList>

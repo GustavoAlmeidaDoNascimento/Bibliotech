@@ -1310,7 +1310,7 @@ Aguardo retorno. Obrigado!`;
             </FeatureItem>
           </FeaturesContainer>
 
-        <PricingSection>
+        <PricingSection id="precos">
           <SectionTitle
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
