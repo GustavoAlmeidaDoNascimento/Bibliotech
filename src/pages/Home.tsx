@@ -895,7 +895,7 @@ interface PricingPlan {
 
 const PRICING_PLANS: PricingPlan[] = [
   {
-    name: 'Bibliotech Basicão',
+    name: 'Bibliotech Start!',
     price: 'R$ 192,90',
     period: '/mês',
     features: [
@@ -910,7 +910,7 @@ const PRICING_PLANS: PricingPlan[] = [
     price: 'R$ 246,90',
     period: '/mês',
     features: [
-      'Tudo do Bibliotech Basicão',
+      'Tudo do Bibliotech Start',
       'Catálogo do leitor (com integração à API do Google)',
       'Estatísticas por turma',
       'Estatísticas da biblioteca',
