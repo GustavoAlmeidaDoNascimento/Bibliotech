@@ -893,6 +893,8 @@ interface PricingPlan {
   badge?: string;
 }
 
+const WHATSAPP_NUMBER = '5551996468758';
+
 const PRICING_PLANS: PricingPlan[] = [
   {
     name: 'Bibliotech Start!',
@@ -1005,7 +1007,7 @@ Mensagem: ${contactForm.mensagem}
 Aguardo retorno. Obrigado!`;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/5551996468758?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
     
     window.open(whatsappUrl, '_blank');
   };
@@ -1015,6 +1017,14 @@ Aguardo retorno. Obrigado!`;
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handlePlanWhatsApp = (plan: PricingPlan) => {
+    const message = `Olá! Tenho interesse no plano ${plan.name} (${plan.price} ${plan.period}). Podemos conversar?`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+
+    window.open(whatsappUrl, '_blank');
   };
 
   const openImageModal = (imageSrc: string) => {
@@ -1358,7 +1368,7 @@ Aguardo retorno. Obrigado!`;
                 </PricingFeatures>
 
                 <PricingButton
-                  onClick={() => scrollToSection('contato')}
+                  onClick={() => handlePlanWhatsApp(plan)}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   $highlighted={plan.highlighted}
