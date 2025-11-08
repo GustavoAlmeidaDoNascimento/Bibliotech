@@ -41,7 +41,7 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({
     return (
       <div className={styles.container}>
         <div className={styles.sectionHeader}>
-          <h3>Recomendações para Você</h3>
+          <h3>Recomendações para o Aluno</h3>
         </div>
         <div className={styles.loadingState}>
           <div className={styles.skeleton}>
@@ -61,7 +61,7 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({
     return (
       <div className={styles.container}>
         <div className={styles.sectionHeader}>
-          <h3>Recomendações para Você</h3>
+          <h3>Recomendações para o Aluno</h3>
         </div>
         <div className={styles.errorState}>
           <BookOpenIcon className={styles.errorIcon} />
@@ -78,7 +78,7 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({
     return (
       <div className={styles.container}>
         <div className={styles.sectionHeader}>
-          <h3>Recomendações para Você</h3>
+          <h3>Recomendações para o Aluno</h3>
         </div>
         <div className={styles.emptyState}>
           <BookOpenIcon className={styles.emptyIcon} />
@@ -91,7 +91,7 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({
   return (
     <div className={styles.container}>
       <div className={styles.sectionHeader}>
-        <h3>Recomendações para Você</h3>
+        <h3>Recomendações para o Aluno</h3>
       </div>
       
       {recommendations.map((section, sectionIndex) => (

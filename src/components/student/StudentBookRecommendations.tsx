@@ -43,7 +43,7 @@ const StudentBookRecommendations: React.FC<StudentBookRecommendationsProps> = ({
         <div className={styles.header}>
           <StarIcon className={styles.headerIcon} />
           <div>
-            <h3>Recomendações para Você</h3>
+            <h3>Recomendações para o Aluno</h3>
             <p>Descobrindo livros perfeitos para seu perfil...</p>
           </div>
         </div>
@@ -61,7 +61,7 @@ const StudentBookRecommendations: React.FC<StudentBookRecommendationsProps> = ({
         <div className={styles.header}>
           <StarIcon className={styles.headerIcon} />
           <div>
-            <h3>Recomendações para Você</h3>
+            <h3>Recomendações para o Aluno</h3>
             <p>Livros selecionados especialmente para você</p>
           </div>
         </div>
@@ -83,7 +83,7 @@ const StudentBookRecommendations: React.FC<StudentBookRecommendationsProps> = ({
         <div className={styles.header}>
           <StarIcon className={styles.headerIcon} />
           <div>
-            <h3>Recomendações para Você</h3>
+            <h3>Recomendações para o Aluno</h3>
             <p>Livros selecionados especialmente para você</p>
           </div>
         </div>
@@ -101,7 +101,7 @@ const StudentBookRecommendations: React.FC<StudentBookRecommendationsProps> = ({
       <div className={styles.header}>
         <StarIcon className={styles.headerIcon} />
         <div>
-          <h3>Recomendações para Você</h3>
+          <h3>Recomendações para o Aluno</h3>
           <p>Baseado no seu histórico de leitura</p>
         </div>
       </div>

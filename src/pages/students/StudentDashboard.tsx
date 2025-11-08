@@ -474,6 +474,11 @@ const StudentDashboard = () => {
             className={styles.backButton}
             onClick={navigateBack}
           >
+            <span aria-hidden="true" className={styles.backButtonIcon}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+              </svg>
+            </span>
             Voltar para a Lista de Alunos
           </button>
           
@@ -545,22 +550,10 @@ const StudentDashboard = () => {
       </div>
       
       {loans.length === 0 ? (
-        <>
-          <div className={styles.emptyState}>
-            <h3>Este aluno ainda não possui histórico de leitura</h3>
-            <p>Quando o aluno começar a retirar livros, os dados aparecerão aqui.</p>
-          </div>
-          
-          {/* Recomendações para novos alunos */}
-          <BookRecommendations
-            userId={currentUser?.uid || ''}
-            studentId={studentId || ''}
-            onBookClick={(bookId) => {
-              // Navegar para detalhes do livro
-              navigate(`/books/${bookId}`);
-            }}
-          />
-        </>
+        <div className={styles.emptyState}>
+          <h3>Este aluno ainda não possui histórico de leitura</h3>
+          <p>Quando o aluno começar a retirar livros, os dados aparecerão aqui.</p>
+        </div>
       ) : (
         <>
           <div className={styles.statsGrid}>
@@ -594,15 +587,6 @@ const StudentDashboard = () => {
           </div>
           
           {/* Seção de Recomendações */}
-          <BookRecommendations
-            userId={currentUser?.uid || ''}
-            studentId={studentId || ''}
-            onBookClick={(bookId) => {
-              // Navegar para detalhes do livro
-              navigate(`/books/${bookId}`);
-            }}
-          />
-          
           <div className={styles.chartGrid}>
             <div className={styles.chartCard}>
               <h3>Evolução de Leitura</h3>
@@ -771,6 +755,17 @@ const StudentDashboard = () => {
           </div>
         </>
       )}
+
+      <div className={styles.recommendationsSection}>
+        <BookRecommendations
+          userId={currentUser?.uid || ''}
+          studentId={studentId || ''}
+          onBookClick={(bookId) => {
+            // Navegar para detalhes do livro
+            navigate(`/books/${bookId}`);
+          }}
+        />
+      </div>
     </div>
   );
 };
