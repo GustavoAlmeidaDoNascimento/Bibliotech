@@ -490,7 +490,7 @@ const FeatureDescription = styled.p`
 `;
 
 const FeatureScreenshotPlaceholder = styled.div`
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   aspect-ratio: 16/10;
@@ -506,7 +506,7 @@ const FeatureScreenshotPlaceholder = styled.div`
     height: 100%;
     object-fit: contain;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.95);
+    background: transparent;
   }
   
   @media (max-width: 768px) {
