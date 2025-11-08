@@ -61,9 +61,10 @@ const EditStaff = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
+    const sanitizedValue = id === 'contact' ? value.replace(/\D/g, '') : value;
     setFormData(prev => ({
       ...prev,
-      [id]: value
+      [id]: sanitizedValue
     }));
   };
 
@@ -156,10 +157,12 @@ const EditStaff = () => {
               <div className={styles.formGroup}>
                 <label htmlFor="contact">Contato</label>
                 <input
-                  type="text"
+                  type="tel"
                   id="contact"
                   value={formData.contact}
                   onChange={handleChange}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                 />
               </div>
             </div>

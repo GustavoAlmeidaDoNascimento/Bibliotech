@@ -47,10 +47,14 @@ const RegisterStudent = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value, type } = e.target;
     const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
-    
+    const sanitizedValue =
+      id === 'contact' && typeof newValue === 'string'
+        ? newValue.replace(/\D/g, '')
+        : newValue;
+
     setFormData(prev => ({
       ...prev,
-      [id]: newValue
+      [id]: sanitizedValue
     }));
   };
 
@@ -194,10 +198,12 @@ const RegisterStudent = () => {
             <div className={styles.formGroup}>
               <label htmlFor="contact">Contato</label>
               <input
-                type="text"
+                type="tel"
                 id="contact"
                 value={formData.contact}
                 onChange={handleChange}
+                inputMode="numeric"
+                pattern="[0-9]*"
               />
               <small className={styles.contactHint}>
                 escreva tudo junto, incluindo o ddd, exceto o código do país ex: "51995634964"
