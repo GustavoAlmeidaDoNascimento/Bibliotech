@@ -7,6 +7,7 @@ import UserTypeSelection from '../pages/auth/UserTypeSelection';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import Dashboard from '../pages/dashboard/Dashboard';
+import OnlineCatalog from '../pages/catalog/OnlineCatalog';
 import Students from '../pages/students/Students';
 import RegisterStudent from '../pages/students/RegisterStudent';
 import EditStudent from '../pages/students/EditStudent';
@@ -222,6 +223,10 @@ export const protectedRoutes = [
   {
     path: ROUTES.SETTINGS,
     element: <Settings />,
+  },
+  {
+    path: ROUTES.CATALOG,
+    element: <OnlineCatalog />,
   },
         {
           path: "/reservations",

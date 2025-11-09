@@ -62,6 +62,7 @@ export const ROUTES = {
   RETURNS: '/returns',
   WITHDRAWALS: '/withdrawals',
   SETTINGS: '/settings',
+  CATALOG: '/catalog',
 } as const;
 
 // Perguntas de verificação para controle de leitura

@@ -17,8 +17,10 @@ import {
   Cog6ToothIcon,
   ChartBarIcon,
   BellIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  GlobeAltIcon
 } from '@heroicons/react/24/outline';
+import { ROUTES } from '../../constants';
 import styles from './Layout.module.css';
 
 const Layout: React.FC = () => {
@@ -550,12 +552,20 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
               Dashboard
             </Link>
             <Link 
-              to="/settings" 
-              className={isActiveLink('/settings') ? styles.activeLink : ''}
+              to={ROUTES.SETTINGS} 
+              className={isActiveLink(ROUTES.SETTINGS) ? styles.activeLink : ''}
               onClick={handleLinkClick}
             >
               <Cog6ToothIcon className={styles.linkIcon} />
               Configurações da Biblioteca
+            </Link>
+            <Link 
+              to={ROUTES.CATALOG}
+              className={isActiveLink(ROUTES.CATALOG) ? styles.activeLink : ''}
+              onClick={handleLinkClick}
+            >
+              <GlobeAltIcon className={styles.linkIcon} />
+              Catálogo Online
             </Link>
           </div>
         </div>
