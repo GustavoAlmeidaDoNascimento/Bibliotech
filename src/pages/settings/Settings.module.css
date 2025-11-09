@@ -7,12 +7,99 @@
   padding: 20px;
 }
 
+.container h2 {
+  margin-bottom: 12px;
+}
+
 .content {
-  margin-top: 20px;
+  margin-top: 24px;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  padding: 20px 24px 28px;
+}
+
+.tabList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.tabButton {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 16px 18px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #1f2937;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.tabButton:hover {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  transform: translateY(-2px);
+}
+
+.tabButtonActive {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 20px 35px rgba(37, 99, 235, 0.35);
+  transform: translateY(-2px);
+}
+
+.tabButton:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+.tabIcon {
+  width: 22px;
+  height: 22px;
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+.tabLabel {
+  flex: 1;
+  text-align: left;
+}
+
+.tabContent {
+  background: transparent;
+}
+
+.tabPanel {
+  background-color: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.tabPanel > .settingsSection {
+  margin-bottom: 0;
+}
+
+.tabPanel > .settingsSection + .settingsSection {
+  padding-top: 24px;
+  border-top: 1px solid #eef2ff;
+}
+
+.sectionDescription {
+  margin: 0 0 16px 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 .settingsGrid {
@@ -120,6 +207,7 @@
 
 .checkboxLabel input[type="checkbox"] {
   margin-top: 2px;
+  margin-right: 10px;
   width: 18px;
   height: 18px;
 }
@@ -524,6 +612,25 @@
 
 /* Responsividade para a seção de suporte */
 @media (max-width: 768px) {
+  .tabList {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .tabButton {
+    padding: 14px;
+  }
+
+  .tabPanel {
+    padding: 24px;
+    gap: 24px;
+  }
+
+  .tabPanel > .settingsSection + .settingsSection {
+    padding-top: 20px;
+  }
+
   .supportContainer {
     flex-direction: column;
     gap: 20px;
