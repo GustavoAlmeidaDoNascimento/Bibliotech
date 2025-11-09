@@ -365,15 +365,17 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
       setError(null);
       
       // Calcular nova data de vencimento usando a configuração loanDuration
+      const durationDays = Math.max(1, settings.loanDuration || 30);
       const newDueDate = new Date();
-      newDueDate.setDate(newDueDate.getDate() + settings.loanDuration);
+      newDueDate.setDate(newDueDate.getDate() + durationDays);
       
       // Atualizar o empréstimo com a nova data de vencimento
       const loanRef = doc(db, `users/${currentUser.uid}/loans/${loan.id}`);
       await updateDoc(loanRef, {
         dueDate: newDueDate,
         renewedAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        loanDurationDays: durationDays
       });
       
       setShowRenewDialog(false);

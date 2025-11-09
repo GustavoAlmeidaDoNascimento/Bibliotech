@@ -5,11 +5,12 @@ import {
   doc, 
   getDoc, 
   addDoc, 
-  updateDoc, 
-  serverTimestamp 
+  serverTimestamp,
+  Timestamp 
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSettings } from '../../contexts/SettingsContext';
 import { CheckIcon, XMarkIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import styles from './Withdrawals.module.css';
 
@@ -48,6 +49,7 @@ const WithdrawalConfirmation = () => {
   const [error, setError] = useState<string | null>(null);
   
   const { currentUser } = useAuth();
+  const { settings } = useSettings();
 
   useEffect(() => {
     if (!currentUser || !studentId || !bookId) {
@@ -115,6 +117,10 @@ const WithdrawalConfirmation = () => {
       }
       
       // 1. Criar registro de locação
+      const loanDurationDays = Math.max(1, settings.loanDuration || 30);
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + loanDurationDays);
+
       const loanData = {
         studentId: student.id,
         studentName: student.name,
@@ -123,7 +129,8 @@ const WithdrawalConfirmation = () => {
         bookCode: state.selectedCode, // Código específico do exemplar
         borrowDate: serverTimestamp(),
         status: 'active' as const,
-        dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 dias para devolução
+        dueDate: Timestamp.fromDate(dueDate),
+        loanDurationDays,
         createdAt: serverTimestamp()
       };
       

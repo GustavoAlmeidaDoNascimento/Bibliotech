@@ -1,5 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { doc, getDoc, setDoc, updateDoc, getFirestore } from 'firebase/firestore';
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where,
+  Timestamp,
+  serverTimestamp
+} from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 
 export type ThemeColor = 'blue' | 'red' | 'green' | 'purple' | 'orange' | 'brown';
@@ -25,7 +37,7 @@ interface SettingsContextType {
 
 const defaultSettings: LibrarySettings = {
   schoolName: 'School Library System',
-  loanDuration: 14,
+  loanDuration: 30,
   maxBooksPerStudent: 3,
   enableNotifications: true,
   showOverdueWarnings: true,
@@ -49,6 +61,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { currentUser } = useAuth();
   const [settings, setSettings] = useState<LibrarySettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
+  const [persistedSettings, setPersistedSettings] = useState<LibrarySettings>(defaultSettings);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -69,11 +82,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...defaultSettings,
             ...data
           });
+          setPersistedSettings({
+            ...defaultSettings,
+            ...data
+          });
         } else {
           // cria documento de configurações padrão se não existir
           await setDoc(settingsRef, {
             ...defaultSettings,
-            createdAt: new Date()
+            loanDuration: 30,
+            createdAt: serverTimestamp()
+          });
+          setPersistedSettings({
+            ...defaultSettings,
+            loanDuration: 30
           });
         }
       } catch (error) {
@@ -86,6 +108,49 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     loadSettings();
   }, [currentUser]);
 
+  const recalculateLoanDueDates = async (newDuration: number) => {
+    if (!currentUser) return;
+
+    try {
+      const dbInstance = getFirestore();
+      const loansRef = collection(dbInstance, `users/${currentUser.uid}/loans`);
+      const activeLoansSnapshot = await getDocs(query(loansRef, where('status', '==', 'active')));
+
+      const updatePromises = activeLoansSnapshot.docs.map(async (loanDoc) => {
+        const data = loanDoc.data();
+
+        if (data.loanDurationDays === newDuration) {
+          return;
+        }
+
+        const borrowDateValue = data.renewedAt?.toDate
+          ? data.renewedAt.toDate()
+          : data.borrowDate?.toDate
+            ? data.borrowDate.toDate()
+            : data.borrowDate instanceof Date
+              ? data.borrowDate
+              : null;
+
+        if (!borrowDateValue) {
+          return;
+        }
+
+        const newDueDate = new Date(borrowDateValue);
+        newDueDate.setDate(newDueDate.getDate() + newDuration);
+
+        await updateDoc(loanDoc.ref, {
+          dueDate: Timestamp.fromDate(newDueDate),
+          loanDurationDays: newDuration,
+          updatedAt: serverTimestamp()
+        });
+      });
+
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error('Erro ao recalcular prazos de devolução:', error);
+    }
+  };
+
   const updateSettings = async (newSettings: Partial<LibrarySettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   };
@@ -97,10 +162,18 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const db = getFirestore();
       const settingsRef = doc(db, `users/${currentUser.uid}/settings/library`);
       
+      const loanDurationChanged = settings.loanDuration !== persistedSettings.loanDuration;
+
       await updateDoc(settingsRef, {
         ...settings,
-        updatedAt: new Date()
+        updatedAt: serverTimestamp()
       });
+
+      if (loanDurationChanged) {
+        await recalculateLoanDueDates(settings.loanDuration);
+      }
+
+      setPersistedSettings(settings);
       
       return Promise.resolve();
     } catch (error) {
