@@ -82,7 +82,7 @@
 }
 
 .createButton:hover {
-  background-color: var(--primary-hover);
+  background-color: var(--primary-color-hover);
 }
 
 .selectAllButton {
@@ -167,7 +167,7 @@
 }
 
 .applyFiltersButton:hover {
-  background-color: var(--primary-hover);
+  background-color: var(--primary-color-hover);
 }
 
 .clearFiltersButton {
