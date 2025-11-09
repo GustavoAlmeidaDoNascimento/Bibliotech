@@ -286,14 +286,32 @@ const PricingHeader = styled.div`
 `;
 
 const PricingTitle = styled.h3`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   font-size: clamp(1.35rem, 2.4vw, 1.6rem);
   font-weight: 700;
   color: white;
   margin: 0;
+
+  @media (max-width: 640px) {
+    flex-wrap: wrap;
+    white-space: normal;
+    row-gap: 6px;
+  }
 `;
 
 const TechAccent = styled.span`
   color: #3b82f6;
+`;
+
+const PlanNameBrand = styled.span`
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 `;
 
 type PlanBadgeVariant = 'basico' | 'intermediario' | 'avancado';
@@ -303,7 +321,7 @@ const PlanBadge = styled.span<{ $variant: PlanBadgeVariant }>`
   align-items: center;
   justify-content: center;
   padding: 2px 12px;
-  margin: 0 4px;
+  margin: 0;
   border-radius: 999px;
   font-weight: 600;
   font-size: 0.92em;
@@ -1044,7 +1062,52 @@ const Home: React.FC = () => {
     });
   };
 
-  const renderPlanName = (name: string) => renderHighlightedText(name);
+  const renderBrandName = (text: string) => {
+    const techIndex = text.toLowerCase().indexOf('tech');
+    if (techIndex === -1) {
+      return text;
+    }
+
+    const before = text.slice(0, techIndex);
+    const tech = text.slice(techIndex, techIndex + 4);
+    const after = text.slice(techIndex + 4);
+
+    return (
+      <>
+        {before}
+        <TechAccent>{tech}</TechAccent>
+        {after}
+      </>
+    );
+  };
+
+  const renderPlanName = (name: string) => {
+    const [brand, ...rest] = name.split(' ');
+    const level = rest.join(' ').trim();
+    const normalizedLevel = normalizeWord(level);
+
+    let badgeVariant: PlanBadgeVariant | undefined;
+    switch (normalizedLevel) {
+      case 'basico':
+        badgeVariant = 'basico';
+        break;
+      case 'intermediario':
+        badgeVariant = 'intermediario';
+        break;
+      case 'avancado':
+        badgeVariant = 'avancado';
+        break;
+    }
+
+    return (
+      <>
+        <PlanNameBrand>{renderBrandName(brand)}</PlanNameBrand>
+        {badgeVariant && level && (
+          <PlanBadge $variant={badgeVariant}>{level}</PlanBadge>
+        )}
+      </>
+    );
+  };
 
   const handleGuestLogin = async () => {
     if (!isGuestLoginConfigured) {
