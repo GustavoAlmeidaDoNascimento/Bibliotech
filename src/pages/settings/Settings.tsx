@@ -1,20 +1,22 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import type { LibrarySettings } from '../../contexts/SettingsContext';
 import { useNavigate } from 'react-router-dom';
-import { 
-  doc, 
-  collection, 
-  query, 
-  getDocs, 
+import {
+  doc,
+  collection,
+  query,
+  getDocs,
   deleteDoc,
-  getFirestore, 
+  getFirestore,
   setDoc,
-  where
+  where,
+  getDoc
 } from 'firebase/firestore';
-import { reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { reauthenticateWithCredential, EmailAuthProvider, getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import GeneralSettingsTab from './components/GeneralSettingsTab';
+import AccountTab from './components/AccountTab';
 import TagsTab from './components/TagsTab';
 import EducationalLevelsTab from './components/EducationalLevelsTab';
 import SupportTab from './components/SupportTab';
@@ -24,7 +26,8 @@ import {
   TagIcon,
   AcademicCapIcon,
   LifebuoyIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  UserCircleIcon
 } from '@heroicons/react/24/outline';
 import styles from './Settings.module.css';
 
@@ -42,6 +45,50 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', isError: false });
   const [activeTab, setActiveTab] = useState('general');
+  const [plan, setPlan] = useState<number | null>(null);
+  const [planLoading, setPlanLoading] = useState(false);
+  const [planError, setPlanError] = useState('');
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
+  
+  useEffect(() => {
+    const fetchPlan = async () => {
+      if (!currentUser) {
+        setPlan(null);
+        setPlanError('');
+        return;
+      }
+
+      setPlanLoading(true);
+      setPlanError('');
+
+      try {
+        const db = getFirestore();
+        const subscriptionRef = doc(db, `users/${currentUser.uid}/account/subscription`);
+        const subscriptionSnapshot = await getDoc(subscriptionRef);
+
+        if (subscriptionSnapshot.exists()) {
+          const data = subscriptionSnapshot.data() as { plan?: number };
+          if (typeof data.plan === 'number') {
+            setPlan(data.plan);
+          } else {
+            setPlan(null);
+            setPlanError('Plano ainda não configurado.');
+          }
+        } else {
+          setPlan(null);
+          setPlanError('Plano não encontrado para esta conta.');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar plano da assinatura:', error);
+        setPlan(null);
+        setPlanError('Não foi possível carregar o plano. Tente novamente mais tarde.');
+      } finally {
+        setPlanLoading(false);
+      }
+    };
+
+    fetchPlan();
+  }, [currentUser]);
   
   // Estado para restauração
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
@@ -313,6 +360,35 @@ const Settings = () => {
     }
   };
 
+  const handleSendPasswordReset = async () => {
+    if (!currentUser?.email) {
+      setMessage({
+        text: 'Não foi possível enviar o e-mail de redefinição. Usuário sem e-mail cadastrado.',
+        isError: true
+      });
+      return;
+    }
+
+    try {
+      setResetPasswordLoading(true);
+      setMessage({ text: '', isError: false });
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, currentUser.email);
+      setMessage({
+        text: 'Enviamos um e-mail com instruções para redefinir sua senha.',
+        isError: false
+      });
+    } catch (error) {
+      console.error('Erro ao enviar e-mail de redefinição de senha:', error);
+      setMessage({
+        text: 'Não foi possível enviar o e-mail de redefinição. Tente novamente mais tarde.',
+        isError: true
+      });
+    } finally {
+      setResetPasswordLoading(false);
+    }
+  };
+
   const handleAdminNavigation = () => {
     navigate('/admin/update-notification');
   };
@@ -478,6 +554,29 @@ const Settings = () => {
   // Verificar se é admin
   const isAdmin = currentUser?.email === 'admin@admin.com';
 
+  const formatDateTime = (value: string | null | undefined) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    return date.toLocaleString('pt-BR', {
+      dateStyle: 'long',
+      timeStyle: 'short'
+    });
+  };
+
+  const getPlanLabel = (planValue: number | null) => {
+    if (planValue === 1) return 'Plano Básico';
+    if (planValue === 2) return 'Plano Intermediário';
+    if (planValue === 3) return 'Plano Avançado';
+    return 'Plano não definido';
+  };
+
+  const planLabel = getPlanLabel(plan);
+  const formattedCreation = formatDateTime(currentUser?.metadata?.creationTime);
+  const formattedLastSignIn = formatDateTime(currentUser?.metadata?.lastSignInTime);
+
   const tabs: TabDefinition[] = [
     {
       id: 'general',
@@ -492,6 +591,25 @@ const Settings = () => {
           onLogout={handleLogout}
           isAdmin={Boolean(isAdmin)}
           onNavigateToAdmin={handleAdminNavigation}
+        />
+      )
+    },
+    {
+      id: 'account',
+      label: 'Conta',
+      icon: UserCircleIcon,
+      content: (
+        <AccountTab
+          email={currentUser?.email ?? null}
+          userId={currentUser?.uid ?? null}
+          emailVerified={Boolean(currentUser?.emailVerified)}
+          creationTime={formattedCreation}
+          lastSignInTime={formattedLastSignIn}
+          planLabel={planLabel}
+          planLoading={planLoading}
+          planError={planError}
+          onResetPassword={handleSendPasswordReset}
+          resetLoading={resetPasswordLoading}
         />
       )
     },
