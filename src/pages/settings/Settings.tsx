@@ -579,22 +579,6 @@ const Settings = () => {
 
   const tabs: TabDefinition[] = [
     {
-      id: 'general',
-      label: 'Configurações Gerais',
-      icon: Cog6ToothIcon,
-      content: (
-        <GeneralSettingsTab
-          settings={settings}
-          onSettingChange={handleSettingChange}
-          onSaveSettings={handleSaveSettings}
-          loading={loading}
-          onLogout={handleLogout}
-          isAdmin={Boolean(isAdmin)}
-          onNavigateToAdmin={handleAdminNavigation}
-        />
-      )
-    },
-    {
       id: 'account',
       label: 'Conta',
       icon: UserCircleIcon,
@@ -610,6 +594,22 @@ const Settings = () => {
           planError={planError}
           onResetPassword={handleSendPasswordReset}
           resetLoading={resetPasswordLoading}
+        />
+      )
+    },
+    {
+      id: 'general',
+      label: 'Configurações Gerais',
+      icon: Cog6ToothIcon,
+      content: (
+        <GeneralSettingsTab
+          settings={settings}
+          onSettingChange={handleSettingChange}
+          onSaveSettings={handleSaveSettings}
+          loading={loading}
+          onLogout={handleLogout}
+          isAdmin={Boolean(isAdmin)}
+          onNavigateToAdmin={handleAdminNavigation}
         />
       )
     },
