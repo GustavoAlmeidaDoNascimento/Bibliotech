@@ -225,28 +225,37 @@
   max-width: 420px;
 }
 
+.accountActionsFooter {
+  margin-top: 20px;
+  display: flex;
+}
+
 .accountActionButton {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  color: #ffffff;
-  border: none;
+  background: #ffffff;
+  color: #1d4ed8;
+  border: 1px solid currentColor;
   border-radius: 10px;
   padding: 12px 20px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.2);
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.12);
 }
 
 .accountActionButton:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.28);
-  filter: brightness(1.02);
+  background: #eff6ff;
+  color: #1e3a8a;
+  border-color: #1e3a8a;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(30, 58, 138, 0.2);
 }
 
 .accountActionButton:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  color: #9ca3af;
+  border-color: #d1d5db;
+  background: #f9fafb;
   box-shadow: none;
 }
 

@@ -595,6 +595,7 @@ const Settings = () => {
           planError={planError}
           onResetPassword={handleSendPasswordReset}
           resetLoading={resetPasswordLoading}
+          onLogout={handleLogout}
         />
       )
     },
@@ -608,7 +609,6 @@ const Settings = () => {
           onSettingChange={handleSettingChange}
           onSaveSettings={handleSaveSettings}
           loading={loading}
-          onLogout={handleLogout}
           isAdmin={Boolean(isAdmin)}
           onNavigateToAdmin={handleAdminNavigation}
         />

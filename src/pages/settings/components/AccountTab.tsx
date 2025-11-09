@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import styles from '../Settings.module.css';
 
 interface AccountTabProps {
@@ -13,6 +14,7 @@ interface AccountTabProps {
   planError?: string;
   onResetPassword: () => void;
   resetLoading: boolean;
+  onLogout: () => void | Promise<void>;
 }
 
 const AccountTab: React.FC<AccountTabProps> = ({
@@ -26,7 +28,8 @@ const AccountTab: React.FC<AccountTabProps> = ({
   planLoading,
   planError,
   onResetPassword,
-  resetLoading
+  resetLoading,
+  onLogout
 }) => {
   const getPlanBadgeClass = () => {
     if (planLoading || planLevel == null) {
@@ -104,6 +107,17 @@ const AccountTab: React.FC<AccountTabProps> = ({
           <span className={styles.accountHelperText}>
             Um e-mail com as instruções será enviado para o endereço cadastrado.
           </span>
+        </div>
+
+        <div className={styles.accountActionsFooter}>
+          <button
+            type="button"
+            className={styles.exitButton}
+            onClick={onLogout}
+          >
+            <ArrowRightOnRectangleIcon className={styles.exitIcon} />
+            Sair
+          </button>
         </div>
       </div>
     </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import type { LibrarySettings } from '../../../contexts/SettingsContext';
 import styles from '../Settings.module.css';
 
@@ -11,7 +10,6 @@ interface GeneralSettingsTabProps {
   ) => void;
   onSaveSettings: () => Promise<void> | void;
   loading: boolean;
-  onLogout: () => Promise<void> | void;
   isAdmin: boolean;
   onNavigateToAdmin: () => void;
 }
@@ -21,7 +19,6 @@ const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
   onSettingChange,
   onSaveSettings,
   loading,
-  onLogout,
   isAdmin,
   onNavigateToAdmin
 }) => {
@@ -134,14 +131,6 @@ const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
         </div>
 
         <div className={styles.buttonContainer}>
-          <button
-            type="button"
-            className={styles.exitButton}
-            onClick={onLogout}
-          >
-            <ArrowRightOnRectangleIcon className={styles.exitIcon} />
-            Sair
-          </button>
           <button
             type="button"
             className={styles.saveButton}
