@@ -16,7 +16,7 @@ import { reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import TagManager from '../../components/TagManager';
 import EducationalLevelManager from '../../components/EducationalLevelManager';
 import ClassesByLevel from '../../components/ClassesByLevel';
-import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { ArrowRightOnRectangleIcon, ArrowUpTrayIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import styles from './Settings.module.css';
 
 const Settings = () => {
@@ -653,7 +653,14 @@ const Settings = () => {
               onClick={handleBackupData}
               disabled={backupLoading}
             >
-              {backupLoading ? 'Gerando backup completo...' : 'Fazer Backup Completo'}
+              {backupLoading ? (
+                'Gerando backup completo...'
+              ) : (
+                <>
+                  <ArrowUpTrayIcon className={styles.actionButtonIcon} />
+                  Fazer Backup Completo
+                </>
+              )}
             </button>
             
             <h4>Restaurar a partir de Backup</h4>
@@ -676,7 +683,14 @@ const Settings = () => {
               onClick={triggerFileInput}
               disabled={restoreFromFileLoading}
             >
-              {restoreFromFileLoading ? 'Restaurando...' : 'Carregar Arquivo de Backup'}
+              {restoreFromFileLoading ? (
+                'Restaurando...'
+              ) : (
+                <>
+                  <ArrowDownTrayIcon className={styles.actionButtonIcon} />
+                  Carregar Arquivo de Backup
+                </>
+              )}
             </button>
           </div>
           

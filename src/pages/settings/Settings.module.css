@@ -391,9 +391,17 @@
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   margin-bottom: 1.5rem;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
   width: 100%;
   max-width: 300px;
+}
+
+.actionButtonIcon {
+  width: 20px;
+  height: 20px;
 }
 
 .actionButton:hover {
