@@ -15,6 +15,13 @@
   padding: 20px;
 }
 
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
 .settingsSection {
   margin-bottom: 40px;
 }
@@ -28,19 +35,24 @@
 }
 
 .settingGroup {
-  margin-bottom: 20px;
+  background-color: #f9fafc;
+  border: 1px solid #e3e8f5;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .settingGroup label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
+  font-weight: 600;
   color: #333;
 }
 
 .settingGroup input[type="number"] {
   width: 100%;
-  max-width: 200px;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -49,11 +61,15 @@
 
 .textInput {
   width: 100%;
-  max-width: 400px;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+}
+
+.settingGroup:focus-within {
+  border-color: #4a90e2;
+  box-shadow: 0 8px 20px rgba(74, 144, 226, 0.12);
 }
 
 /* Seletor de Cores */
@@ -95,18 +111,33 @@
 
 .checkboxLabel {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
   cursor: pointer;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .checkboxLabel input[type="checkbox"] {
-  margin-right: 10px;
+  margin-top: 2px;
   width: 18px;
   height: 18px;
 }
 
+.toggleGroup {
+  background-color: #ffffff;
+  border: 1px solid #e7ebf3;
+}
+
+.toggleGroup .helpText {
+  margin-top: 4px;
+}
+
 .buttonContainer {
-  margin-top: 30px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .saveButton {

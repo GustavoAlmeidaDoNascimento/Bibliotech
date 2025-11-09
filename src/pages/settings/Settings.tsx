@@ -475,80 +475,82 @@ const Settings = () => {
         <div className={styles.settingsSection}>
           <h3>Configurações Gerais</h3>
           
-          <div className={styles.settingGroup}>
-            <label htmlFor="schoolName">Nome da Escola/Biblioteca</label>
-            <input
-              type="text"
-              id="schoolName"
-              value={settings.schoolName}
-              onChange={(e) => handleSettingChange('schoolName', e.target.value)}
-              className={styles.textInput}
-              placeholder="Nome que aparecerá no cabeçalho"
-              maxLength={50}
-            />
-          </div>
-          
-          <div className={styles.settingGroup}>
-            <label htmlFor="loanDuration">Duração padrão do empréstimo (dias)</label>
-            <input
-              type="number"
-              id="loanDuration"
-              min="1"
-              max="90"
-              value={settings.loanDuration}
-              onChange={(e) => handleSettingChange('loanDuration', parseInt(e.target.value))}
-            />
-          </div>
-          
-          <div className={styles.settingGroup}>
-            <label htmlFor="maxBooksPerStudent">Máximo de livros por aluno</label>
-            <input
-              type="number"
-              id="maxBooksPerStudent"
-              min="1"
-              max="10"
-              value={settings.maxBooksPerStudent}
-              onChange={(e) => handleSettingChange('maxBooksPerStudent', parseInt(e.target.value))}
-            />
-          </div>
-          
-          <div className={styles.settingGroup}>
-            <label className={styles.checkboxLabel}>
+          <div className={styles.settingsGrid}>
+            <div className={styles.settingGroup}>
+              <label htmlFor="schoolName">Nome da Escola/Biblioteca</label>
               <input
-                type="checkbox"
-                checked={settings.enableNotifications}
-                onChange={(e) => handleSettingChange('enableNotifications', e.target.checked)}
+                type="text"
+                id="schoolName"
+                value={settings.schoolName}
+                onChange={(e) => handleSettingChange('schoolName', e.target.value)}
+                className={styles.textInput}
+                placeholder="Nome que aparecerá no cabeçalho"
+                maxLength={50}
               />
-              Habilitar notificações
-            </label>
-          </div>
-          
-          <div className={styles.settingGroup}>
-            <label className={styles.checkboxLabel}>
+            </div>
+            
+            <div className={styles.settingGroup}>
+              <label htmlFor="loanDuration">Duração padrão do empréstimo (dias)</label>
               <input
-                type="checkbox"
-                checked={settings.useDistinctCodes}
-                onChange={(e) => handleSettingChange('useDistinctCodes', e.target.checked)}
+                type="number"
+                id="loanDuration"
+                min="1"
+                max="90"
+                value={settings.loanDuration}
+                onChange={(e) => handleSettingChange('loanDuration', parseInt(e.target.value))}
               />
-              Minha biblioteca usa códigos distintos para o mesmo título
-            </label>
-            <p className={styles.helpText}>
-              Quando ativado, cada exemplar físico terá seu próprio código e a quantidade será calculada automaticamente pelo número de códigos. Quando desativado, você define manualmente a quantidade de exemplares para um mesmo Código.
-            </p>
-          </div>
+            </div>
+            
+            <div className={styles.settingGroup}>
+              <label htmlFor="maxBooksPerStudent">Máximo de livros por aluno</label>
+              <input
+                type="number"
+                id="maxBooksPerStudent"
+                min="1"
+                max="10"
+                value={settings.maxBooksPerStudent}
+                onChange={(e) => handleSettingChange('maxBooksPerStudent', parseInt(e.target.value))}
+              />
+            </div>
+            
+            <div className={`${styles.settingGroup} ${styles.toggleGroup}`}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={settings.enableNotifications}
+                  onChange={(e) => handleSettingChange('enableNotifications', e.target.checked)}
+                />
+                Habilitar notificações
+              </label>
+            </div>
+            
+            <div className={`${styles.settingGroup} ${styles.toggleGroup}`}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={settings.useDistinctCodes}
+                  onChange={(e) => handleSettingChange('useDistinctCodes', e.target.checked)}
+                />
+                Minha biblioteca usa códigos distintos para o mesmo título
+              </label>
+              <p className={styles.helpText}>
+                Quando ativado, cada exemplar físico terá seu próprio código e a quantidade será calculada automaticamente pelo número de códigos. Quando desativado, você define manualmente a quantidade de exemplares para um mesmo Código.
+              </p>
+            </div>
 
-          <div className={styles.settingGroup}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={settings.useGuardianContact}
-                onChange={(e) => handleSettingChange('useGuardianContact', e.target.checked)}
-              />
-              Usar contato dos responsáveis
-            </label>
-            <p className={styles.helpText}>
-              Quando ativado, as notificações de lembrete de devolução serão direcionadas aos responsáveis, com uma mensagem personalizada solicitando que avisem o aluno sobre a devolução.
-            </p>
+            <div className={`${styles.settingGroup} ${styles.toggleGroup}`}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={settings.useGuardianContact}
+                  onChange={(e) => handleSettingChange('useGuardianContact', e.target.checked)}
+                />
+                Usar contato dos responsáveis
+              </label>
+              <p className={styles.helpText}>
+                Quando ativado, as notificações de lembrete de devolução serão direcionadas aos responsáveis, com uma mensagem personalizada solicitando que avisem o aluno sobre a devolução.
+              </p>
+            </div>
           </div>
 
           <div className={styles.buttonContainer}>
