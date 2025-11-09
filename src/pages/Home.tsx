@@ -897,7 +897,7 @@ const WHATSAPP_NUMBER = '5551996468758';
 
 const PRICING_PLANS: PricingPlan[] = [
   {
-    name: 'Bibliotech Start!',
+    name: 'Bibliotech Básico',
     price: 'R$ 192,90',
     period: '/mês',
     features: [
@@ -908,11 +908,11 @@ const PRICING_PLANS: PricingPlan[] = [
     ]
   },
   {
-    name: 'Bibliotech Smart',
+    name: 'Bibliotech Intermediário',
     price: 'R$ 246,90',
     period: '/mês',
     features: [
-      'Tudo do Bibliotech Start',
+      'Tudo do Bibliotech Básico',
       'Catálogo do leitor (com integração à API do Google)',
       'Estatísticas por turma',
       'Estatísticas da biblioteca',
@@ -924,11 +924,11 @@ const PRICING_PLANS: PricingPlan[] = [
     badge: 'Mais Popular'
   },
   {
-    name: 'Bibliotech +',
+    name: 'Bibliotech Avançado',
     price: 'R$ 337,90',
     period: '/mês',
     features: [
-      'Tudo do Bibliotech Smart',
+      'Tudo do Bibliotech Intermediário',
       'Conquistas',
       'Reservas de livros',
       'Estatísticas da turma na interface do aluno',
