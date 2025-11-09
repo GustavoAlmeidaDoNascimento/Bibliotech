@@ -112,7 +112,7 @@
 .checkboxLabel {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
   cursor: pointer;
   font-weight: 600;
   color: #1f2937;
@@ -146,19 +146,21 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #dc2626;
-  color: #ffffff;
-  border: none;
+  background-color: #ffffff;
+  color: #dc2626;
+  border: 1px solid #dc2626;
   padding: 10px 20px;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
   margin-right: auto;
 }
 
 .exitButton:hover {
-  background-color: #b91c1c;
+  background-color: #fef2f2;
+  border-color: #b91c1c;
+  color: #b91c1c;
 }
 
 .exitButton:active {
@@ -171,23 +173,29 @@
 }
 
 .saveButton {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: #2f855a;
+  border: 1px solid #2f855a;
   padding: 10px 20px;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .saveButton:hover {
-  background-color: #388E3C;
+  background-color: #f0fff4;
+  border-color: #276749;
+  color: #276749;
+  box-shadow: 0 4px 12px rgba(47, 133, 90, 0.15);
 }
 
 .saveButton:disabled {
-  background-color: #cccccc;
+  background-color: #f9fafb;
+  color: #9ca3af;
+  border-color: #d1d5db;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .successMessage, .errorMessage {

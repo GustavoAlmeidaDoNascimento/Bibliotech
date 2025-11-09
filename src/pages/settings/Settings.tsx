@@ -533,6 +533,9 @@ const Settings = () => {
                 />
                 Habilitar notificações
               </label>
+              <p className={styles.helpText}>
+                Quando ativado, o sistema enviará notificações automáticas com lembretes e comunicados importantes para a comunidade escolar.
+              </p>
             </div>
             
             <div className={`${styles.settingGroup} ${styles.toggleGroup}`}>
