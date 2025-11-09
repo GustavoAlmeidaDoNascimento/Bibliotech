@@ -8,6 +8,7 @@ interface AccountTabProps {
   creationTime?: string | null;
   lastSignInTime?: string | null;
   planLabel: string;
+  planLevel: number | null;
   planLoading: boolean;
   planError?: string;
   onResetPassword: () => void;
@@ -21,11 +22,22 @@ const AccountTab: React.FC<AccountTabProps> = ({
   creationTime,
   lastSignInTime,
   planLabel,
+  planLevel,
   planLoading,
   planError,
   onResetPassword,
   resetLoading
 }) => {
+  const getPlanBadgeClass = () => {
+    if (planLoading || planLevel == null) {
+      return styles.planBadgeDefault;
+    }
+    if (planLevel === 1) return styles.planBadgeBasic;
+    if (planLevel === 2) return styles.planBadgeIntermediate;
+    if (planLevel === 3) return styles.planBadgeAdvanced;
+    return styles.planBadgeDefault;
+  };
+
   return (
     <div className={styles.tabPanel}>
       <div className={styles.settingsSection}>
@@ -39,13 +51,11 @@ const AccountTab: React.FC<AccountTabProps> = ({
           <div className={styles.accountInfoCard}>
             <span className={styles.accountLabel}>E-mail principal</span>
             <span className={styles.accountValue}>{email ?? '—'}</span>
-            <span
-              className={`${styles.statusBadge} ${
-                emailVerified ? styles.statusBadgeSuccess : styles.statusBadgeWarning
-              }`}
-            >
-              {emailVerified ? 'E-mail verificado' : 'E-mail não verificado'}
-            </span>
+            {emailVerified && (
+              <span className={styles.statusBadge}>
+                E-mail verificado
+              </span>
+            )}
           </div>
 
           <div className={styles.accountInfoCard}>
@@ -55,7 +65,7 @@ const AccountTab: React.FC<AccountTabProps> = ({
 
           <div className={styles.accountInfoCard}>
             <span className={styles.accountLabel}>Plano Atual</span>
-            <span className={styles.planBadge}>
+            <span className={`${styles.planBadge} ${getPlanBadgeClass()}`}>
               {planLoading ? 'Carregando plano...' : planLabel}
             </span>
             {planError && <span className={styles.accountHelperText}>{planError}</span>}

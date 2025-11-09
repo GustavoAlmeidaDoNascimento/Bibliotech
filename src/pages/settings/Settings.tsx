@@ -590,6 +590,7 @@ const Settings = () => {
           creationTime={formattedCreation}
           lastSignInTime={formattedLastSignIn}
           planLabel={planLabel}
+          planLevel={plan}
           planLoading={planLoading}
           planError={planError}
           onResetPassword={handleSendPasswordReset}

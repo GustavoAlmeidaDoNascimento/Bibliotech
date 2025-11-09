@@ -148,16 +148,8 @@
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-}
-
-.statusBadgeSuccess {
   background-color: #dcfce7;
   color: #166534;
-}
-
-.statusBadgeWarning {
-  background-color: #fef3c7;
-  color: #92400e;
 }
 
 .planBadge {
@@ -166,9 +158,28 @@
   border-radius: 999px;
   font-weight: 600;
   font-size: 0.9rem;
-  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
   color: #ffffff;
-  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.15);
+}
+
+.planBadgeDefault {
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+}
+
+.planBadgeBasic {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.planBadgeIntermediate {
+  background: linear-gradient(135deg, #f8fafc 0%, #cbd5f5 45%, #94a3b8 100%);
+  color: #1e293b;
+  box-shadow: 0 10px 20px rgba(148, 163, 184, 0.25);
+}
+
+.planBadgeAdvanced {
+  background: linear-gradient(135deg, #facc15 0%, #f97316 60%, #b45309 100%);
+  color: #3b2f0b;
+  box-shadow: 0 12px 24px rgba(250, 204, 21, 0.25);
 }
 
 .accountHelperText {
