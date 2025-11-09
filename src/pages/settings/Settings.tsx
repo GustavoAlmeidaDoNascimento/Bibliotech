@@ -16,10 +16,11 @@ import { reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import TagManager from '../../components/TagManager';
 import EducationalLevelManager from '../../components/EducationalLevelManager';
 import ClassesByLevel from '../../components/ClassesByLevel';
+import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import styles from './Settings.module.css';
 
 const Settings = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const { settings, updateSettings, saveSettings } = useSettings();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -282,6 +283,16 @@ const Settings = () => {
     updateSettings({ [setting]: value });
   };
   
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Erro ao sair da conta:', error);
+      setMessage({ text: 'Erro ao sair da conta. Tente novamente.', isError: true });
+    }
+  };
+
   const handleSaveSettings = async () => {
     try {
       setLoading(true);
@@ -554,7 +565,16 @@ const Settings = () => {
           </div>
 
           <div className={styles.buttonContainer}>
+            <button
+              type="button"
+              className={styles.exitButton}
+              onClick={handleLogout}
+            >
+              <ArrowRightOnRectangleIcon className={styles.exitIcon} />
+              Sair
+            </button>
             <button 
+              type="button"
               className={styles.saveButton}
               onClick={handleSaveSettings}
               disabled={loading}

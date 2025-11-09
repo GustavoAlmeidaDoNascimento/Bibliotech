@@ -15,7 +15,6 @@ import {
   ClipboardDocumentListIcon,
   ArrowPathIcon,
   Cog6ToothIcon,
-  ArrowRightOnRectangleIcon,
   ChartBarIcon,
   BellIcon,
   CalendarDaysIcon
@@ -28,7 +27,7 @@ const Layout: React.FC = () => {
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [reservationsCount, setReservationsCount] = useState<number>(0);
   
-  const { logout, currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { settings } = useSettings();
@@ -66,15 +65,6 @@ const Layout: React.FC = () => {
     
     return () => clearInterval(interval);
   }, [currentUser?.uid, location.pathname]);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Failed to log out:', error);
-    }
-  };
 
   // verifica se o link atual corresponde à página atual
   const isActiveLink = (path: string) => {
@@ -567,10 +557,6 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
               <Cog6ToothIcon className={styles.linkIcon} />
               Configurações da Biblioteca
             </Link>
-            <button onClick={handleLogout} className={styles.logoutButton}>
-              <ArrowRightOnRectangleIcon className={styles.linkIcon} />
-              Sair
-            </button>
           </div>
         </div>
       </nav>
