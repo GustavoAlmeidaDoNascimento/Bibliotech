@@ -3,13 +3,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import type { LibrarySettings } from '../../contexts/SettingsContext';
 import { useNavigate } from 'react-router-dom';
-import {
-  doc,
-  collection,
-  query,
-  getDocs,
+import { 
+  doc, 
+  collection, 
+  query, 
+  getDocs, 
   deleteDoc,
-  getFirestore,
+  getFirestore, 
   setDoc,
   where
 } from 'firebase/firestore';
@@ -570,8 +570,8 @@ const Settings = () => {
             </button>
           );
         })}
-      </div>
-
+        </div>
+        
       <div className={styles.content}>
         <div
           className={styles.tabContent}
