@@ -296,6 +296,62 @@ const TechAccent = styled.span`
   color: #3b82f6;
 `;
 
+type PlanBadgeVariant = 'basico' | 'intermediario' | 'avancado';
+
+const PlanBadge = styled.span<{ $variant: PlanBadgeVariant }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 12px;
+  margin: 0 4px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.92em;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: ${({ $variant }) => {
+    switch ($variant) {
+      case 'intermediario':
+        return '#0f172a';
+      case 'avancado':
+        return '#1f2937';
+      default:
+        return '#ffffff';
+    }
+  }};
+  background: ${({ $variant }) => {
+    switch ($variant) {
+      case 'intermediario':
+        return 'linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%)';
+      case 'avancado':
+        return 'linear-gradient(135deg, #facc15 0%, #f59e0b 100%)';
+      default:
+        return 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+    }
+  }};
+  box-shadow: ${({ $variant }) => {
+    switch ($variant) {
+      case 'intermediario':
+        return '0 10px 24px rgba(148, 163, 184, 0.25)';
+      case 'avancado':
+        return '0 10px 24px rgba(245, 158, 11, 0.35)';
+      default:
+        return '0 10px 24px rgba(59, 130, 246, 0.35)';
+    }
+  }};
+  border: 1px solid
+    ${({ $variant }) => {
+      switch ($variant) {
+        case 'intermediario':
+          return 'rgba(148, 163, 184, 0.65)';
+        case 'avancado':
+          return 'rgba(245, 158, 11, 0.65)';
+        default:
+          return 'rgba(59, 130, 246, 0.65)';
+      }
+    }};
+`;
+
 interface PricingPriceProps {
   $highlighted?: boolean;
 }
@@ -949,24 +1005,46 @@ const Home: React.FC = () => {
   });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const renderPlanName = (name: string) => {
-    const techIndex = name.toLowerCase().indexOf('tech');
-    if (techIndex === -1) {
-      return name;
-    }
+  const normalizeWord = (word: string) =>
+    word
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
 
-    const before = name.slice(0, techIndex);
-    const tech = name.slice(techIndex, techIndex + 4);
-    const after = name.slice(techIndex + 4);
+  const renderHighlightedText = (text: string) => {
+    const parts = text.split(/(tech|básico|basico|intermediário|intermediario|avançado|avancado)/gi);
 
-    return (
-      <>
-        {before}
-        <TechAccent>{tech}</TechAccent>
-        {after}
-      </>
-    );
+    return parts.map((part, index) => {
+      const normalized = normalizeWord(part);
+
+      switch (normalized) {
+        case 'tech':
+          return <TechAccent key={`${part}-${index}`}>{part}</TechAccent>;
+        case 'basico':
+          return (
+            <PlanBadge $variant="basico" key={`${part}-${index}`}>
+              {part}
+            </PlanBadge>
+          );
+        case 'intermediario':
+          return (
+            <PlanBadge $variant="intermediario" key={`${part}-${index}`}>
+              {part}
+            </PlanBadge>
+          );
+        case 'avancado':
+          return (
+            <PlanBadge $variant="avancado" key={`${part}-${index}`}>
+              {part}
+            </PlanBadge>
+          );
+        default:
+          return <React.Fragment key={`${part}-${index}`}>{part}</React.Fragment>;
+      }
+    });
   };
+
+  const renderPlanName = (name: string) => renderHighlightedText(name);
 
   const handleGuestLogin = async () => {
     if (!isGuestLoginConfigured) {
