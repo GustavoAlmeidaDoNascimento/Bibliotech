@@ -45,13 +45,18 @@
 }
 
 .registerButton {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: #ffffff;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
   text-decoration: none;
 }
 
 .registerButton:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--primary-light);
+  border-color: var(--primary-dark);
+  color: var(--primary-dark);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
 }
 
 .selectAllButton {
@@ -78,12 +83,17 @@
 }
 
 .applyFiltersButton {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: #ffffff;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
 }
 
 .applyFiltersButton:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--primary-light);
+  border-color: var(--primary-dark);
+  color: var(--primary-dark);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
 }
 
 .clearFiltersButton {
