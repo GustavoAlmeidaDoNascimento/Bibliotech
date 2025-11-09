@@ -3,7 +3,7 @@ import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './Withdrawals.module.css';
 
 interface Student {
@@ -212,7 +212,18 @@ const StudentWithdrawals = () => {
                 <tbody>
                   {currentStudents.map(student => (
                     <tr key={student.id} className={styles.studentRow}>
-                      <td>{student.name}</td>
+                      <td>
+                        {student.name ? (
+                          <Link
+                            to={`/students/${student.id}`}
+                            className={styles.studentNameLink}
+                          >
+                            {student.name}
+                          </Link>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
                       <td>{student.classroom || '-'}</td>
                       <td>{student.contact || '-'}</td>
                       <td className={styles.actionsColumn}>
