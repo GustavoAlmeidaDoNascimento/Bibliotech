@@ -36,7 +36,7 @@ interface SettingsContextType {
 }
 
 const defaultSettings: LibrarySettings = {
-  schoolName: 'School Library System',
+  schoolName: 'Biblioteca',
   loanDuration: 30,
   maxBooksPerStudent: 3,
   enableNotifications: true,
