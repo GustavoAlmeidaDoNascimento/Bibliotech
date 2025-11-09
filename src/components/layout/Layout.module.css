@@ -506,21 +506,23 @@
 }
 
 .whatsappNotificationButton {
-  background-color: #25D366;
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: #128C7E;
+  border: 1px solid currentColor;
   border-radius: 4px;
   padding: 6px 12px;
   font-size: 0.8rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
   display: flex;
   align-items: center;
   font-weight: 500;
 }
 
 .whatsappNotificationButton:hover {
-  background-color: #128C7E;
+  background-color: #ecfdf5;
+  color: #0f766e;
+  border-color: #0f766e;
 }
 
 .whatsappNotificationButton::before {
@@ -650,21 +652,23 @@
 }
 
 .modalActionButton {
-  background: #059669;
-  color: white;
-  border: none;
+  background: #ffffff;
+  color: #047857;
+  border: 1px solid currentColor;
   padding: 0.75rem 2rem;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .modalActionButton:hover {
-  background: #047857;
+  background: rgba(5, 150, 105, 0.1);
+  color: #03543f;
+  border-color: #03543f;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
 }
 
 .modalActionButton:active {

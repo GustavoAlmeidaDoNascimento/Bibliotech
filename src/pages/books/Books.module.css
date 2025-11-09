@@ -50,9 +50,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 0.95rem;
@@ -62,7 +62,9 @@
 }
 
 .registerButton:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--primary-light);
+  border-color: var(--primary-dark);
+  color: var(--primary-dark);
   transform: translateY(-1px);
 }
 
@@ -70,9 +72,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #059669;
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: #047857;
+  border: 1px solid #059669;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 0.95rem;
@@ -82,12 +84,16 @@
 }
 
 .exportButton:hover:not(:disabled) {
-  background-color: #047857;
+  background-color: rgba(5, 150, 105, 0.1);
+  border-color: #047857;
+  color: #03543f;
   transform: translateY(-1px);
 }
 
 .exportButton:disabled {
-  background-color: #9ca3af;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  border-color: #d1d5db;
   cursor: not-allowed;
   transform: none;
 }
@@ -96,9 +102,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #7c3aed;
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: #6d28d9;
+  border: 1px solid #7c3aed;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 0.95rem;
@@ -108,12 +114,16 @@
 }
 
 .printButton:hover:not(:disabled) {
-  background-color: #6d28d9;
+  background-color: rgba(124, 58, 237, 0.12);
+  border-color: #6d28d9;
+  color: #5b21b6;
   transform: translateY(-1px);
 }
 
 .printButton:disabled {
-  background-color: #9ca3af;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  border-color: #d1d5db;
   cursor: not-allowed;
   transform: none;
 }
@@ -122,9 +132,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--danger-color);
-  color: var(--text-primary);
-  border: none;
+  background-color: #ffffff;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 0.95rem;
@@ -134,12 +144,16 @@
 }
 
 .deleteButton:hover:not(:disabled) {
-  background-color: var(--danger-dark);
+  background-color: rgba(220, 38, 38, 0.08);
+  border-color: var(--danger-dark);
+  color: var(--danger-dark);
   transform: translateY(-1px);
 }
 
 .deleteButton:disabled {
-  opacity: 0.7;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  border-color: #d1d5db;
   cursor: not-allowed;
 }
 
@@ -398,9 +412,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 0.95rem;
@@ -409,7 +423,9 @@
 }
 
 .applyFiltersButton:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--primary-light);
+  border-color: var(--primary-dark);
+  color: var(--primary-dark);
   transform: translateY(-1px);
 }
 
@@ -780,9 +796,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: var(--primary-color);
-  color: white;
-  border: none;
+  background: #ffffff;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
   padding: 0.875rem 2rem;
   border-radius: 8px;
   font-size: 1rem;
@@ -793,13 +809,17 @@
 }
 
 .loadMoreButton:hover:not(:disabled) {
-  background: var(--primary-dark);
+  background: var(--primary-light);
+  border-color: var(--primary-dark);
+  color: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .loadMoreButton:disabled {
-  background: var(--text-secondary);
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #d1d5db;
   cursor: not-allowed;
   transform: none;
   opacity: 0.6;

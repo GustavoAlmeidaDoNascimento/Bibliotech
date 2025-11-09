@@ -233,18 +233,20 @@
 }
 
 .dangerButton {
-  background-color: #f44336;
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: #d32f2f;
+  border: 1px solid currentColor;
   padding: 10px 20px;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .dangerButton:hover {
-  background-color: #d32f2f;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #b91c1c;
 }
 
 .helpText {
@@ -337,18 +339,27 @@
 }
 
 .confirmDangerButton {
-  background-color: #f44336;
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: #d32f2f;
+  border: 1px solid currentColor;
   padding: 10px 20px;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .confirmDangerButton:disabled {
-  background-color: #ffcdd2;
+  background-color: #f9fafb;
+  color: #d1d5db;
+  border-color: #e5e7eb;
   cursor: not-allowed;
+}
+
+.confirmDangerButton:not(:disabled):hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #b91c1c;
 }
 
 .backupSection {
@@ -372,13 +383,13 @@
 
 .actionButton {
   padding: 0.7rem 1.2rem;
-  background-color: #4a90e2;
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: #2563eb;
+  border: 1px solid currentColor;
   border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   margin-bottom: 1.5rem;
   display: block;
   width: 100%;
@@ -386,29 +397,39 @@
 }
 
 .actionButton:hover {
-  background-color: #3a7bc8;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
 }
 
 .actionButton:disabled {
-  background-color: #cccccc;
+  background-color: #f9fafb;
+  color: #9ca3af;
+  border-color: #d1d5db;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .supportButton {
   display: inline-block;
-  background-color: #25D366;
-  color: white;
+  background-color: #ffffff;
+  color: #128C7E;
   text-decoration: none;
   padding: 10px 20px;
   border-radius: 4px;
   font-size: 1rem;
   font-weight: 500;
-  transition: background-color 0.3s;
+  border: 1px solid currentColor;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   margin-top: 10px;
 }
 
 .supportButton:hover {
-  background-color: #128C7E;
+  background-color: #ecfdf5;
+  color: #0f766e;
+  border-color: #0f766e;
+  box-shadow: 0 4px 12px rgba(18, 140, 126, 0.2);
 }
 
 /* Estilos modernos para a seção de suporte */
@@ -467,22 +488,25 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-  color: white;
+  background: #ffffff;
+  color: #128C7E;
   text-decoration: none;
   padding: 14px 24px;
   border-radius: 12px;
   font-size: 1rem;
   font-weight: 600;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.3);
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.15);
   align-self: flex-start;
+  border: 1px solid currentColor;
 }
 
 .modernSupportButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
-  background: linear-gradient(135deg, #128C7E 0%, #075e54 100%);
+  box-shadow: 0 6px 20px rgba(18, 140, 126, 0.25);
+  background: #ecfdf5;
+  color: #0f766e;
+  border-color: #0f766e;
 }
 
 .whatsappIcon {
@@ -514,19 +538,22 @@
 }
 
 .adminButton {
-  background-color: #6f42c1;
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: #5a32a3;
+  border: 1px solid currentColor;
   padding: 12px 24px;
   border-radius: 6px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   text-decoration: none;
   display: inline-block;
 }
 
 .adminButton:hover {
-  background-color: #5a32a3;
-} 
+  background-color: #f3e8ff;
+  color: #4c1d95;
+  border-color: #4c1d95;
+  box-shadow: 0 4px 12px rgba(90, 50, 163, 0.2);
+}
