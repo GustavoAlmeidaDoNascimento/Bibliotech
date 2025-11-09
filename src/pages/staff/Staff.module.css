@@ -42,13 +42,18 @@
 }
 
 .registerButton {
-  background: var(--primary-color, #4a90e2);
-  color: white;
+  background: #ffffff;
+  color: var(--primary-color, #4a90e2);
+  border: 1px solid currentColor;
   text-decoration: none;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
 .registerButton:hover {
-  background: var(--primary-color-hover, #357abd);
+  background: #eff6ff;
+  color: var(--primary-color-hover, #357abd);
+  border-color: var(--primary-color-hover, #357abd);
+  box-shadow: 0 4px 12px rgba(53, 122, 189, 0.2);
 }
 
 .filterButton {
