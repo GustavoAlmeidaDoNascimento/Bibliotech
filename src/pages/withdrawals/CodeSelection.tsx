@@ -51,12 +51,10 @@ const CodeSelection = () => {
   const calculateAvailableCodes = async (bookData: Book): Promise<string[]> => {
     if (!currentUser || !bookData.id) return [];
     
+    const allCodes = bookData.codes || [];
+    if (allCodes.length === 0) return [];
+    
     try {
-      // Obter todos os códigos do livro
-      const allCodes = bookData.codes || [];
-      
-      if (allCodes.length === 0) return [];
-      
       // Buscar empréstimos ativos para este livro
       const loansRef = collection(db, `users/${currentUser.uid}/loans`);
       const activeLoansQuery = query(
@@ -78,7 +76,7 @@ const CodeSelection = () => {
       return availableCodes;
     } catch (error) {
       console.error('Erro ao calcular códigos disponíveis:', error);
-      return [];
+      return allCodes;
     }
   };
 

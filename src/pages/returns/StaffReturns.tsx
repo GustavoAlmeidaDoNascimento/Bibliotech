@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   collection, 
-  query, 
   getDocs, 
-  where, 
   doc, 
   deleteDoc, 
   getDoc, 
-  updateDoc,
-  Timestamp, 
-  orderBy,
-  limit,
-  startAfter
+  Timestamp
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -21,7 +15,8 @@ interface StaffLoan {
   id: string;
   staffId: string;
   bookId: string;
-  loanDate: Timestamp;
+  loanDate: Timestamp | null;
+  loanDateMillis?: number;
   staffName: string;
   bookTitle: string;
 }
@@ -34,8 +29,7 @@ const StaffReturns = () => {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredLoans, setFilteredLoans] = useState<StaffLoan[]>([]);
-  const [lastVisible, setLastVisible] = useState<any>(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [confirmDialog, setConfirmDialog] = useState<{show: boolean, loanId: string, bookId: string, staffName: string, bookTitle: string}>({
     show: false,
     loanId: '',
@@ -67,34 +61,8 @@ const StaffReturns = () => {
 
     try {
       setLoading(true);
-      let loansQuery;
-      
-      if (lastVisible && !searchQuery) {
-        // Paginação
-        loansQuery = query(
-          collection(db, `users/${currentUser.uid}/staffLoans`),
-          orderBy('loanDate', 'desc'),
-          startAfter(lastVisible),
-          limit(ITEMS_PER_PAGE)
-        );
-      } else {
-        // Primeira página
-        loansQuery = query(
-          collection(db, `users/${currentUser.uid}/staffLoans`),
-          orderBy('loanDate', 'desc'),
-          limit(ITEMS_PER_PAGE)
-        );
-      }
-      
-      const querySnapshot = await getDocs(loansQuery);
-      
-      // Verificar se há mais itens
-      if (querySnapshot.docs.length < ITEMS_PER_PAGE) {
-        setHasMore(false);
-      } else {
-        setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-        setHasMore(true);
-      }
+      const loansRef = collection(db, `users/${currentUser.uid}/staffLoans`);
+      const querySnapshot = await getDocs(loansRef);
       
       const loanPromises = querySnapshot.docs.map(async (docSnapshot) => {
         const loanData = docSnapshot.data();
@@ -125,24 +93,36 @@ const StaffReturns = () => {
           console.error('Erro ao buscar dados do livro:', err);
         }
         
+        const rawLoanDate = loanData.loanDate;
+        const loanDate: Timestamp | null = rawLoanDate instanceof Timestamp
+          ? rawLoanDate
+          : (rawLoanDate?.toDate ? rawLoanDate : null);
+        let loanDateMillis = 0;
+        if (loanDate) {
+          loanDateMillis = loanDate.toMillis();
+        } else if (typeof rawLoanDate === 'string') {
+          const parsed = Date.parse(rawLoanDate);
+          loanDateMillis = Number.isNaN(parsed) ? 0 : parsed;
+        }
+
         return {
           id: docSnapshot.id,
           staffId: loanData.staffId,
           bookId: loanData.bookId,
-          loanDate: loanData.loanDate,
+          loanDate,
+          loanDateMillis,
           staffName,
           bookTitle
         };
       });
       
       const loansWithDetails = await Promise.all(loanPromises);
-      
-      if (lastVisible && !searchQuery) {
-        setLoans(prev => [...prev, ...loansWithDetails]);
-      } else {
-        setLoans(loansWithDetails);
-      }
-      
+      loansWithDetails.sort((a, b) => (b.loanDateMillis || 0) - (a.loanDateMillis || 0));
+
+      setLoans(loansWithDetails);
+      setFilteredLoans(loansWithDetails);
+      setVisibleCount(ITEMS_PER_PAGE);
+      setError('');
     } catch (error) {
       console.error('Erro ao buscar locações:', error);
       setError('Erro ao carregar locações. Tente novamente mais tarde.');
@@ -151,9 +131,15 @@ const StaffReturns = () => {
     }
   };
 
+  useEffect(() => {
+    if (searchQuery) {
+      setVisibleCount(ITEMS_PER_PAGE);
+    }
+  }, [searchQuery]);
+
   const loadMore = () => {
-    if (hasMore && !loading) {
-      fetchLoans();
+    if (!loading) {
+      setVisibleCount(prev => prev + ITEMS_PER_PAGE);
     }
   };
 
@@ -200,6 +186,9 @@ const StaffReturns = () => {
     setSearchQuery(e.target.value);
   };
 
+  const displayedLoans = searchQuery ? filteredLoans : filteredLoans.slice(0, visibleCount);
+  const hasMore = !searchQuery && filteredLoans.length > displayedLoans.length;
+
   return (
     <div className={styles.container}>
       <h2>Devoluções de Professores e Funcionários</h2>
@@ -219,14 +208,14 @@ const StaffReturns = () => {
           <div className={styles.loading}>Carregando locações...</div>
         ) : error ? (
           <div className={styles.error}>{error}</div>
-        ) : filteredLoans.length === 0 ? (
+        ) : displayedLoans.length === 0 ? (
           <div className={styles.emptyState}>
             <p>Nenhuma locação registrada para professores ou funcionários.</p>
           </div>
         ) : (
           <>
             <div className={styles.cardGrid}>
-              {filteredLoans.map(loan => (
+              {displayedLoans.map(loan => (
                 <div key={loan.id} className={styles.card}>
                   <div className={styles.cardContent}>
                     <div className={styles.cardHeader}>

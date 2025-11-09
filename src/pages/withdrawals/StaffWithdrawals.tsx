@@ -97,9 +97,12 @@ const StaffWithdrawals = () => {
     }
   };
 
+  const normalize = (value?: string) =>
+    (value || '').toString().toLowerCase().trim();
+
   const applyFilters = () => {
-    const nameFilter = filters.name.toLowerCase().trim();
-    const positionFilter = filters.position.toLowerCase().trim();
+    const nameFilter = normalize(filters.name);
+    const positionFilter = normalize(filters.position);
     
     if (!nameFilter && !positionFilter) {
       setFiltersApplied(false);
@@ -108,8 +111,8 @@ const StaffWithdrawals = () => {
     }
     
     const filtered = staffList.filter(staff => {
-      const matchesName = !nameFilter || staff.name.toLowerCase().includes(nameFilter);
-      const matchesPosition = !positionFilter || staff.position.toLowerCase().includes(positionFilter);
+      const matchesName = !nameFilter || normalize(staff.name).includes(nameFilter);
+      const matchesPosition = !positionFilter || normalize(staff.position).includes(positionFilter);
       return matchesName && matchesPosition;
     });
     

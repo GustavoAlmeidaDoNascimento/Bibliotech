@@ -52,13 +52,11 @@ const StaffWithdrawalConfirmation = () => {
   // Função para calcular códigos disponíveis
   const calculateAvailableCodes = async (bookData: Book): Promise<string[]> => {
     if (!currentUser || !bookData.id) return [];
-    
+      
+    const allCodes = bookData.codes && bookData.codes.length > 0 ? bookData.codes : (bookData.code ? [bookData.code] : []);
+    if (allCodes.length === 0) return [];
+
     try {
-      // Obter todos os códigos do livro
-      const allCodes = bookData.codes && bookData.codes.length > 0 ? bookData.codes : (bookData.code ? [bookData.code] : []);
-      
-      if (allCodes.length === 0) return [];
-      
       // Buscar empréstimos ativos para este livro (tanto de alunos quanto de funcionários)
       const [studentLoans, staffLoans] = await Promise.all([
         // Empréstimos de alunos (apenas ativos)
