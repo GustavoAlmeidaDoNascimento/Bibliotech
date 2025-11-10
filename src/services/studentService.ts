@@ -9,6 +9,7 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { subscriptionService } from './subscriptionService';
 import { Student } from '../types/common';
 import { studentIndexService } from './studentIndexService';
 
@@ -124,30 +125,15 @@ export const studentService = {
    */
   getSchoolSubscriptionPlan: async (schoolId: string): Promise<string | null> => {
     try {
-      const subscriptionRef = doc(db, `users/${schoolId}/account/subscription`);
-      const subscriptionSnapshot = await getDoc(subscriptionRef);
+      const subscriptionInfo = await subscriptionService.getSubscriptionPlan(schoolId);
 
-      if (!subscriptionSnapshot.exists()) {
+      if (!subscriptionInfo.rawPlan) {
         console.log(`ℹ️ Nenhum plano de assinatura encontrado para a escola ${schoolId}`);
         return null;
       }
 
-      const subscriptionData = subscriptionSnapshot.data();
-      console.log(`📄 Dados de assinatura obtidos para a escola ${schoolId}:`, subscriptionData);
-      const planValue = subscriptionData?.plan ?? subscriptionData?.planName ?? subscriptionData?.name;
-
-      if (typeof planValue === 'string') {
-        if (planValue.trim().length > 0) {
-          console.log(`🏷️ Plano identificado (string) para a escola ${schoolId}:`, planValue);
-          return planValue.trim();
-        }
-      } else if (typeof planValue === 'number') {
-        console.log(`🏷️ Plano identificado (number) para a escola ${schoolId}:`, planValue);
-        return planValue.toString();
-      }
-
-      console.log(`⚠️ Documento de assinatura da escola ${schoolId} não contém campo de plano legível`);
-      return null;
+      console.log(`🏷️ Plano identificado para a escola ${schoolId}:`, subscriptionInfo.rawPlan);
+      return subscriptionInfo.rawPlan;
     } catch (error) {
       console.warn(`⚠️ Erro ao buscar plano de assinatura da escola ${schoolId}:`, error);
       return null;

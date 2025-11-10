@@ -4,10 +4,12 @@ import { collection, query, getDocs, doc, updateDoc, serverTimestamp, orderBy, s
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEducationalLevels } from '../../contexts/EducationalLevelsContext';
-import { ArrowLeftIcon, ChartBarIcon, TrophyIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ChartBarIcon, TrophyIcon, BookOpenIcon, LockClosedIcon, ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import styles from './EditClass.module.css';
+import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
+import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
 
 // Registrar componentes do Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
@@ -71,6 +73,8 @@ const EditClass: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const classDashboardFeature = useFeatureBlock(FEATURE_BLOCK_KEYS.BlockClassDashboard);
 
   // Estados do formulário
   const [formData, setFormData] = useState({
@@ -262,10 +266,22 @@ const EditClass: React.FC = () => {
   }, [currentUser, classInfo]);
 
   useEffect(() => {
-    if (classInfo) {
-      fetchClassStats();
+    if (!classInfo) {
+      return;
     }
-  }, [classInfo, fetchClassStats]);
+
+    if (classDashboardFeature.loading) {
+      return;
+    }
+
+    if (classDashboardFeature.isBlocked) {
+      setClassStats(null);
+      setLoadingStats(false);
+      return;
+    }
+
+    fetchClassStats();
+  }, [classInfo, fetchClassStats, classDashboardFeature.loading, classDashboardFeature.isBlocked]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -496,7 +512,47 @@ const EditClass: React.FC = () => {
             Dashboard da Turma
           </h3>
           
-          {loadingStats ? (
+          {classDashboardFeature.loading ? (
+            <div className={styles.loadingStats}>
+              <p>Verificando permissões do plano...</p>
+            </div>
+          ) : classDashboardFeature.isBlocked ? (
+            <div className={styles.featureBlockContainer}>
+              <div className={styles.featureBlockCard}>
+                <div className={styles.featureBlockHeader}>
+                  <div className={styles.featureBlockIcon}>
+                    <LockClosedIcon />
+                  </div>
+                  <div>
+                    <span className={styles.featureBlockBadge}>
+                      Plano atual: {classDashboardFeature.planDisplayName}
+                    </span>
+                    <h4>Estatísticas da turma disponíveis no plano Intermediário</h4>
+                  </div>
+                </div>
+                <p className={styles.featureBlockDescription}>
+                  Faça o upgrade para o Bibliotech Intermediário pra conhecer todas as turmas como a palma da sua mão.
+                </p>
+                <ul className={styles.featureBlockHighlights}>
+                  <li>Acompanhe empréstimos, devoluções e atrasos em tempo real</li>
+                  <li>Visualize rankings completos e gráficos prontos para reuniões</li>
+                  <li>Economize tempo com insights automáticos sobre o engajamento da turma</li>
+                </ul>
+                <a
+                  className={styles.featureBlockButton}
+                  href="https://bibliotech.tech/#planos"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Conhecer plano intermediário
+                  <ArrowUpRightIcon />
+                </a>
+                <span className={styles.featureBlockFootnote}>
+                  Disponível nos planos Bibliotech Intermediário e Avançado.
+                </span>
+              </div>
+            </div>
+          ) : loadingStats ? (
             <div className={styles.loadingStats}>
               <p>Carregando estatísticas...</p>
             </div>
