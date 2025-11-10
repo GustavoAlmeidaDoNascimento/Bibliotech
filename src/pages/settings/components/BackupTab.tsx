@@ -1,5 +1,10 @@
 import React, { ChangeEvent, RefObject } from 'react';
-import { ArrowUpTrayIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowUpTrayIcon,
+  ArrowDownTrayIcon,
+  TrashIcon,
+  ArrowPathIcon
+} from '@heroicons/react/24/outline';
 import styles from '../Settings.module.css';
 
 interface BackupTabProps {
@@ -102,6 +107,7 @@ const BackupTab: React.FC<BackupTabProps> = ({
             className={styles.dangerButton}
             onClick={onDeleteReturnedClick}
           >
+            <TrashIcon className={styles.dangerButtonIcon} />
             Apagar Empréstimos Devolvidos
           </button>
           <p className={styles.helpText}>
@@ -112,6 +118,7 @@ const BackupTab: React.FC<BackupTabProps> = ({
             className={styles.dangerButton}
             onClick={onRestoreDataClick}
           >
+            <ArrowPathIcon className={styles.dangerButtonIcon} />
             Restaurar Todos os Dados
           </button>
           <p className={styles.helpText}>

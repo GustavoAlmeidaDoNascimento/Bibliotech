@@ -44,7 +44,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', isError: false });
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('account');
   const [plan, setPlan] = useState<number | null>(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [planError, setPlanError] = useState('');
