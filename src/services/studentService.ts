@@ -113,9 +113,47 @@ export interface StudentDashboardData {
   student: Student;
   loans: StudentLoan[];
   books: StudentBook[];
+  subscriptionPlan?: string | null;
 }
 
 export const studentService = {
+  /**
+   * Busca o plano de assinatura da escola
+   * @param schoolId ID da escola (userId)
+   * @returns Promise<string | null>
+   */
+  getSchoolSubscriptionPlan: async (schoolId: string): Promise<string | null> => {
+    try {
+      const subscriptionRef = doc(db, `users/${schoolId}/account/subscription`);
+      const subscriptionSnapshot = await getDoc(subscriptionRef);
+
+      if (!subscriptionSnapshot.exists()) {
+        console.log(`ℹ️ Nenhum plano de assinatura encontrado para a escola ${schoolId}`);
+        return null;
+      }
+
+      const subscriptionData = subscriptionSnapshot.data();
+      console.log(`📄 Dados de assinatura obtidos para a escola ${schoolId}:`, subscriptionData);
+      const planValue = subscriptionData?.plan ?? subscriptionData?.planName ?? subscriptionData?.name;
+
+      if (typeof planValue === 'string') {
+        if (planValue.trim().length > 0) {
+          console.log(`🏷️ Plano identificado (string) para a escola ${schoolId}:`, planValue);
+          return planValue.trim();
+        }
+      } else if (typeof planValue === 'number') {
+        console.log(`🏷️ Plano identificado (number) para a escola ${schoolId}:`, planValue);
+        return planValue.toString();
+      }
+
+      console.log(`⚠️ Documento de assinatura da escola ${schoolId} não contém campo de plano legível`);
+      return null;
+    } catch (error) {
+      console.warn(`⚠️ Erro ao buscar plano de assinatura da escola ${schoolId}:`, error);
+      return null;
+    }
+  },
+
   /**
    * Busca um aluno por ID em todas as bibliotecas
    * @param studentId ID do aluno
@@ -416,10 +454,19 @@ export const studentService = {
       const books = await studentService.getBooks(schoolId, bookIds);
       console.log(`📖 Encontrados ${books.length} livros`);
 
+      const subscriptionPlan = await studentService.getSchoolSubscriptionPlan(schoolId);
+      console.log(`✅ Dados consolidados do dashboard para aluno ${studentId}`, {
+        schoolId,
+        loans: loans.length,
+        books: books.length,
+        subscriptionPlan
+      });
+
       return {
         student,
         loans,
-        books
+        books,
+        subscriptionPlan
       };
     } catch (error) {
       console.error('Erro ao buscar dados do dashboard:', error);

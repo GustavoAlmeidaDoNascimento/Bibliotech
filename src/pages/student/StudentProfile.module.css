@@ -208,6 +208,126 @@
   margin: 0;
 }
 
+.subscriptionInfo {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.subscriptionLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+
+.subscriptionValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #E2E8F0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: rgba(30, 41, 59, 0.6);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.45);
+}
+
+.subscriptionBrand {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.subscriptionValue svg {
+  color: #38BDF8;
+}
+
+.subscriptionTier {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  background: rgba(148, 163, 184, 0.2);
+  color: #F8FAFC;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.subscriptionValueBasic {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(37, 99, 235, 0.45));
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  box-shadow: 0 14px 40px rgba(37, 99, 235, 0.4);
+}
+
+.subscriptionValueBasic svg {
+  color: #38BDF8;
+}
+
+.subscriptionTierBasic {
+  background: linear-gradient(135deg, #3B82F6, #2563EB);
+  color: #F8FAFC;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.15);
+}
+
+.subscriptionValueIntermediate {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.45), rgba(100, 116, 139, 0.55));
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  box-shadow: 0 14px 40px rgba(100, 116, 139, 0.35);
+}
+
+.subscriptionValueIntermediate svg {
+  color: #CBD5F5;
+}
+
+.subscriptionTierIntermediate {
+  background: linear-gradient(135deg, #E2E8F0, #CBD5F5);
+  color: #0F172A;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25);
+}
+
+.subscriptionValueAdvanced {
+  background: linear-gradient(135deg, rgba(249, 168, 37, 0.35), rgba(245, 158, 11, 0.55));
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  box-shadow: 0 14px 40px rgba(245, 158, 11, 0.45);
+}
+
+.subscriptionValueAdvanced svg {
+  color: #FACC15;
+}
+
+.subscriptionTierAdvanced {
+  background: linear-gradient(135deg, #F59E0B, #F97316);
+  color: #0F172A;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.subscriptionEmpty {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  border: 1px dashed rgba(148, 163, 184, 0.5);
+  color: #94A3B8;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.subscriptionSkeleton {
+  width: 160px;
+  height: 18px;
+  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 999px;
+  margin-top: 0.75rem;
+}
+
 /* Menu Section */
 .menuSection {
   background: rgba(30, 41, 59, 0.5);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookMarked, MessageCircle, LogOut, Trophy } from 'lucide-react';
+import { BookMarked, MessageCircle, LogOut, Trophy, Crown } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService, StudentDashboardData } from '../../services/studentService';
 import { useStudentProfileCache } from '../../hooks/useStudentProfileCache';
@@ -22,17 +22,29 @@ const StudentProfile: React.FC = () => {
       return;
     }
 
+    let shouldFetchFromServer = true;
+
     // Se já tem dados em cache, usar eles
     if (cachedData) {
       setDashboardData(cachedData.dashboardData);
       setLoading(false);
-      console.log('✅ Usando dados do perfil em cache');
-      return;
+      console.log('✅ Usando dados do perfil em cache', {
+        studentId,
+        hasSubscriptionPlan: typeof cachedData.dashboardData.subscriptionPlan !== 'undefined',
+        subscriptionPlan: cachedData.dashboardData.subscriptionPlan
+      });
+
+      if (typeof cachedData.dashboardData.subscriptionPlan !== 'undefined') {
+        console.log('🏷️ Plano obtido via cache, não é necessário buscar no servidor');
+        shouldFetchFromServer = false;
+      } else {
+        console.log('ℹ️ Plano não presente no cache, buscando do servidor...');
+      }
     }
 
     const loadData = async () => {
       try {
-        console.log('🔄 Buscando dados do perfil do servidor...');
+        console.log('🔄 Buscando dados do perfil do servidor...', { studentId });
         const data = await studentService.getStudentDashboardData(studentId);
         if (data) {
           setDashboardData(data);
@@ -49,7 +61,9 @@ const StudentProfile: React.FC = () => {
       }
     };
 
-    loadData();
+    if (shouldFetchFromServer) {
+      loadData();
+    }
   }, [studentId, navigate, cachedData, setCachedData]);
 
   const handleMyBooksClick = () => {
@@ -79,6 +93,109 @@ const StudentProfile: React.FC = () => {
     return name.substring(0, 2).toUpperCase();
   };
 
+  type PlanVariant = 'basic' | 'intermediate' | 'advanced';
+  interface PlanDisplayData {
+    tierLabel: string;
+    variant: PlanVariant;
+  }
+
+  const subscriptionVariantClasses: Record<PlanVariant, { container: string; tier: string }> = {
+    basic: {
+      container: styles.subscriptionValueBasic,
+      tier: styles.subscriptionTierBasic
+    },
+    intermediate: {
+      container: styles.subscriptionValueIntermediate,
+      tier: styles.subscriptionTierIntermediate
+    },
+    advanced: {
+      container: styles.subscriptionValueAdvanced,
+      tier: styles.subscriptionTierAdvanced
+    }
+  };
+
+  const removeDiacritics = (value: string) =>
+    value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  const getPlanDisplayData = (plan?: string | null): PlanDisplayData | null => {
+    if (plan === undefined || plan === null) {
+      return null;
+    }
+
+    const rawValue = plan.toString().trim();
+    if (!rawValue) {
+      return null;
+    }
+
+    const normalized = removeDiacritics(rawValue).toLowerCase();
+
+    if (
+      normalized === '1' ||
+      normalized === 'plano 1' ||
+      normalized.includes('basico') ||
+      normalized.includes('basic')
+    ) {
+      return { tierLabel: 'Básico', variant: 'basic' };
+    }
+
+    if (
+      normalized === '2' ||
+      normalized === 'plano 2' ||
+      normalized.includes('intermediario') ||
+      normalized.includes('intermediate')
+    ) {
+      return { tierLabel: 'Intermediário', variant: 'intermediate' };
+    }
+
+    if (
+      normalized === '3' ||
+      normalized === 'plano 3' ||
+      normalized.includes('avancado') ||
+      normalized.includes('advanced')
+    ) {
+      return { tierLabel: 'Avançado', variant: 'advanced' };
+    }
+
+    return null;
+  };
+
+  const formatPlanName = (plan?: string | null) => {
+    if (!plan) {
+      return '';
+    }
+
+    const normalized = plan
+      .split(/[\s_-]+/)
+      .filter(Boolean)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+
+    if (!normalized) {
+      return '';
+    }
+
+    if (/^\d+$/.test(normalized)) {
+      return `Plano ${normalized}`;
+    }
+
+    return normalized;
+  };
+
+  const student = dashboardData?.student;
+  const subscriptionPlan = dashboardData?.subscriptionPlan;
+  const showSubscriptionSkeleton = dashboardData !== null && typeof subscriptionPlan === 'undefined';
+  const planDisplayData = getPlanDisplayData(subscriptionPlan);
+  const planVariantClasses = planDisplayData ? subscriptionVariantClasses[planDisplayData.variant] : null;
+
+  useEffect(() => {
+    console.log('🔍 Estado do plano na renderização do perfil', {
+      studentId,
+      subscriptionPlan,
+      showSubscriptionSkeleton,
+      hasDashboardData: !!dashboardData
+    });
+  }, [studentId, subscriptionPlan, showSubscriptionSkeleton, dashboardData]);
+
   if (loading) {
     return (
       <div className={styles.container}>
@@ -97,6 +214,7 @@ const StudentProfile: React.FC = () => {
             <div className={styles.userInfo}>
               <div className={styles.userNameSkeleton}></div>
               <div className={styles.userIdSkeleton}></div>
+              <div className={styles.subscriptionSkeleton}></div>
             </div>
           </div>
 
@@ -121,8 +239,6 @@ const StudentProfile: React.FC = () => {
       </div>
     );
   }
-
-  const student = dashboardData?.student;
 
   return (
     <div className={styles.container}>
@@ -150,6 +266,24 @@ const StudentProfile: React.FC = () => {
               <p>ID: {student.id}</p>
             ) : (
               <div className={styles.userIdSkeleton}></div>
+            )}
+            {showSubscriptionSkeleton ? (
+              <div className={styles.subscriptionSkeleton}></div>
+            ) : (
+              <div className={styles.subscriptionInfo}>
+                <span className={styles.subscriptionLabel}>Plano da escola</span>
+                {subscriptionPlan ? (
+                  <span className={`${styles.subscriptionValue} ${planVariantClasses?.container ?? ''}`}>
+                    <Crown size={16} />
+                    <span className={styles.subscriptionBrand}>Bibliotech</span>
+                    <span className={`${styles.subscriptionTier} ${planVariantClasses?.tier ?? ''}`}>
+                      {planDisplayData ? planDisplayData.tierLabel : formatPlanName(subscriptionPlan)}
+                    </span>
+                  </span>
+                ) : (
+                  <span className={styles.subscriptionEmpty}>Plano não disponível</span>
+                )}
+              </div>
             )}
           </div>
         </div>
