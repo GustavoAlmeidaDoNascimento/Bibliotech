@@ -534,7 +534,7 @@ const EditClass: React.FC = () => {
                   Faça o upgrade para o Bibliotech Intermediário pra conhecer todas as turmas como a palma da sua mão.
                 </p>
                 <ul className={styles.featureBlockHighlights}>
-                  <li>Acompanhe empréstimos, devoluções e atrasos em tempo real</li>
+                  <li>Acompanhe métricas e gráficos sobre suas turmas em tempo real</li>
                   <li>Visualize rankings completos e gráficos prontos para reuniões</li>
                   <li>Economize tempo com insights automáticos sobre o engajamento da turma</li>
                 </ul>
