@@ -71,6 +71,10 @@
 }
 
 .primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background: #1d4ed8;
   color: white;
   border: none;

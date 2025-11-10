@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { WrenchScrewdriverIcon, SparklesIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, WrenchScrewdriverIcon, SparklesIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import styles from './OnlineCatalog.module.css';
 
 const OnlineCatalog: React.FC = () => {
@@ -53,9 +53,10 @@ const OnlineCatalog: React.FC = () => {
         <button
           type="button"
           className={styles.primaryButton}
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(-1)}
         >
-          Voltar para o dashboard
+          <ArrowLeftIcon width={20} height={20} />
+          Voltar
         </button>
         <a
           className={styles.secondaryLink}
