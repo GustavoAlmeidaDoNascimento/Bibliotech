@@ -1011,6 +1011,8 @@ const PRICING_PLANS: PricingPlan[] = [
   }
 ];
 
+const SHOW_PRICING_SECTION = false;
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -1451,75 +1453,77 @@ Aguardo retorno. Obrigado!`;
             </FeatureItem>
           </FeaturesContainer>
 
-        <PricingSection id="precos">
-          <SectionTitle
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            Escolha seu plano
-          </SectionTitle>
-          <SectionDescription
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            Selecione o plano ideal para sua biblioteca
-          </SectionDescription>
+        {SHOW_PRICING_SECTION && (
+          <PricingSection id="precos">
+            <SectionTitle
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Escolha seu plano
+            </SectionTitle>
+            <SectionDescription
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              Selecione o plano ideal para sua biblioteca
+            </SectionDescription>
 
-          <PricingGrid>
-            {PRICING_PLANS.map((plan, index) => (
-              <PricingCard
-                key={plan.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 * index }}
-                $highlighted={plan.highlighted}
-              >
-                {plan.badge && <PricingBadge>{plan.badge}</PricingBadge>}
-                <PricingHeader>
-                  <PricingTitle>{renderPlanName(plan.name)}</PricingTitle>
-                  <PricingPrice $highlighted={plan.highlighted}>
-                    <strong>{plan.price}</strong>
-                    <PricingPeriod>{plan.period}</PricingPeriod>
-                  </PricingPrice>
-                </PricingHeader>
-
-                <PricingFeatures>
-                  {plan.features.map((feature) => (
-                    <PricingFeature key={feature} $highlighted={plan.highlighted}>
-                      <CheckIcon $highlighted={plan.highlighted}>
-                        <svg
-                          viewBox="0 0 12 10"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="1 5.5 4.5 9 11 1"></polyline>
-                        </svg>
-                      </CheckIcon>
-                      <PricingFeatureText>{feature}</PricingFeatureText>
-                    </PricingFeature>
-                  ))}
-                </PricingFeatures>
-
-                <PricingButton
-                  onClick={() => handlePlanWhatsApp(plan)}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
+            <PricingGrid>
+              {PRICING_PLANS.map((plan, index) => (
+                <PricingCard
+                  key={plan.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.1 * index }}
                   $highlighted={plan.highlighted}
                 >
-                  Começar agora
-                </PricingButton>
-              </PricingCard>
-            ))}
-          </PricingGrid>
-        </PricingSection>
+                  {plan.badge && <PricingBadge>{plan.badge}</PricingBadge>}
+                  <PricingHeader>
+                    <PricingTitle>{renderPlanName(plan.name)}</PricingTitle>
+                    <PricingPrice $highlighted={plan.highlighted}>
+                      <strong>{plan.price}</strong>
+                      <PricingPeriod>{plan.period}</PricingPeriod>
+                    </PricingPrice>
+                  </PricingHeader>
+
+                  <PricingFeatures>
+                    {plan.features.map((feature) => (
+                      <PricingFeature key={feature} $highlighted={plan.highlighted}>
+                        <CheckIcon $highlighted={plan.highlighted}>
+                          <svg
+                            viewBox="0 0 12 10"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="1 5.5 4.5 9 11 1"></polyline>
+                          </svg>
+                        </CheckIcon>
+                        <PricingFeatureText>{feature}</PricingFeatureText>
+                      </PricingFeature>
+                    ))}
+                  </PricingFeatures>
+
+                  <PricingButton
+                    onClick={() => handlePlanWhatsApp(plan)}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    $highlighted={plan.highlighted}
+                  >
+                    Começar agora
+                  </PricingButton>
+                </PricingCard>
+              ))}
+            </PricingGrid>
+          </PricingSection>
+        )}
 
           <CTASection
             initial={{ opacity: 0, y: 20 }}
