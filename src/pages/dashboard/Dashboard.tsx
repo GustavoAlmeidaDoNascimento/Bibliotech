@@ -204,6 +204,7 @@ const Dashboard = () => {
     labels: [],
     rates: []
   });
+  const [hasForcedRefreshOnMount, setHasForcedRefreshOnMount] = useState(false);
 
   // Função para aplicar filtro no ranking de estudantes
   const applyStudentRankingFilter = useCallback(async (startDate: string, endDate: string) => {
@@ -731,6 +732,10 @@ const Dashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.uid]); // Apenas quando o usuário mudar
 
+  useEffect(() => {
+    setHasForcedRefreshOnMount(false);
+  }, [currentUser?.uid]);
+
   // Recarrega dados quando o usuário volta para o dashboard (navegação entre páginas)
   useEffect(() => {
     if (!currentUser) return;
@@ -744,8 +749,9 @@ const Dashboard = () => {
       const hasInvalidData = activeReadersCount === 0 && totalBooksRead === 0 &&
                             totalBooksCount > 0 && totalReadersCount > 0; // Mas tem dados de contagem
       
-      if (hasInvalidData) {
+      if (hasInvalidData && !hasForcedRefreshOnMount) {
         console.log('🔄 Dados inválidos detectados, recarregando dashboard...');
+        setHasForcedRefreshOnMount(true);
         fetchDashboardData({ forceRefresh: true });
       } else {
         console.log('✅ Dados válidos encontrados no cache');
@@ -753,7 +759,17 @@ const Dashboard = () => {
     }, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [currentUser, activeLoansCount, overdueLoansCount, activeReadersCount, totalBooksRead, totalBooksCount, totalReadersCount, fetchDashboardData]);
+  }, [
+    currentUser,
+    activeLoansCount,
+    overdueLoansCount,
+    activeReadersCount,
+    totalBooksRead,
+    totalBooksCount,
+    totalReadersCount,
+    fetchDashboardData,
+    hasForcedRefreshOnMount
+  ]);
 
   // Força atualização quando dados ficam stale (mas não cria loop)
   useEffect(() => {
