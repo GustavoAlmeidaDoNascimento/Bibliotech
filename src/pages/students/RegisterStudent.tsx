@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, serverTimestamp, query, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, getDocs, setDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import styles from './RegisterStudent.module.css';
+import { studentIndexService } from '../../services/studentIndexService';
 
 interface StudentForm {
   name: string;
@@ -132,7 +133,10 @@ const RegisterStudent = () => {
         userId: currentUser.uid, // Adiciona referência ao usuário
       };
       const studentsRef = collection(db, `users/${currentUser.uid}/students`);
-      await addDoc(studentsRef, studentData);
+      const newStudentRef = await addDoc(studentsRef, studentData);
+
+      await setDoc(newStudentRef, { studentId: newStudentRef.id }, { merge: true });
+      await studentIndexService.upsertEntry(newStudentRef.id, currentUser.uid);
       navigate('/students');
     } catch (err) {
       console.error('Error adding student:', err);

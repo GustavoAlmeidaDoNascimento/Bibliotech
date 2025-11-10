@@ -1,13 +1,16 @@
-import { 
-  collection, 
+import {
+  collection,
+  collectionGroup,
   getDocs,
   doc,
   getDoc,
   query,
-  where
+  where,
+  limit
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Student } from '../types/common';
+import { studentIndexService } from './studentIndexService';
 
 // Cache de escola do aluno em localStorage
 const SCHOOL_CACHE_KEY = 'bibliotech_student_school_cache';
@@ -59,6 +62,28 @@ const setCachedSchoolId = (studentId: string, schoolId: string): void => {
   }
 };
 
+const STUDENT_IDENTIFIER_SEPARATORS = ['@', ':', '|'];
+
+export const parseStudentIdentifier = (identifier: string): { studentId: string; schoolIdHint?: string } => {
+  const trimmed = identifier.trim();
+  if (!trimmed) {
+    return { studentId: '' };
+  }
+
+  for (const separator of STUDENT_IDENTIFIER_SEPARATORS) {
+    const separatorIndex = trimmed.indexOf(separator);
+    if (separatorIndex > 0 && separatorIndex < trimmed.length - 1) {
+      const schoolIdHint = trimmed.slice(0, separatorIndex);
+      const studentId = trimmed.slice(separatorIndex + 1);
+      if (schoolIdHint && studentId) {
+        return { studentId, schoolIdHint };
+      }
+    }
+  }
+
+  return { studentId: trimmed };
+};
+
 // Interfaces para o dashboard do aluno
 export interface StudentLoan {
   id: string;
@@ -96,10 +121,46 @@ export const studentService = {
    * @param studentId ID do aluno
    * @returns Promise<Student | null>
    */
-  findStudentById: async (studentId: string): Promise<Student | null> => {
+  findStudentById: async (studentIdentifier: string): Promise<Student | null> => {
     try {
+      const { studentId, schoolIdHint } = parseStudentIdentifier(studentIdentifier);
+      if (!studentId) {
+        return null;
+      }
+
       // Verificar cache primeiro
       const cachedSchoolId = getCachedSchoolId(studentId);
+      const checkedSchoolIds = new Set<string>();
+      
+      if (schoolIdHint) {
+        checkedSchoolIds.add(schoolIdHint);
+        try {
+          const studentRef = doc(db, `users/${schoolIdHint}/students/${studentId}`);
+          const studentDoc = await getDoc(studentRef);
+
+          if (studentDoc.exists()) {
+            const studentData = studentDoc.data();
+            console.log(`✅ Aluno encontrado usando código explícito na escola ${schoolIdHint}!`);
+            setCachedSchoolId(studentId, schoolIdHint);
+            return {
+              id: studentDoc.id,
+              name: studentData.name,
+              className: studentData.classroom || studentData.className || studentData.class || studentData.turma,
+              educationalLevelId: studentData.educationalLevelId,
+              userId: schoolIdHint,
+              username: studentData.username,
+              hasCredentials: studentData.hasCredentials,
+              tempPassword: studentData.tempPassword,
+              createdAt: studentData.createdAt,
+              updatedAt: studentData.updatedAt,
+            };
+          } else {
+            console.log(`⚠️ Aluno não encontrado com código explícito na escola ${schoolIdHint}, seguindo fluxo padrão...`);
+          }
+        } catch (error) {
+          console.log(`⚠️ Erro ao buscar aluno com código explícito na escola ${schoolIdHint}:`, error);
+        }
+      }
       
       if (cachedSchoolId) {
         console.log(`🚀 Tentando buscar aluno ${studentId} na escola em cache: ${cachedSchoolId}`);
@@ -128,9 +189,82 @@ export const studentService = {
         } catch (error) {
           console.log(`⚠️ Erro ao buscar na escola em cache, buscando em todas...`);
         }
+        checkedSchoolIds.add(cachedSchoolId);
+      }
+
+      // Tentar o índice global de alunos
+      const indexedSchoolId = await studentIndexService.getSchoolId(studentId);
+      if (indexedSchoolId && !checkedSchoolIds.has(indexedSchoolId)) {
+        console.log(`🌐 Tentando buscar aluno ${studentId} via índice global na escola ${indexedSchoolId}`);
+        checkedSchoolIds.add(indexedSchoolId);
+
+        try {
+          const studentRef = doc(db, `users/${indexedSchoolId}/students/${studentId}`);
+          const studentDoc = await getDoc(studentRef);
+
+          if (studentDoc.exists()) {
+            const studentData = studentDoc.data();
+            console.log(`✅ Aluno encontrado via índice global na escola ${indexedSchoolId}!`);
+            setCachedSchoolId(studentId, indexedSchoolId);
+
+            return {
+              id: studentDoc.id,
+              name: studentData.name,
+              className: studentData.classroom || studentData.className || studentData.class || studentData.turma,
+              educationalLevelId: studentData.educationalLevelId,
+              userId: indexedSchoolId,
+              username: studentData.username,
+              hasCredentials: studentData.hasCredentials,
+              tempPassword: studentData.tempPassword,
+              createdAt: studentData.createdAt,
+              updatedAt: studentData.updatedAt,
+            };
+          } else {
+            console.log(`⚠️ Índice global desatualizado: aluno ${studentId} não encontrado na escola ${indexedSchoolId}`);
+          }
+        } catch (error) {
+          console.log(`⚠️ Erro ao buscar aluno ${studentId} via índice global:`, error);
+        }
       }
       
-      // Se não tem cache ou não encontrou, buscar em todas as escolas
+      // Se não tem cache ou não encontrou, tentar via collectionGroup com campo studentId
+      try {
+        const groupQuery = query(
+          collectionGroup(db, 'students'),
+          where('studentId', '==', studentId),
+          limit(1)
+        );
+        const groupSnapshot = await getDocs(groupQuery);
+
+        if (!groupSnapshot.empty) {
+          const studentDoc = groupSnapshot.docs[0];
+          const studentData = studentDoc.data();
+          const pathSegments = studentDoc.ref.path.split('/');
+          const schoolIdIndex = pathSegments.findIndex(segment => segment === 'users') + 1;
+          const schoolId = pathSegments[schoolIdIndex];
+
+          console.log(`✅ Aluno encontrado via collectionGroup na escola ${schoolId}`);
+          setCachedSchoolId(studentId, schoolId);
+          checkedSchoolIds.add(schoolId);
+
+          return {
+            id: studentDoc.id,
+            name: studentData.name,
+            className: studentData.classroom || studentData.className || studentData.class || studentData.turma,
+            educationalLevelId: studentData.educationalLevelId,
+            userId: schoolId,
+            username: studentData.username,
+            hasCredentials: studentData.hasCredentials,
+            tempPassword: studentData.tempPassword,
+            createdAt: studentData.createdAt,
+            updatedAt: studentData.updatedAt,
+          };
+        }
+      } catch (error) {
+        console.log('⚠️ Erro ao buscar aluno via collectionGroup:', error);
+      }
+
+      // Se ainda não encontrou, buscar em todas as escolas conhecidas
       const knownSchoolIds = [
         '9PKyLnC37EP5cV6n7cdbLqcF2vI3',
         'rkCZozqfmoPspakPwswFA4qWqAo1',
@@ -143,6 +277,10 @@ export const studentService = {
       
       // Buscar nas escolas conhecidas diretamente
       for (const schoolId of knownSchoolIds) {
+        if (checkedSchoolIds.has(schoolId)) {
+          continue;
+        }
+
         try {
           console.log(`🏫 Verificando escola: ${schoolId}`);
           const studentRef = doc(db, `users/${schoolId}/students/${studentId}`);
@@ -184,7 +322,7 @@ export const studentService = {
         const usersSnapshot = await getDocs(usersRef);
         
         for (const userDoc of usersSnapshot.docs) {
-          if (knownSchoolIds.includes(userDoc.id)) {
+          if (knownSchoolIds.includes(userDoc.id) || checkedSchoolIds.has(userDoc.id)) {
             continue; // Já testamos essas escolas
           }
           
@@ -270,7 +408,7 @@ export const studentService = {
       console.log(`🏫 Aluno encontrado na escola: ${schoolId}`);
 
       // Buscar empréstimos do aluno
-      const loans = await studentService.getStudentLoans(schoolId, studentId);
+      const loans = await studentService.getStudentLoans(schoolId, student.id);
       console.log(`📚 Encontrados ${loans.length} empréstimos`);
 
       // Buscar dados dos livros emprestados

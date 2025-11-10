@@ -19,9 +19,11 @@ const StudentIdInput: React.FC = () => {
 
     try {
       await executeSearch(async () => {
-        const student = await studentService.findStudentById(studentId.trim());
+        const trimmedId = studentId.trim();
+        const student = await studentService.findStudentById(trimmedId);
         if (student) {
-            navigate(`/student-dashboard/${studentId.trim()}`);
+            const canonicalAccessCode = student.userId ? `${student.userId}@${student.id}` : trimmedId;
+            navigate(`/student-dashboard/${canonicalAccessCode}`);
         } else {
           throw new Error('Aluno não encontrado. Verifique se o ID está correto.');
         }

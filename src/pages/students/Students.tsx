@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { collection, query, getDocs, doc, deleteDoc, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, doc, deleteDoc, orderBy, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useInfiniteScroll } from '../../hooks';
 import { FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styles from './Students.module.css';
+import { studentIndexService } from '../../services/studentIndexService';
 
 interface Student {
   id: string;
@@ -60,6 +61,31 @@ const Students = () => {
       
       setStudents(fetchedStudents);
       setFilteredStudents(fetchedStudents);
+
+      // Sincronizar índice global e garantir campo studentId nas fichas
+      if (fetchedStudents.length > 0) {
+        void (async () => {
+          try {
+            await Promise.allSettled(
+              fetchedStudents.map(async student => {
+                const studentDocRef = doc(db, `users/${currentUser.uid}/students/${student.id}`);
+
+                if (!('studentId' in student)) {
+                  try {
+                    await updateDoc(studentDocRef, { studentId: student.id });
+                  } catch (updateError) {
+                    console.warn(`⚠️ Não foi possível atualizar studentId para ${student.id}:`, updateError);
+                  }
+                }
+
+                await studentIndexService.upsertEntry(student.id, currentUser.uid);
+              })
+            );
+          } catch (indexError) {
+            console.warn('⚠️ Erro ao sincronizar índice global de alunos:', indexError);
+          }
+        })();
+      }
     } catch (error) {
       console.error('Erro ao buscar alunos:', error);
     } finally {
@@ -124,6 +150,11 @@ const Students = () => {
       for (const studentId of selectedStudents) {
         const studentRef = doc(db, `users/${currentUser.uid}/students/${studentId}`);
         await deleteDoc(studentRef);
+        try {
+          await studentIndexService.removeEntry(studentId);
+        } catch (indexError) {
+          console.warn(`⚠️ Não foi possível remover o aluno ${studentId} do índice global:`, indexError);
+        }
       }
       await fetchStudents();
       setSelectedStudents([]);
