@@ -401,9 +401,221 @@
 }
 
 .featureBlockContainer {
+  position: relative;
   display: flex;
   justify-content: center;
-  padding: 2.5rem 1rem;
+  padding: 3rem 1.5rem;
+  min-height: 420px;
+}
+
+.featureBlockContainer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  background: radial-gradient(circle at top, rgba(30, 64, 175, 0.18), transparent 60%),
+    linear-gradient(140deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 118, 110, 0.35) 100%);
+  filter: blur(24px);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.featureBlockBackdrop {
+  position: absolute;
+  inset: 1.5rem 1rem;
+  display: grid;
+  grid-template-columns: minmax(230px, 0.9fr) minmax(280px, 1.1fr);
+  gap: 1.5rem;
+  padding: 2rem;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.65), rgba(17, 94, 89, 0.5));
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.3);
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.featureBlockBackdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.12), transparent 55%);
+  pointer-events: none;
+}
+
+.backdropPanel,
+.backdropCharts {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.backdropPanel {
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.65), rgba(30, 41, 59, 0.35));
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.25);
+}
+
+.backdropHeader {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.backdropBadge,
+.backdropTitle,
+.backdropSubtitle {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(94, 234, 212, 0.4), rgba(129, 140, 248, 0.35));
+  opacity: 0.8;
+}
+
+.backdropBadge {
+  width: 120px;
+}
+
+.backdropTitle {
+  width: 180px;
+  height: 12px;
+}
+
+.backdropSubtitle {
+  width: 150px;
+}
+
+.backdropScoreCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.backdropScoreRing {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, rgba(96, 165, 250, 0.08) 60%, transparent 70%);
+  border: 6px solid rgba(96, 165, 250, 0.3);
+  box-shadow: inset 0 0 0 2px rgba(14, 165, 233, 0.25);
+}
+
+.backdropScoreRing::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 12px;
+  border-radius: 999px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(90deg, rgba(125, 211, 252, 0.45), rgba(14, 165, 233, 0.25));
+}
+
+.backdropScoreInfo {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.backdropScoreInfo span {
+  display: block;
+  width: 140px;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(125, 211, 252, 0.35), rgba(45, 212, 191, 0.25));
+  opacity: 0.85;
+}
+
+.backdropMetricList {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.backdropMetricList span {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(52, 211, 153, 0.28), rgba(34, 197, 94, 0.22));
+  opacity: 0.75;
+}
+
+.backdropCharts {
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(8, 47, 73, 0.6), rgba(15, 23, 42, 0.45));
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(8, 47, 73, 0.2);
+}
+
+.backdropLineChart {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: end;
+  gap: 0.5rem;
+  height: 120px;
+  padding: 0.75rem;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.08), rgba(15, 23, 42, 0.2));
+  border: 1px solid rgba(59, 130, 246, 0.18);
+}
+
+.backdropLineChart span {
+  display: block;
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.35), rgba(56, 189, 248, 0.15));
+  opacity: 0.6;
+}
+
+.backdropLineChart span:nth-child(odd) {
+  height: 85%;
+}
+
+.backdropLineChart span:nth-child(2) {
+  height: 65%;
+}
+
+.backdropLineChart span:nth-child(4) {
+  height: 95%;
+}
+
+.backdropBarChart {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(8px, 1fr));
+  align-items: end;
+  gap: 0.4rem;
+  padding: 0.75rem;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.12), rgba(15, 23, 42, 0.24));
+  border: 1px solid rgba(129, 140, 248, 0.18);
+}
+
+.backdropBarChart span {
+  display: block;
+  width: 100%;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, rgba(129, 140, 248, 0.45), rgba(196, 181, 253, 0.2));
+  opacity: 0.8;
+}
+
+.backdropBarChart span[data-height='sm'] {
+  height: 40px;
+}
+
+.backdropBarChart span[data-height='md'] {
+  height: 64px;
+}
+
+.backdropBarChart span[data-height='lg'] {
+  height: 88px;
+}
+
+.backdropBarChart span[data-height='xl'] {
+  height: 110px;
 }
 
 .featureBlockCard {
@@ -421,6 +633,7 @@
   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.35);
   color: #e2e8f0;
   overflow: hidden;
+  z-index: 2;
 }
 
 .featureBlockCard::after {
@@ -555,6 +768,18 @@
 @media (max-width: 768px) {
   .featureBlockCard {
     padding: 2rem 1.5rem;
+  }
+
+  .featureBlockBackdrop {
+    inset: 1.25rem 0.75rem;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .featureBlockContainer {
+    padding: 2.5rem 1rem 3rem;
+    min-height: 520px;
   }
 
   .featureBlockHeader {
