@@ -1704,8 +1704,8 @@ Aguardo retorno. Obrigado!`;
 
         <WhatsAppButton 
           phoneNumber="5551996468758"
-          message="Olá, Gustavo! Referente à Bibliotech;"
-        />
+          message="Olá! Referente ao sistema Bibliotech;"
+        />%
 
         {/* Image Modal */}
         {selectedImage && (
