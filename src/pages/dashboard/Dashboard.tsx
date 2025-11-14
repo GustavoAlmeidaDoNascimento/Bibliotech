@@ -9,6 +9,9 @@ import { useIncrementalSync } from '../../hooks/useIncrementalSync';
 import { useLazySection } from '../../hooks/useLazySection';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import EmbeddedDateFilter from '../../components/ui/EmbeddedDateFilter';
+import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
+import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
+import { LockClosedIcon, ArrowUpRightIcon } from '@heroicons/react/24/outline';
 
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import {
@@ -144,6 +147,9 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, description, onClick,
 const Dashboard = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  
+  // Feature block para gráficos do dashboard
+  const dashboardChartsFeature = useFeatureBlock(FEATURE_BLOCK_KEYS.BlockDashboardCharts);
   
   // Cache management
   const cache = useDashboardCache(currentUser?.uid || '');
@@ -650,13 +656,23 @@ const Dashboard = () => {
       // Calcula estatísticas principais usando TODOS os empréstimos
       processMainStats(allLoansForStats, sortedStudents);
       
-      // Processa dados para os gráficos (usar sortedStudents para busca binária)
-      processGenreData(loans, books);
-      processTopBooks(loans);
-      processTopStudents(loans, sortedStudents, filterStartDate, filterEndDate);
-      processClassroomPerformance(loans, sortedStudents, filterStartDate, filterEndDate);
-      processMonthlyLoanData(loans);
-      processCompletionRateData(loans);
+      // Processa dados para os gráficos apenas se não estiver bloqueado
+      if (!dashboardChartsFeature.isBlocked && !dashboardChartsFeature.loading) {
+        processGenreData(loans, books);
+        processTopBooks(loans);
+        processTopStudents(loans, sortedStudents, filterStartDate, filterEndDate);
+        processClassroomPerformance(loans, sortedStudents, filterStartDate, filterEndDate);
+        processMonthlyLoanData(loans);
+        processCompletionRateData(loans);
+      } else if (!dashboardChartsFeature.loading) {
+        // Limpa dados dos gráficos quando bloqueado (apenas quando não está carregando)
+        setGenreData([]);
+        setTopBooks([]);
+        setTopStudents([]);
+        setClassroomPerformance([]);
+        setMonthlyLoanData({ labels: [], borrowed: [], returned: [] });
+        setCompletionRateData({ labels: [], rates: [] });
+      }
       
       const endTime = performance.now();
       const loadTime = ((endTime - startTime) / 1000).toFixed(2);
@@ -1176,112 +1192,191 @@ const Dashboard = () => {
         ))}
       </div>
       
-      <div className={styles.charts}>
-        {/* Gráfico de Empréstimos por Categoria */}
-        <div ref={genreChartSection.elementRef} className={styles.chartCard}>
-          <h3>Empréstimos por Categoria</h3>
-          {genreData.length > 0 ? (
-            <div className={styles.chartContainer}>
-              <Pie
-                data={{
-                  labels: genreData.map(item => item.genre),
-                  datasets: [
-                    {
-                      data: genreData.map(item => item.count),
-                      backgroundColor: [
-                        '#4a90e2',
-                        '#50c878',
-                        '#f78fb3',
-                        '#f5cd79',
-                        '#778beb',
-                        '#e77f67',
-                        '#cf6a87',
-                        '#786fa6'
-                      ],
-                      borderWidth: 1
-                    }
-                  ]
-                }}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      position: 'right',
-                      labels: {
-                        boxWidth: 15,
-                        font: {
-                          size: 11
+      {dashboardChartsFeature.isBlocked ? (
+        <div className={styles.featureBlockContainer}>
+          <div className={styles.featureBlockBackdrop} aria-hidden="true">
+            <div className={styles.backdropPanel}>
+              <div className={styles.backdropHeader}>
+                <span className={styles.backdropBadge}></span>
+                <span className={styles.backdropTitle}></span>
+                <span className={styles.backdropSubtitle}></span>
+              </div>
+              <div className={styles.backdropScoreCard}>
+                <span className={styles.backdropScoreRing}></span>
+                <div className={styles.backdropScoreInfo}>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+              <div className={styles.backdropMetricList}>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+
+            <div className={styles.backdropCharts}>
+              <div className={styles.backdropLineChart}>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div className={styles.backdropBarChart}>
+                <span data-height="sm"></span>
+                <span data-height="md"></span>
+                <span data-height="lg"></span>
+                <span data-height="xl"></span>
+                <span data-height="md"></span>
+                <span data-height="sm"></span>
+              </div>
+            </div>
+          </div>
+          <div className={styles.featureBlockCard}>
+            <div className={styles.featureBlockHeader}>
+              <div className={styles.featureBlockIcon}>
+                <LockClosedIcon />
+              </div>
+              <div>
+                <span className={styles.featureBlockBadge}>
+                  Plano atual: {dashboardChartsFeature.planDisplayName}
+                </span>
+                <h4>Gráficos e análises disponíveis no plano Intermediário</h4>
+              </div>
+            </div>
+            <p className={styles.featureBlockDescription}>
+              Faça o upgrade para o Bibliotech Intermediário e tenha acesso a gráficos completos, rankings detalhados e análises avançadas do seu dashboard.
+            </p>
+            <ul className={styles.featureBlockHighlights}>
+              <li>Acompanhe métricas e gráficos sobre suas turmas em tempo real</li>
+              <li>Visualize rankings completos e gráficos prontos para reuniões</li>
+              <li>Economize tempo com insights automáticos sobre o engajamento da turma</li>
+            </ul>
+            <a
+              className={styles.featureBlockButton}
+              href="https://bibliotech.tech/#planos"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Conhecer plano intermediário
+              <ArrowUpRightIcon />
+            </a>
+            <span className={styles.featureBlockFootnote}>
+              Disponível nos planos Bibliotech Intermediário e Avançado.
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.charts}>
+          {/* Gráfico de Empréstimos por Categoria */}
+          <div ref={genreChartSection.elementRef} className={styles.chartCard}>
+            <h3>Empréstimos por Categoria</h3>
+            {genreData.length > 0 ? (
+              <div className={styles.chartContainer}>
+                <Pie
+                  data={{
+                    labels: genreData.map(item => item.genre),
+                    datasets: [
+                      {
+                        data: genreData.map(item => item.count),
+                        backgroundColor: [
+                          '#4a90e2',
+                          '#50c878',
+                          '#f78fb3',
+                          '#f5cd79',
+                          '#778beb',
+                          '#e77f67',
+                          '#cf6a87',
+                          '#786fa6'
+                        ],
+                        borderWidth: 1
+                      }
+                    ]
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'right',
+                        labels: {
+                          boxWidth: 15,
+                          font: {
+                            size: 11
+                          }
                         }
                       }
                     }
-                  }
-                }}
-              />
-            </div>
-          ) : (
-          <div className={styles.chartPlaceholder}>
-              Nenhum dado disponível
-          </div>
-          )}
-        </div>
-        
-        {/* Lista de Livros Mais Populares */}
-        <div className={styles.chartCard}>
-          <h3>Livros Mais Populares</h3>
-          {topBooks.length > 0 ? (
-            <div className={styles.popularBooksContainer}>
-              <table className={styles.topItemsTable}>
-                <thead>
-                  <tr>
-                    <th>Título</th>
-                    <th>Empréstimos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topBooks.map((book, index) => (
-                    <tr key={book.id} className={index === 0 ? styles.topRanked : ''}>
-                      <td>
-                        <span 
-                          style={{
-                            cursor: 'pointer',
-                            color: '#4a90e2',
-                            borderBottom: '1px dotted #4a90e2',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/books/${book.id}`);
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.color = '#2c5aa0';
-                            e.currentTarget.style.borderBottomStyle = 'solid';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.color = '#4a90e2';
-                            e.currentTarget.style.borderBottomStyle = 'dotted';
-                          }}
-                          title={`Editar ${book.title}`}
-                        >
-                          {book.title}
-                        </span>
-                      </td>
-                      <td>{book.borrowCount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
+                  }}
+                />
+              </div>
+            ) : (
             <div className={styles.chartPlaceholder}>
-              Nenhum dado disponível
+                Nenhum dado disponível
             </div>
-          )}
+            )}
+          </div>
+          
+          {/* Lista de Livros Mais Populares */}
+          <div className={styles.chartCard}>
+            <h3>Livros Mais Populares</h3>
+            {topBooks.length > 0 ? (
+              <div className={styles.popularBooksContainer}>
+                <table className={styles.topItemsTable}>
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Empréstimos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topBooks.map((book, index) => (
+                      <tr key={book.id} className={index === 0 ? styles.topRanked : ''}>
+                        <td>
+                          <span 
+                            style={{
+                              cursor: 'pointer',
+                              color: '#4a90e2',
+                              borderBottom: '1px dotted #4a90e2',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/books/${book.id}`);
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = '#2c5aa0';
+                              e.currentTarget.style.borderBottomStyle = 'solid';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = '#4a90e2';
+                              e.currentTarget.style.borderBottomStyle = 'dotted';
+                            }}
+                            title={`Editar ${book.title}`}
+                          >
+                            {book.title}
+                          </span>
+                        </td>
+                        <td>{book.borrowCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className={styles.chartPlaceholder}>
+                Nenhum dado disponível
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       
-      <h2 className={styles.sectionTitle}>Métricas de Desempenho</h2>
-      
-      <div className={styles.charts}>
+      {!dashboardChartsFeature.isBlocked && (
+        <>
+          <h2 className={styles.sectionTitle}>Métricas de Desempenho</h2>
+          
+          <div className={styles.charts}>
         {/* Gráfico de Evolução Mensal */}
         <div ref={monthlyChartSection.elementRef} className={styles.chartCard}>
           <h3>Evolução Mensal</h3>
@@ -1529,6 +1624,8 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

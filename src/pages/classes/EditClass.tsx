@@ -280,7 +280,7 @@ const EditClass: React.FC = () => {
       return;
     }
 
-    fetchClassStats();
+      fetchClassStats();
   }, [classInfo, fetchClassStats, classDashboardFeature.loading, classDashboardFeature.isBlocked]);
 
   const handleInputChange = (field: string, value: string) => {
