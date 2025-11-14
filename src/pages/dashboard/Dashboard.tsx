@@ -1240,7 +1240,14 @@ const Dashboard = () => {
               </div>
               <div>
                 <span className={styles.featureBlockBadge}>
-                  Plano atual: {dashboardChartsFeature.planDisplayName}
+                  Plano atual:{' '}
+                  {dashboardChartsFeature.planDisplayName.includes('Básico') ? (
+                    <>
+                      Plano <span className={styles.planNameHighlight}>Básico</span>
+                    </>
+                  ) : (
+                    dashboardChartsFeature.planDisplayName
+                  )}
                 </span>
                 <h4>Gráficos e análises disponíveis no plano Intermediário</h4>
               </div>

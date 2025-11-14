@@ -564,7 +564,14 @@ const EditClass: React.FC = () => {
                   </div>
                   <div>
                     <span className={styles.featureBlockBadge}>
-                      Plano atual: {classDashboardFeature.planDisplayName}
+                      Plano atual:{' '}
+                      {classDashboardFeature.planDisplayName.includes('Básico') ? (
+                        <>
+                          Plano <span className={styles.planNameHighlight}>Básico</span>
+                        </>
+                      ) : (
+                        classDashboardFeature.planDisplayName
+                      )}
                     </span>
                     <h4>Estatísticas da turma disponíveis no plano Intermediário</h4>
                   </div>

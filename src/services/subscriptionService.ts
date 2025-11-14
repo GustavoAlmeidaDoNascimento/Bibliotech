@@ -177,7 +177,25 @@ export const formatPlanDisplayName = (rawPlan: string | null): string => {
   }
 
   if (/^\d+$/.test(normalized)) {
+    // Mapear números para nomes de planos
+    if (normalized === '1') {
+      return 'Plano Básico';
+    } else if (normalized === '2') {
+      return 'Plano Intermediário';
+    } else if (normalized === '3') {
+      return 'Plano Avançado';
+    }
     return `Plano ${normalized}`;
+  }
+
+  // Verificar se já contém "básico", "intermediário" ou "avançado"
+  const lowerNormalized = normalized.toLowerCase();
+  if (lowerNormalized.includes('basico') || lowerNormalized.includes('basic')) {
+    return 'Plano Básico';
+  } else if (lowerNormalized.includes('intermediario') || lowerNormalized.includes('intermediate')) {
+    return 'Plano Intermediário';
+  } else if (lowerNormalized.includes('avancado') || lowerNormalized.includes('advanced')) {
+    return 'Plano Avançado';
   }
 
   return normalized;
