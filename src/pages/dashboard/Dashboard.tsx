@@ -1251,7 +1251,8 @@ const Dashboard = () => {
             <ul className={styles.featureBlockHighlights}>
               <li>Acompanhe métricas e gráficos sobre suas turmas em tempo real</li>
               <li>Visualize rankings completos e gráficos prontos para reuniões</li>
-              <li>Economize tempo com insights automáticos sobre o engajamento da turma</li>
+              <li>Veja as categorias e livros mais lidos para investir em livros melhores</li>
+              <li>Veja a evolução mensal da biblioteca em geral, assim como de cada turma</li>
             </ul>
             <a
               className={styles.featureBlockButton}
