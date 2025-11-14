@@ -207,6 +207,52 @@ const SectionDescription = styled(motion.p)`
   }
 `;
 
+const PricingToggleContainer = styled(motion.div)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 60px;
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 40px;
+  }
+`;
+
+const ToggleWrapper = styled.div`
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 4px;
+  position: relative;
+`;
+
+const ToggleOption = styled.button<{ $active: boolean }>`
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: ${(props) => (props.$active ? '#0078d4' : 'transparent')};
+  color: ${(props) => (props.$active ? 'white' : '#94a3b8')};
+  font-size: 0.95rem;
+  font-weight: ${(props) => (props.$active ? '600' : '400')};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+  box-shadow: ${(props) => (props.$active ? '0 2px 8px rgba(0, 120, 212, 0.3)' : 'none')};
+
+  &:hover {
+    color: ${(props) => (props.$active ? 'white' : 'white')};
+    background: ${(props) => (props.$active ? '#0078d4' : 'rgba(0, 120, 212, 0.1)')};
+  }
+
+  @media (max-width: 768px) {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+  }
+`;
+
 const PricingSection = styled.div`
   margin: 80px 0 60px;
 `;
@@ -276,6 +322,64 @@ const PricingBadge = styled.span`
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.2);
   box-shadow: 0 10px 30px rgba(37, 99, 235, 0.45);
+`;
+
+interface DiscountRibbonProps {
+  $discount: number;
+}
+
+const DiscountRibbon = styled.div<DiscountRibbonProps>`
+  position: absolute;
+  top: 0;
+  right: 0px;
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+  z-index: 10;
+  
+  &::before {
+    content: '${(props) => props.$discount}% OFF';
+    position: absolute;
+    top: 25px;
+    right: -38px;
+    width: 160px;
+    height: 32px;
+    background: #0078d4;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    line-height: 32px;
+    transform: rotate(45deg);
+    box-shadow: 0 4px 8px rgba(0, 120, 212, 0.4);
+    letter-spacing: 0.5px;
+  }
+  
+  @media (max-width: 768px) {
+    width: 100px;
+    height: 100px;
+    
+    &::before {
+      top: 16px;
+      right: -28px;
+      width: 140px;
+      height: 28px;
+      font-size: 0.7rem;
+      line-height: 28px;
+    }
+  }
+`;
+
+const SavingsText = styled.div`
+  font-size: 0.9rem;
+  color: #60a5fa;
+  font-weight: 600;
+  text-align: left;
+  margin-top: 8px;
+  
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+  }
 `;
 
 const PricingHeader = styled.div`
@@ -372,13 +476,17 @@ const PlanBadge = styled.span<{ $variant: PlanBadgeVariant }>`
 
 interface PricingPriceProps {
   $highlighted?: boolean;
+  $isAnnual?: boolean;
 }
 
 const PricingPrice = styled.div<PricingPriceProps>`
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-size: clamp(2.2rem, 4vw, 2.8rem);
+  font-size: ${(props) => 
+    props.$isAnnual 
+      ? 'clamp(1.6rem, 3vw, 2.2rem)' 
+      : 'clamp(2.2rem, 4vw, 2.8rem)'};
   font-weight: 700;
   color: ${(props) => (props.$highlighted ? '#93c5fd' : '#60a5fa')};
   margin: 0;
@@ -972,7 +1080,7 @@ const WHATSAPP_NUMBER = '5551996468758';
 const PRICING_PLANS: PricingPlan[] = [
   {
     name: 'Bibliotech Básico',
-    price: 'R$ 192,90',
+    price: 'R$ 94,90',
     period: '/mês',
     features: [
       'Gerenciamento de biblioteca básico (acervo, cadastros e retiradas)',
@@ -983,7 +1091,7 @@ const PRICING_PLANS: PricingPlan[] = [
   },
   {
     name: 'Bibliotech Intermediário',
-    price: 'R$ 246,90',
+    price: 'R$ 157,90',
     period: '/mês',
     features: [
       'Tudo do Bibliotech Básico',
@@ -999,7 +1107,7 @@ const PRICING_PLANS: PricingPlan[] = [
   },
   {
     name: 'Bibliotech Avançado',
-    price: 'R$ 337,90',
+    price: 'R$ 219,99',
     period: '/mês',
     features: [
       'Tudo do Bibliotech Intermediário',
@@ -1011,7 +1119,7 @@ const PRICING_PLANS: PricingPlan[] = [
   }
 ];
 
-const SHOW_PRICING_SECTION = false;
+const SHOW_PRICING_SECTION = true;
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -1024,6 +1132,7 @@ const Home: React.FC = () => {
     mensagem: ''
   });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isAnnual, setIsAnnual] = useState(false);
 
   const normalizeWord = (word: string) =>
     word
@@ -1163,7 +1272,8 @@ Aguardo retorno. Obrigado!`;
   };
 
   const handlePlanWhatsApp = (plan: PricingPlan) => {
-    const message = `Olá! Tenho interesse no plano ${plan.name} (${plan.price} ${plan.period}). Podemos conversar?`;
+    const displayPrice = getDisplayPrice(plan);
+    const message = `Olá! Tenho interesse no plano ${plan.name} (${displayPrice.price} ${displayPrice.period}). Podemos conversar?`;
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
@@ -1176,6 +1286,75 @@ Aguardo retorno. Obrigado!`;
 
   const closeImageModal = () => {
     setSelectedImage(null);
+  };
+
+  const formatPrice = (value: number): string => {
+    // Formata para o formato brasileiro com separador de milhar
+    const formattedValue = value.toFixed(2).replace('.', ',');
+    const parts = formattedValue.split(',');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `R$ ${parts.join(',')}`;
+  };
+
+  const parsePrice = (price: string): number => {
+    // Remove "R$ " e substitui vírgula por ponto
+    const cleanPrice = price.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+    return parseFloat(cleanPrice);
+  };
+
+  const calculateAnnualPrice = (monthlyPrice: string, discount: number = 0): string => {
+    const monthlyValue = parsePrice(monthlyPrice);
+    const annualValue = monthlyValue * 12;
+    const discountedValue = annualValue * (1 - discount / 100);
+    
+    return formatPrice(discountedValue);
+  };
+
+  const getDiscount = (plan: PricingPlan): number => {
+    if (!isAnnual) return 0;
+    
+    switch (plan.name) {
+      case 'Bibliotech Básico':
+        return 15;
+      case 'Bibliotech Intermediário':
+        return 15;
+      case 'Bibliotech Avançado':
+        return 20;
+      default:
+        return 0;
+    }
+  };
+
+  const getDisplayPrice = (plan: PricingPlan): { price: string; period: string } => {
+    if (isAnnual) {
+      const discount = getDiscount(plan);
+      return {
+        price: calculateAnnualPrice(plan.price, discount),
+        period: '/ano'
+      };
+    }
+    return {
+      price: plan.price,
+      period: plan.period
+    };
+  };
+
+  const getSavings = (plan: PricingPlan): { savings: string; originalPrice: string; discount: number } | null => {
+    if (!isAnnual) return null;
+    
+    const discount = getDiscount(plan);
+    if (discount === 0) return null;
+    
+    const monthlyValue = parsePrice(plan.price);
+    const annualValue = monthlyValue * 12;
+    const savings = annualValue * (discount / 100);
+    const originalPrice = formatPrice(annualValue);
+    
+    return {
+      savings: formatPrice(savings),
+      originalPrice,
+      discount
+    };
   };
 
   return (
@@ -1463,14 +1642,27 @@ Aguardo retorno. Obrigado!`;
             >
               Escolha seu plano
             </SectionTitle>
-            <SectionDescription
+            <PricingToggleContainer
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              Selecione o plano ideal para sua biblioteca
-            </SectionDescription>
+              <ToggleWrapper>
+                <ToggleOption
+                  $active={!isAnnual}
+                  onClick={() => setIsAnnual(false)}
+                >
+                  Mensal
+                </ToggleOption>
+                <ToggleOption
+                  $active={isAnnual}
+                  onClick={() => setIsAnnual(true)}
+                >
+                  Anual
+                </ToggleOption>
+              </ToggleWrapper>
+            </PricingToggleContainer>
 
             <PricingGrid>
               {PRICING_PLANS.map((plan, index) => (
@@ -1483,12 +1675,20 @@ Aguardo retorno. Obrigado!`;
                   $highlighted={plan.highlighted}
                 >
                   {plan.badge && <PricingBadge>{plan.badge}</PricingBadge>}
+                  {isAnnual && getDiscount(plan) > 0 && (
+                    <DiscountRibbon $discount={getDiscount(plan)} />
+                  )}
                   <PricingHeader>
                     <PricingTitle>{renderPlanName(plan.name)}</PricingTitle>
-                    <PricingPrice $highlighted={plan.highlighted}>
-                      <strong>{plan.price}</strong>
-                      <PricingPeriod>{plan.period}</PricingPeriod>
+                    <PricingPrice $highlighted={plan.highlighted} $isAnnual={isAnnual}>
+                      <strong>{getDisplayPrice(plan).price}</strong>
+                      <PricingPeriod>{getDisplayPrice(plan).period}</PricingPeriod>
                     </PricingPrice>
+                    {getSavings(plan) && (
+                      <SavingsText>
+                        Economize {getSavings(plan)!.savings}/ano
+                      </SavingsText>
+                    )}
                   </PricingHeader>
 
                   <PricingFeatures>
