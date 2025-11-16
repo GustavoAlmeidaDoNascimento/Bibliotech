@@ -844,7 +844,7 @@ const StudentStats: React.FC = () => {
                   <li>Use as métricas da turma para projetos, feiras e reuniões pedagógicas</li>
                 </ul>
                 <a
-                  className={styles.featureBlockButton}
+                  className={`${styles.featureBlockButton} ${styles.featureBlockButtonAdvanced}`}
                   href="https://bibliotech.tech/#planos"
                   target="_blank"
                   rel="noopener noreferrer"
