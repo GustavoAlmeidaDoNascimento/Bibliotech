@@ -19,6 +19,9 @@ import {
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import BookRecommendations from '../../components/recommendations/BookRecommendations';
+import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
+import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
+import { Lock, ArrowUpRight } from 'lucide-react';
 import styles from './StudentDashboard.module.css';
 
 // Registrando os componentes necessários do Chart.js
@@ -76,6 +79,8 @@ const StudentDashboard = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+
+  const studentDashboardFeature = useFeatureBlock(FEATURE_BLOCK_KEYS.BlockStudentDashboard);
   
   const [student, setStudent] = useState<Student | null>(null);
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -104,6 +109,20 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     if (!currentUser || !studentId) return;
+
+    // Enquanto ainda está carregando informações do plano, não buscar nada
+    if (studentDashboardFeature.loading) {
+      return;
+    }
+
+    // Se o plano atual bloqueia o dashboard do aluno, não buscar dados
+    if (studentDashboardFeature.isBlocked) {
+      setStudent(null);
+      setLoans([]);
+      setBooks([]);
+      setLoading(false);
+      return;
+    }
     
     const fetchStudentData = async () => {
       try {
@@ -187,7 +206,7 @@ const StudentDashboard = () => {
     };
     
     fetchStudentData();
-  }, [currentUser, studentId]);
+  }, [currentUser, studentId, studentDashboardFeature.loading, studentDashboardFeature.isBlocked]);
   
   const processData = (loansData: Loan[], booksData: Book[]) => {
     if (loansData.length === 0) return;
@@ -488,6 +507,58 @@ const StudentDashboard = () => {
     window.open(whatsappUrl, '_blank');
   };
   
+  if (studentDashboardFeature.loading) {
+    return <div className={styles.loading}>Carregando informações do plano...</div>;
+  }
+
+  if (studentDashboardFeature.isBlocked) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h2>Dashboard do Aluno</h2>
+          <p className={styles.classroom}>Visualização disponível apenas para escolas a partir do plano Intermediário.</p>
+        </div>
+        <div className={styles.featureBlock}>
+          <div className={styles.featureBlockContent}>
+            <div className={styles.featureBlockHeader}>
+              <div className={styles.featureBlockIcon}>
+                <Lock size={22} />
+              </div>
+              <div>
+                <span className={styles.featureBlockBadge}>
+                  Plano atual:{' '}
+                  {studentDashboardFeature.planDisplayName.includes('Básico') ? (
+                    <strong>Plano Básico</strong>
+                  ) : (
+                    studentDashboardFeature.planDisplayName
+                  )}
+                </span>
+                <h3>Dashboard do aluno disponível no plano Intermediário</h3>
+              </div>
+            </div>
+            <p className={styles.featureBlockDescription}>
+              Veja a evolução de leitura, categorias favoritas e o histórico completo de empréstimos de cada aluno com gráficos e métricas prontas para reunião.
+            </p>
+            <ul className={styles.featureBlockList}>
+              <li>Acompanhe total de livros lidos, categoria favorita e melhor trimestre</li>
+              <li>Visualize gráficos de evolução mensal e leitura por trimestre</li>
+              <li>Consulte o histórico de empréstimos do aluno em poucos cliques</li>
+            </ul>
+            <a
+              className={styles.featureBlockButton}
+              href="https://bibliotech.tech/#planos"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Conhecer plano intermediário
+              <ArrowUpRight size={18} />
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return <div className={styles.loading}>Carregando...</div>;
   }
