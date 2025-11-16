@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, BookOpen, TrendingUp, Star, Sparkles, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
+import { Search, BookOpen, TrendingUp, Star, Sparkles, ChevronLeft, ChevronRight, Filter, X, Lock, ArrowUpRight } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
-import { studentService } from '../../services/studentService';
+import { studentService, StudentDashboardData } from '../../services/studentService';
 import { bookRecommendationService, RecommendationSection, BookWithStats } from '../../services/bookRecommendationService';
 import { useStudentHomeCache } from '../../hooks/useStudentHomeCache';
+import { inferTierFromPlanValue, formatPlanDisplayName } from '../../services/subscriptionService';
 import styles from './StudentHome.module.css';
 
 const StudentHome: React.FC = () => {
@@ -18,6 +19,8 @@ const StudentHome: React.FC = () => {
   
   const [recommendationSections, setRecommendationSections] = useState<RecommendationSection[]>(cachedData?.recommendationSections || []);
   const [allBooks, setAllBooks] = useState<BookWithStats[]>(cachedData?.allBooks || []);
+  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(cachedData?.dashboardData || null);
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(cachedData?.dashboardData?.subscriptionPlan ?? null);
   const [searchResults, setSearchResults] = useState<BookWithStats[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -29,18 +32,37 @@ const StudentHome: React.FC = () => {
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [allCategories, setAllCategories] = useState<string[]>([]);
 
+  const planTier = useMemo(() => inferTierFromPlanValue(subscriptionPlan ?? null), [subscriptionPlan]);
+  const isCatalogBlocked = useMemo(
+    () => planTier === 'basic' || planTier === 'unknown',
+    [planTier]
+  );
+  const planDisplayName = useMemo(
+    () => formatPlanDisplayName(subscriptionPlan ?? null),
+    [subscriptionPlan]
+  );
+
   useEffect(() => {
     if (!studentId) {
       navigate('/student-id-input');
       return;
     }
 
-    // Se já tem dados em cache, usar eles
-    if (cachedData) {
+    // Se já tem dados em cache e o catálogo não está bloqueado, usar eles
+    if (cachedData && !isCatalogBlocked) {
       setRecommendationSections(cachedData.recommendationSections);
       setAllBooks(cachedData.allBooks);
+      setDashboardData(cachedData.dashboardData || null);
+      setSubscriptionPlan(cachedData.dashboardData?.subscriptionPlan ?? null);
       setLoading(false);
       console.log('✅ Usando dados do catálogo em cache');
+      return;
+    }
+
+    // Se o catálogo estiver bloqueado, não buscar dados
+    if (isCatalogBlocked) {
+      setLoading(false);
+      console.log('⛔ Catálogo bloqueado para este plano, nenhum dado será buscado');
       return;
     }
 
@@ -58,8 +80,22 @@ const StudentHome: React.FC = () => {
           return;
         }
 
+        // Buscar apenas o plano da escola
+        const plan = await studentService.getSchoolSubscriptionPlan(student.userId);
+        setSubscriptionPlan(plan);
+
+        const tier = inferTierFromPlanValue(plan ?? null);
+
+        // Se plano básico, não carregar catálogo
+        if (tier === 'basic' || tier === 'unknown') {
+          console.log('⛔ Plano básico/indefinido: catálogo bloqueado, não serão feitas consultas de livros.');
+          setLoading(false);
+          return;
+        }
+
         // Buscar dados do dashboard (para estatísticas do aluno)
-        const dashboardData = await studentService.getStudentDashboardData(studentId);
+        const dashboardDataResponse = await studentService.getStudentDashboardData(studentId);
+        setDashboardData(dashboardDataResponse);
         
         // Buscar todos os livros da escola e gerar recomendações
         const booksData = await bookRecommendationService.getAllBooksWithStats(student.userId);
@@ -71,7 +107,7 @@ const StudentHome: React.FC = () => {
 
         // Salvar no cache
         setCachedData({
-          dashboardData,
+          dashboardData: dashboardDataResponse || null,
           recommendationSections: recommendations,
           allBooks: booksData
         });
@@ -84,7 +120,7 @@ const StudentHome: React.FC = () => {
     };
 
     loadData();
-  }, [studentId, navigate, cachedData, setCachedData]);
+  }, [studentId, navigate, cachedData, setCachedData, isCatalogBlocked]);
 
   // Extrair todas as categorias únicas dos livros
   useEffect(() => {
@@ -311,6 +347,110 @@ const StudentHome: React.FC = () => {
               </div>
             </section>
           ))}
+        </main>
+
+        <BottomNavigation studentId={studentId || ''} activePage="home" />
+      </div>
+    );
+  }
+
+  if (isCatalogBlocked) {
+    return (
+      <div className={styles.container}>
+        {/* Header simples sem busca */}
+        <header className={styles.header}>
+          <div className={styles.headerContent}>
+            <div className={styles.logo}>
+              <BookOpen size={24} />
+              <h1>Bibliotech</h1>
+            </div>
+          </div>
+        </header>
+
+        <main className={styles.main}>
+          <div className={styles.featureBlockContainer}>
+            <div className={styles.featureBlockBackdrop} aria-hidden="true">
+              <div className={styles.backdropPanel}>
+                <div className={styles.backdropHeader}>
+                  <span className={styles.backdropBadge}></span>
+                  <span className={styles.backdropTitle}></span>
+                  <span className={styles.backdropSubtitle}></span>
+                </div>
+                <div className={styles.backdropScoreCard}>
+                  <span className={styles.backdropScoreRing}></span>
+                  <div className={styles.backdropScoreInfo}>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+                <div className={styles.backdropMetricList}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+
+              <div className={styles.backdropCharts}>
+                <div className={styles.backdropLineChart}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div className={styles.backdropBarChart}>
+                  <span data-height="sm"></span>
+                  <span data-height="md"></span>
+                  <span data-height="lg"></span>
+                  <span data-height="xl"></span>
+                  <span data-height="md"></span>
+                  <span data-height="sm"></span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.featureBlockCard}>
+              <div className={styles.featureBlockHeader}>
+                <div className={styles.featureBlockIcon}>
+                  <Lock size={20} />
+                </div>
+                <div>
+                  <span className={styles.featureBlockBadge}>
+                    Plano da escola:{' '}
+                    {planDisplayName.includes('Básico') ? (
+                      <>
+                        Plano <span className={styles.planNameHighlight}>Básico</span>
+                      </>
+                    ) : (
+                      planDisplayName
+                    )}
+                  </span>
+                  <h4>Catálogo de livros disponível no plano Intermediário</h4>
+                </div>
+              </div>
+              <p className={styles.featureBlockDescription}>
+                Com o catálogo do Bibliotech você busca, filtra e descobre livros em segundos, sem depender do balcão da biblioteca.
+              </p>
+              <ul className={styles.featureBlockHighlights}>
+                <li>Busque por título, autor, categorias e muito mais</li>
+                <li>Veja rapidamente quais livros estão disponíveis para retirada</li>
+                <li>Receba recomendações personalizadas para o seu perfil de leitura</li>
+                <li>Explore as categorias mais lidas da escola para descobrir novos livros favoritos</li>
+              </ul>
+              <a
+                className={styles.featureBlockButton}
+                href="https://bibliotech.tech/#planos"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Conhecer plano intermediário
+                <ArrowUpRight size={16} />
+              </a>
+              <span className={styles.featureBlockFootnote}>
+                Disponível nos planos Bibliotech Intermediário e Avançado.
+              </span>
+            </div>
+          </div>
         </main>
 
         <BottomNavigation studentId={studentId || ''} activePage="home" />

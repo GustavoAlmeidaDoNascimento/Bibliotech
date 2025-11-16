@@ -3,7 +3,8 @@ import { SubscriptionPlanTier } from '../services/subscriptionService';
 export const FEATURE_BLOCK_KEYS = {
   BlockClassDashboard: 'blockClassDashboard',
   BlockStudentSideClassDashboard: 'blockStudentSideClassDashboard',
-  BlockDashboardCharts: 'blockDashboardCharts'
+  BlockDashboardCharts: 'blockDashboardCharts',
+  BlockStudentCatalog: 'blockStudentCatalog'
 } as const;
 
 export type FeatureBlockKey = (typeof FEATURE_BLOCK_KEYS)[keyof typeof FEATURE_BLOCK_KEYS];
@@ -14,14 +15,16 @@ const PLAN_FEATURE_BLOCKS: PlanFeatureBlocks = {
   basic: [
     FEATURE_BLOCK_KEYS.BlockClassDashboard,
     FEATURE_BLOCK_KEYS.BlockStudentSideClassDashboard,
-    FEATURE_BLOCK_KEYS.BlockDashboardCharts
+    FEATURE_BLOCK_KEYS.BlockDashboardCharts,
+    FEATURE_BLOCK_KEYS.BlockStudentCatalog
   ],
   intermediate: [],
   advanced: [],
   unknown: [
     FEATURE_BLOCK_KEYS.BlockClassDashboard,
     FEATURE_BLOCK_KEYS.BlockStudentSideClassDashboard,
-    FEATURE_BLOCK_KEYS.BlockDashboardCharts
+    FEATURE_BLOCK_KEYS.BlockDashboardCharts,
+    FEATURE_BLOCK_KEYS.BlockStudentCatalog
   ]
 };
 
