@@ -32,14 +32,23 @@ const StudentHome: React.FC = () => {
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [allCategories, setAllCategories] = useState<string[]>([]);
 
-  const planTier = useMemo(() => inferTierFromPlanValue(subscriptionPlan ?? null), [subscriptionPlan]);
+  // Plano efetivo: usa o que estiver em memória ou no cache do dashboard
+  const effectiveSubscriptionPlan = useMemo(
+    () => subscriptionPlan ?? cachedData?.dashboardData?.subscriptionPlan ?? null,
+    [subscriptionPlan, cachedData?.dashboardData?.subscriptionPlan]
+  );
+
+  const planTier = useMemo(
+    () => inferTierFromPlanValue(effectiveSubscriptionPlan ?? null),
+    [effectiveSubscriptionPlan]
+  );
   const isCatalogBlocked = useMemo(
     () => planTier === 'basic' || planTier === 'unknown',
     [planTier]
   );
   const planDisplayName = useMemo(
-    () => formatPlanDisplayName(subscriptionPlan ?? null),
-    [subscriptionPlan]
+    () => formatPlanDisplayName(effectiveSubscriptionPlan ?? null),
+    [effectiveSubscriptionPlan]
   );
 
   useEffect(() => {
@@ -59,8 +68,9 @@ const StudentHome: React.FC = () => {
       return;
     }
 
-    // Se o catálogo estiver bloqueado, não buscar dados
-    if (isCatalogBlocked) {
+    // Se já sabemos que o plano bloqueia o catálogo, não buscar dados
+    // (mas só depois de conhecer o plano efetivo)
+    if (effectiveSubscriptionPlan && isCatalogBlocked) {
       setLoading(false);
       console.log('⛔ Catálogo bloqueado para este plano, nenhum dado será buscado');
       return;
@@ -120,7 +130,7 @@ const StudentHome: React.FC = () => {
     };
 
     loadData();
-  }, [studentId, navigate, cachedData, setCachedData, isCatalogBlocked]);
+  }, [studentId, navigate, cachedData, setCachedData, isCatalogBlocked, effectiveSubscriptionPlan]);
 
   // Extrair todas as categorias únicas dos livros
   useEffect(() => {
