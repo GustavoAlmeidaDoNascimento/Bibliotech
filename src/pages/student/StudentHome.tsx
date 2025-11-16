@@ -394,41 +394,24 @@ const StudentHome: React.FC = () => {
         <main className={styles.main}>
           <div className={styles.featureBlockContainer}>
             <div className={styles.featureBlockBackdrop} aria-hidden="true">
-              <div className={styles.backdropPanel}>
-                <div className={styles.backdropHeader}>
-                  <span className={styles.backdropBadge}></span>
-                  <span className={styles.backdropTitle}></span>
-                  <span className={styles.backdropSubtitle}></span>
+              <div className={styles.catalogSkeleton}>
+                <div className={styles.catalogRow}>
+                  <span className={styles.catalogCard}></span>
+                  <span className={styles.catalogCard}></span>
+                  <span className={styles.catalogCard}></span>
+                  <span className={styles.catalogCard}></span>
                 </div>
-                <div className={styles.backdropScoreCard}>
-                  <span className={styles.backdropScoreRing}></span>
-                  <div className={styles.backdropScoreInfo}>
-                    <span></span>
-                    <span></span>
-                  </div>
+                <div className={styles.catalogRow}>
+                  <span className={styles.catalogCard}></span>
+                  <span className={styles.catalogCard}></span>
+                  <span className={styles.catalogCard}></span>
+                  <span className={styles.catalogCard}></span>
                 </div>
-                <div className={styles.backdropMetricList}>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-
-              <div className={styles.backdropCharts}>
-                <div className={styles.backdropLineChart}>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <div className={styles.backdropBarChart}>
-                  <span data-height="sm"></span>
-                  <span data-height="md"></span>
-                  <span data-height="lg"></span>
-                  <span data-height="xl"></span>
-                  <span data-height="md"></span>
-                  <span data-height="sm"></span>
+                <div className={styles.catalogRow}>
+                  <span className={styles.catalogCard}></span>
+                  <span className={styles.catalogCard}></span>
+                  <span className={styles.catalogCard}></span>
+                  <span className={styles.catalogCard}></span>
                 </div>
               </div>
             </div>
