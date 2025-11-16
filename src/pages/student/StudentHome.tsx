@@ -25,6 +25,7 @@ const StudentHome: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [loading, setLoading] = useState(!cachedData); // Iniciar como true se não houver cache
+  const [catalogBlockResolved, setCatalogBlockResolved] = useState(false);
   
   // Estados para o filtro
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -68,9 +69,18 @@ const StudentHome: React.FC = () => {
       return;
     }
 
-    // Se já sabemos que o plano bloqueia o catálogo, não buscar dados
-    // (mas só depois de conhecer o plano efetivo)
-    if (effectiveSubscriptionPlan && isCatalogBlocked) {
+    // Se já resolvemos que o catálogo está bloqueado para este aluno, não buscar mais nada
+    if (isCatalogBlocked && catalogBlockResolved) {
+      if (loading) {
+        setLoading(false);
+      }
+      console.log('⛔ Catálogo bloqueado para este plano (cacheado), nenhuma nova consulta será feita');
+      return;
+    }
+
+    // Se já sabemos o plano efetivo e ele bloqueia o catálogo, marcar como resolvido
+    if (effectiveSubscriptionPlan && isCatalogBlocked && !catalogBlockResolved) {
+      setCatalogBlockResolved(true);
       setLoading(false);
       console.log('⛔ Catálogo bloqueado para este plano, nenhum dado será buscado');
       return;
@@ -96,9 +106,10 @@ const StudentHome: React.FC = () => {
 
         const tier = inferTierFromPlanValue(plan ?? null);
 
-        // Se plano básico, não carregar catálogo
+        // Se plano básico/indefinido, não carregar catálogo (e marcar como resolvido)
         if (tier === 'basic' || tier === 'unknown') {
           console.log('⛔ Plano básico/indefinido: catálogo bloqueado, não serão feitas consultas de livros.');
+          setCatalogBlockResolved(true);
           setLoading(false);
           return;
         }
@@ -129,8 +140,11 @@ const StudentHome: React.FC = () => {
       }
     };
 
-    loadData();
-  }, [studentId, navigate, cachedData, setCachedData, isCatalogBlocked, effectiveSubscriptionPlan]);
+    // Só tentar carregar se ainda não resolvemos que está bloqueado
+    if (!catalogBlockResolved) {
+      loadData();
+    }
+  }, [studentId, navigate, cachedData, setCachedData, isCatalogBlocked, effectiveSubscriptionPlan, catalogBlockResolved]);
 
   // Extrair todas as categorias únicas dos livros
   useEffect(() => {
