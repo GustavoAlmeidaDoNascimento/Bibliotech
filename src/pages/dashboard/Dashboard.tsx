@@ -55,6 +55,7 @@ interface Student {
   id: string;
   name: string;
   classroom: string;
+  shift?: string;
 }
 
 interface Loan {
@@ -101,6 +102,7 @@ interface TopBook {
 
 interface ClassroomPerformance {
   classroom: string;
+  shift?: string;
   booksRead: number;
   averageCompletion: number;
 }
@@ -939,8 +941,9 @@ const Dashboard = () => {
   };
 
   const processClassroomPerformance = (loans: Loan[], students: Student[], startDate?: Date, endDate?: Date) => {
-    // Agrupar alunos por turma
+    // Agrupar alunos por turma e armazenar shift
     const classroomStudents: Record<string, string[]> = {};
+    const classroomShifts: Record<string, string> = {};
     
     students.forEach(student => {
       const classroom = student.classroom || 'Sem Turma';
@@ -948,6 +951,10 @@ const Dashboard = () => {
         classroomStudents[classroom] = [];
       }
       classroomStudents[classroom].push(student.id);
+      // Armazenar o shift da turma (pega do primeiro aluno encontrado)
+      if (!classroomShifts[classroom] && student.shift) {
+        classroomShifts[classroom] = student.shift;
+      }
     });
     
     // Calcular desempenho por turma
@@ -978,6 +985,11 @@ const Dashboard = () => {
       if (student) {
         const classroom = student.classroom || 'Sem Turma';
         
+        // Atualizar shift se ainda não foi definido
+        if (!classroomShifts[classroom] && student.shift) {
+          classroomShifts[classroom] = student.shift;
+        }
+        
         // Contar livros lidos (incluindo parcialmente)
         if (loan.status === 'returned') {
           if (loan.completed) {
@@ -1000,6 +1012,7 @@ const Dashboard = () => {
     const performanceData = Object.entries(classroomStats)
       .map(([classroom, stats]) => ({
         classroom,
+        shift: classroomShifts[classroom] || 'Não informado',
         booksRead: Math.round(stats.totalRead * 10) / 10, // Arredonda para 1 casa decimal
         averageCompletion: stats.completionCount > 0 
           ? Math.round(stats.completionSum / stats.completionCount) 
@@ -1587,7 +1600,7 @@ const Dashboard = () => {
             />
           </div>
           {classroomPerformance.length > 0 ? (
-            <div className={styles.chartContainer}>
+            <div className={styles.chartContainer} style={{ cursor: 'pointer' }}>
               <Bar
                 data={{
                   labels: classroomPerformance.map(c => c.classroom),
@@ -1601,6 +1614,17 @@ const Dashboard = () => {
                 }}
                 options={{
                   responsive: true,
+                  onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                      const elementIndex = elements[0].index;
+                      const selectedClassroom = classroomPerformance[elementIndex];
+                      if (selectedClassroom) {
+                        const encodedClassName = encodeURIComponent(selectedClassroom.classroom);
+                        const encodedShift = encodeURIComponent(selectedClassroom.shift || 'Não informado');
+                        navigate(`/classes/${encodedClassName}/${encodedShift}`);
+                      }
+                    }
+                  },
                   plugins: {
                     legend: {
                       position: 'top'
