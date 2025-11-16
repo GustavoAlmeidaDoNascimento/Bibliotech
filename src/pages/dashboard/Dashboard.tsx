@@ -658,12 +658,12 @@ const Dashboard = () => {
       
       // Processa dados para os gráficos apenas se não estiver bloqueado
       if (!dashboardChartsFeature.isBlocked && !dashboardChartsFeature.loading) {
-        processGenreData(loans, books);
-        processTopBooks(loans);
-        processTopStudents(loans, sortedStudents, filterStartDate, filterEndDate);
-        processClassroomPerformance(loans, sortedStudents, filterStartDate, filterEndDate);
-        processMonthlyLoanData(loans);
-        processCompletionRateData(loans);
+      processGenreData(loans, books);
+      processTopBooks(loans);
+      processTopStudents(loans, sortedStudents, filterStartDate, filterEndDate);
+      processClassroomPerformance(loans, sortedStudents, filterStartDate, filterEndDate);
+      processMonthlyLoanData(loans);
+      processCompletionRateData(loans);
       } else if (!dashboardChartsFeature.loading) {
         // Limpa dados dos gráficos quando bloqueado (apenas quando não está carregando)
         setGenreData([]);
@@ -1276,115 +1276,115 @@ const Dashboard = () => {
           </div>
         </div>
       ) : (
-        <div className={styles.charts}>
-          {/* Gráfico de Empréstimos por Categoria */}
-          <div ref={genreChartSection.elementRef} className={styles.chartCard}>
-            <h3>Empréstimos por Categoria</h3>
-            {genreData.length > 0 ? (
-              <div className={styles.chartContainer}>
-                <Pie
-                  data={{
-                    labels: genreData.map(item => item.genre),
-                    datasets: [
-                      {
-                        data: genreData.map(item => item.count),
-                        backgroundColor: [
-                          '#4a90e2',
-                          '#50c878',
-                          '#f78fb3',
-                          '#f5cd79',
-                          '#778beb',
-                          '#e77f67',
-                          '#cf6a87',
-                          '#786fa6'
-                        ],
-                        borderWidth: 1
-                      }
-                    ]
-                  }}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: 'right',
-                        labels: {
-                          boxWidth: 15,
-                          font: {
-                            size: 11
-                          }
+      <div className={styles.charts}>
+        {/* Gráfico de Empréstimos por Categoria */}
+        <div ref={genreChartSection.elementRef} className={styles.chartCard}>
+          <h3>Empréstimos por Categoria</h3>
+          {genreData.length > 0 ? (
+            <div className={styles.chartContainer}>
+              <Pie
+                data={{
+                  labels: genreData.map(item => item.genre),
+                  datasets: [
+                    {
+                      data: genreData.map(item => item.count),
+                      backgroundColor: [
+                        '#4a90e2',
+                        '#50c878',
+                        '#f78fb3',
+                        '#f5cd79',
+                        '#778beb',
+                        '#e77f67',
+                        '#cf6a87',
+                        '#786fa6'
+                      ],
+                      borderWidth: 1
+                    }
+                  ]
+                }}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'right',
+                      labels: {
+                        boxWidth: 15,
+                        font: {
+                          size: 11
                         }
                       }
                     }
-                  }}
-                />
-              </div>
-            ) : (
-            <div className={styles.chartPlaceholder}>
-                Nenhum dado disponível
+                  }
+                }}
+              />
             </div>
-            )}
+          ) : (
+          <div className={styles.chartPlaceholder}>
+              Nenhum dado disponível
           </div>
-          
-          {/* Lista de Livros Mais Populares */}
-          <div className={styles.chartCard}>
-            <h3>Livros Mais Populares</h3>
-            {topBooks.length > 0 ? (
-              <div className={styles.popularBooksContainer}>
-                <table className={styles.topItemsTable}>
-                  <thead>
-                    <tr>
-                      <th>Título</th>
-                      <th>Empréstimos</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topBooks.map((book, index) => (
-                      <tr key={book.id} className={index === 0 ? styles.topRanked : ''}>
-                        <td>
-                          <span 
-                            style={{
-                              cursor: 'pointer',
-                              color: '#4a90e2',
-                              borderBottom: '1px dotted #4a90e2',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/books/${book.id}`);
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.color = '#2c5aa0';
-                              e.currentTarget.style.borderBottomStyle = 'solid';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.color = '#4a90e2';
-                              e.currentTarget.style.borderBottomStyle = 'dotted';
-                            }}
-                            title={`Editar ${book.title}`}
-                          >
-                            {book.title}
-                          </span>
-                        </td>
-                        <td>{book.borrowCount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className={styles.chartPlaceholder}>
-                Nenhum dado disponível
-              </div>
-            )}
-          </div>
+          )}
         </div>
+        
+        {/* Lista de Livros Mais Populares */}
+        <div className={styles.chartCard}>
+          <h3>Livros Mais Populares</h3>
+          {topBooks.length > 0 ? (
+            <div className={styles.popularBooksContainer}>
+              <table className={styles.topItemsTable}>
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Empréstimos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topBooks.map((book, index) => (
+                    <tr key={book.id} className={index === 0 ? styles.topRanked : ''}>
+                      <td>
+                        <span 
+                          style={{
+                            cursor: 'pointer',
+                            color: '#4a90e2',
+                            borderBottom: '1px dotted #4a90e2',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/books/${book.id}`);
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = '#2c5aa0';
+                            e.currentTarget.style.borderBottomStyle = 'solid';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = '#4a90e2';
+                            e.currentTarget.style.borderBottomStyle = 'dotted';
+                          }}
+                          title={`Editar ${book.title}`}
+                        >
+                          {book.title}
+                        </span>
+                      </td>
+                      <td>{book.borrowCount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className={styles.chartPlaceholder}>
+              Nenhum dado disponível
+            </div>
+          )}
+        </div>
+      </div>
       )}
       
       {!dashboardChartsFeature.isBlocked && (
         <>
-          <h2 className={styles.sectionTitle}>Métricas de Desempenho</h2>
-          
-          <div className={styles.charts}>
+      <h2 className={styles.sectionTitle}>Métricas de Desempenho</h2>
+      
+      <div className={styles.charts}>
         {/* Gráfico de Evolução Mensal */}
         <div ref={monthlyChartSection.elementRef} className={styles.chartCard}>
           <h3>Evolução Mensal</h3>
