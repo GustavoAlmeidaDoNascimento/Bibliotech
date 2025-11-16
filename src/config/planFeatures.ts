@@ -4,7 +4,9 @@ export const FEATURE_BLOCK_KEYS = {
   BlockClassDashboard: 'blockClassDashboard',
   BlockStudentSideClassDashboard: 'blockStudentSideClassDashboard',
   BlockDashboardCharts: 'blockDashboardCharts',
-  BlockStudentCatalog: 'blockStudentCatalog'
+  BlockStudentCatalog: 'blockStudentCatalog',
+  BlockStudentDashboard: 'blockStudentDashboard',
+  BlockStudentClassDashboard: 'blockStudentClassDashboard'
 } as const;
 
 export type FeatureBlockKey = (typeof FEATURE_BLOCK_KEYS)[keyof typeof FEATURE_BLOCK_KEYS];
@@ -16,7 +18,9 @@ const PLAN_FEATURE_BLOCKS: PlanFeatureBlocks = {
     FEATURE_BLOCK_KEYS.BlockClassDashboard,
     FEATURE_BLOCK_KEYS.BlockStudentSideClassDashboard,
     FEATURE_BLOCK_KEYS.BlockDashboardCharts,
-    FEATURE_BLOCK_KEYS.BlockStudentCatalog
+    FEATURE_BLOCK_KEYS.BlockStudentCatalog,
+    FEATURE_BLOCK_KEYS.BlockStudentDashboard,
+    FEATURE_BLOCK_KEYS.BlockStudentClassDashboard
   ],
   intermediate: [],
   advanced: [],

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, TrendingUp, Users, Clock, Calendar } from 'lucide-react';
+import { BookOpen, TrendingUp, Users, Clock, Calendar, Lock, ArrowUpRight } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import ClassDashboard from '../../components/student/ClassDashboard';
 import { studentService, StudentDashboardData, StudentLoan, StudentBook } from '../../services/studentService';
@@ -21,6 +21,7 @@ import {
 } from 'chart.js';
 import { useResponsiveChart } from '../../hooks/useResponsiveChart';
 import { useStudentStatsCache } from '../../hooks/useStudentStatsCache';
+import { inferTierFromPlanValue, formatPlanDisplayName } from '../../services/subscriptionService';
 import styles from './StudentStats.module.css';
 
 // Registrar componentes do Chart.js
@@ -74,6 +75,31 @@ const StudentStats: React.FC = () => {
   );
   const [quarterlyData, setQuarterlyData] = useState<{labels: string[], data: number[]}>(
     cachedData?.quarterlyData || { labels: [], data: [] }
+  );
+
+  const effectiveSubscriptionPlan = useMemo(
+    () => dashboardData?.subscriptionPlan ?? cachedData?.dashboardData?.subscriptionPlan ?? null,
+    [dashboardData?.subscriptionPlan, cachedData?.dashboardData?.subscriptionPlan]
+  );
+
+  const planTier = useMemo(
+    () => inferTierFromPlanValue(effectiveSubscriptionPlan ?? null),
+    [effectiveSubscriptionPlan]
+  );
+
+  const isStudentDashboardBlocked = useMemo(
+    () => planTier === 'basic' || planTier === 'unknown',
+    [planTier]
+  );
+
+  const isClassDashboardBlocked = useMemo(
+    () => planTier !== 'advanced',
+    [planTier]
+  );
+
+  const planDisplayName = useMemo(
+    () => formatPlanDisplayName(effectiveSubscriptionPlan ?? null),
+    [effectiveSubscriptionPlan]
   );
 
   useEffect(() => {
@@ -386,6 +412,91 @@ const StudentStats: React.FC = () => {
       {/* Content */}
       <main className={styles.main}>
         {activeTab === 'aluno' ? (
+          isStudentDashboardBlocked ? (
+            <div className={styles.featureBlockContainer}>
+              <div className={styles.featureBlockBackdrop} aria-hidden="true">
+                <div className={styles.backdropPanel}>
+                  <div className={styles.backdropHeader}>
+                    <span className={styles.backdropBadge}></span>
+                    <span className={styles.backdropTitle}></span>
+                    <span className={styles.backdropSubtitle}></span>
+                  </div>
+                  <div className={styles.backdropScoreCard}>
+                    <span className={styles.backdropScoreRing}></span>
+                    <div className={styles.backdropScoreInfo}>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                  <div className={styles.backdropMetricList}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+
+                <div className={styles.backdropCharts}>
+                  <div className={styles.backdropLineChart}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div className={styles.backdropBarChart}>
+                    <span data-height="sm"></span>
+                    <span data-height="md"></span>
+                    <span data-height="lg"></span>
+                    <span data-height="xl"></span>
+                    <span data-height="md"></span>
+                    <span data-height="sm"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.featureBlockCard}>
+                <div className={styles.featureBlockHeader}>
+                  <div className={styles.featureBlockIcon}>
+                    <Lock size={20} />
+                  </div>
+                  <div>
+                    <span className={styles.featureBlockBadge}>
+                      Plano da escola:{' '}
+                      {planDisplayName.includes('Básico') ? (
+                        <>
+                          Plano <span className={styles.planNameHighlight}>Básico</span>
+                        </>
+                      ) : (
+                        planDisplayName
+                      )}
+                    </span>
+                    <h4>Dashboard do aluno disponível no plano Intermediário</h4>
+                  </div>
+                </div>
+                <p className={styles.featureBlockDescription}>
+                  No dashboard do aluno você acompanha sua evolução de leitura, categorias favoritas e ritmo ao longo dos meses.
+                </p>
+                <ul className={styles.featureBlockHighlights}>
+                  <li>Veja gráficos de evolução mensal das suas leituras</li>
+                  <li>Descubra suas categorias mais lidas e onde você mais evoluiu</li>
+                  <li>Acompanhe o tempo médio de leitura e seu melhor trimestre</li>
+                  <li>Tenha uma visão completa do seu histórico de leitura na escola</li>
+                </ul>
+                <a
+                  className={styles.featureBlockButton}
+                  href="https://bibliotech.tech/#planos"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Conhecer plano intermediário
+                  <ArrowUpRight size={16} />
+                </a>
+                <span className={styles.featureBlockFootnote}>
+                  Disponível nos planos Bibliotech Intermediário e Avançado.
+                </span>
+              </div>
+            </div>
+          ) : (
           <>
             {/* Cards de Estatísticas */}
             <div className={styles.statsGrid}>
@@ -660,7 +771,93 @@ const StudentStats: React.FC = () => {
               </div>
             </div> */}
           </>
+          )
         ) : (
+          isClassDashboardBlocked ? (
+            <div className={styles.featureBlockContainer}>
+              <div className={styles.featureBlockBackdrop} aria-hidden="true">
+                <div className={styles.backdropPanel}>
+                  <div className={styles.backdropHeader}>
+                    <span className={styles.backdropBadge}></span>
+                    <span className={styles.backdropTitle}></span>
+                    <span className={styles.backdropSubtitle}></span>
+                  </div>
+                  <div className={styles.backdropScoreCard}>
+                    <span className={styles.backdropScoreRing}></span>
+                    <div className={styles.backdropScoreInfo}>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                  <div className={styles.backdropMetricList}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+
+                <div className={styles.backdropCharts}>
+                  <div className={styles.backdropLineChart}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div className={styles.backdropBarChart}>
+                    <span data-height="sm"></span>
+                    <span data-height="md"></span>
+                    <span data-height="lg"></span>
+                    <span data-height="xl"></span>
+                    <span data-height="md"></span>
+                    <span data-height="sm"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.featureBlockCard}>
+                <div className={styles.featureBlockHeader}>
+                  <div className={styles.featureBlockIcon}>
+                    <Lock size={20} />
+                  </div>
+                  <div>
+                    <span className={styles.featureBlockBadge}>
+                      Plano da escola:{' '}
+                      {planDisplayName.includes('Básico') ? (
+                        <>
+                          Plano <span className={styles.planNameHighlight}>Básico</span>
+                        </>
+                      ) : (
+                        planDisplayName
+                      )}
+                    </span>
+                    <h4>Dashboard da turma disponível no plano Avançado</h4>
+                  </div>
+                </div>
+                <p className={styles.featureBlockDescription}>
+                  Veja o desempenho completo da sua turma: quem mais lê, como estão as categorias e como a turma evolui mês a mês.
+                </p>
+                <ul className={styles.featureBlockHighlights}>
+                  <li>Acompanhe rankings de leitores e engajamento da turma</li>
+                  <li>Veja gráficos de empréstimos e devoluções por período</li>
+                  <li>Compare o desempenho entre diferentes turmas da escola</li>
+                  <li>Use as métricas da turma para projetos, feiras e reuniões pedagógicas</li>
+                </ul>
+                <a
+                  className={styles.featureBlockButton}
+                  href="https://bibliotech.tech/#planos"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Conhecer plano avançado
+                  <ArrowUpRight size={16} />
+                </a>
+                <span className={styles.featureBlockFootnote}>
+                  Disponível apenas no plano Bibliotech Avançado.
+                </span>
+              </div>
+            </div>
+          ) : (
           <>
             {dashboardData?.student?.className ? (
               <ClassDashboard
@@ -676,6 +873,7 @@ const StudentStats: React.FC = () => {
               </div>
             )}
           </>
+          )
         )}
       </main>
 
