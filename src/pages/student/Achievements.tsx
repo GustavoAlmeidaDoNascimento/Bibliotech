@@ -81,7 +81,12 @@ const Achievements: React.FC = () => {
             <Trophy size={48} />
           </div>
           <h2>Funcionalidade em Construção</h2>
-          <p>Estamos preparando um sistema completo de conquistas para tornar sua jornada de leitura ainda mais divertida e motivadora!</p>
+          <p>
+            Estamos preparando um sistema completo de conquistas para tornar sua jornada de leitura ainda mais divertida e motivadora!
+          </p>
+          <p>
+            Essa experiência gamificada ficará disponível primeiro para os estudantes das escolas que adotarem o plano avançado do Bibliotech.
+          </p>
         </div>
 
         {/* O que Esperar */}
@@ -164,7 +169,7 @@ const Achievements: React.FC = () => {
           <p>
             Em breve você poderá acompanhar todas as suas conquistas, 
             desafios e progresso de leitura. Continue lendo e acumulando 
-            experiência para quando o sistema estiver disponível!
+            experiência para quando o sistema estiver disponível para os adotantes do plano avançado!
           </p>
         </div>
       </main>
