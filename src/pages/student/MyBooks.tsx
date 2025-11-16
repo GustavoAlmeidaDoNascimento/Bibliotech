@@ -198,41 +198,38 @@ const MyBooks: React.FC = () => {
         {isReservationsBlocked ? (
           <div className={styles.featureBlockContainer}>
             <div className={styles.featureBlockBackdrop} aria-hidden="true">
-              <div className={styles.backdropPanel}>
-                <div className={styles.backdropHeader}>
-                  <span className={styles.backdropBadge} />
-                  <span className={styles.backdropTitle} />
-                  <span className={styles.backdropSubtitle} />
-                </div>
-                <div className={styles.backdropScoreCard}>
-                  <div className={styles.backdropScoreRing} />
-                  <div className={styles.backdropScoreInfo}>
-                    <span />
-                    <span />
-                    <span />
+              <div className={styles.backdropList}>
+                <div className={styles.backdropListItem}>
+                  <div className={styles.backdropCover} />
+                  <div className={styles.backdropText}>
+                    <span className={styles.backdropTitleLine} />
+                    <span className={styles.backdropSubtitleLine} />
+                    <span className={styles.backdropMetaLine} />
                   </div>
                 </div>
-                <div className={styles.backdropMetricList}>
-                  <span />
-                  <span />
-                  <span />
+                <div className={styles.backdropListItem}>
+                  <div className={styles.backdropCover} />
+                  <div className={styles.backdropText}>
+                    <span className={styles.backdropTitleLine} />
+                    <span className={styles.backdropSubtitleLine} />
+                    <span className={styles.backdropMetaLine} />
+                  </div>
                 </div>
-              </div>
-              <div className={styles.backdropCharts}>
-                <div className={styles.backdropLineChart}>
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                  <span />
+                <div className={styles.backdropListItem}>
+                  <div className={styles.backdropCover} />
+                  <div className={styles.backdropText}>
+                    <span className={styles.backdropTitleLine} />
+                    <span className={styles.backdropSubtitleLine} />
+                    <span className={styles.backdropMetaLine} />
+                  </div>
                 </div>
-                <div className={styles.backdropBarChart}>
-                  <span data-height="sm" />
-                  <span data-height="md" />
-                  <span data-height="lg" />
-                  <span data-height="xl" />
-                  <span data-height="md" />
-                  <span data-height="lg" />
+                <div className={styles.backdropListItem}>
+                  <div className={styles.backdropCover} />
+                  <div className={styles.backdropText}>
+                    <span className={styles.backdropTitleLine} />
+                    <span className={styles.backdropSubtitleLine} />
+                    <span className={styles.backdropMetaLine} />
+                  </div>
                 </div>
               </div>
             </div>
