@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Clock, CheckCircle, AlertCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, CheckCircle, AlertCircle, Calendar, Lock, ArrowUpRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { reservationService, Reservation } from '../../services/reservationService';
 import { studentService } from '../../services/studentService';
+import { inferTierFromPlanValue, formatPlanDisplayName } from '../../services/subscriptionService';
 import styles from './MyBooks.module.css';
 
 const MyBooks: React.FC = () => {
@@ -15,6 +16,7 @@ const MyBooks: React.FC = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
 
   useEffect(() => {
     loadReservations();
@@ -36,6 +38,20 @@ const MyBooks: React.FC = () => {
       }
       
       console.log('🏫 Escola do aluno:', student.userId);
+
+      // Buscar plano da escola
+      const plan = await studentService.getSchoolSubscriptionPlan(student.userId);
+      setSubscriptionPlan(plan);
+
+      const tier = inferTierFromPlanValue(plan ?? null);
+
+      // Se plano básico/indefinido, não buscar reservas
+      if (tier === 'basic' || tier === 'unknown') {
+        console.log('⛔ Reservas bloqueadas para este plano, nenhuma consulta será feita.');
+        setReservations([]);
+        setLoading(false);
+        return;
+      }
       
       // Usar a nova função que tenta buscar de ambas as coleções
       const studentReservations = await reservationService.getStudentReservations(studentId, student.userId);
@@ -97,6 +113,21 @@ const MyBooks: React.FC = () => {
       return 'Data inválida';
     }
   };
+
+  const planTier = useMemo(
+    () => inferTierFromPlanValue(subscriptionPlan ?? null),
+    [subscriptionPlan]
+  );
+
+  const isReservationsBlocked = useMemo(
+    () => planTier === 'basic' || planTier === 'unknown',
+    [planTier]
+  );
+
+  const planDisplayName = useMemo(
+    () => formatPlanDisplayName(subscriptionPlan ?? null),
+    [subscriptionPlan]
+  );
 
   if (loading) {
     return (
@@ -164,7 +195,90 @@ const MyBooks: React.FC = () => {
 
       {/* Main Content */}
       <main className={styles.main}>
-        {reservations.length === 0 ? (
+        {isReservationsBlocked ? (
+          <div className={styles.featureBlockContainer}>
+            <div className={styles.featureBlockBackdrop} aria-hidden="true">
+              <div className={styles.backdropPanel}>
+                <div className={styles.backdropHeader}>
+                  <span className={styles.backdropBadge} />
+                  <span className={styles.backdropTitle} />
+                  <span className={styles.backdropSubtitle} />
+                </div>
+                <div className={styles.backdropScoreCard}>
+                  <div className={styles.backdropScoreRing} />
+                  <div className={styles.backdropScoreInfo}>
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                </div>
+                <div className={styles.backdropMetricList}>
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </div>
+              <div className={styles.backdropCharts}>
+                <div className={styles.backdropLineChart}>
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                <div className={styles.backdropBarChart}>
+                  <span data-height="sm" />
+                  <span data-height="md" />
+                  <span data-height="lg" />
+                  <span data-height="xl" />
+                  <span data-height="md" />
+                  <span data-height="lg" />
+                </div>
+              </div>
+            </div>
+            <div className={styles.featureBlockCard}>
+              <div className={styles.featureBlockHeader}>
+                <div className={styles.featureBlockIcon}>
+                  <Lock size={20} />
+                </div>
+                <div>
+                  <span className={styles.featureBlockBadge}>
+                    Plano da escola:{' '}
+                    {planDisplayName.includes('Básico') ? (
+                      <>
+                        Plano <span className={styles.planNameHighlight}>Básico</span>
+                      </>
+                    ) : (
+                      planDisplayName
+                    )}
+                  </span>
+                  <h4>Reservas de livros disponíveis no plano Intermediário</h4>
+                </div>
+              </div>
+              <p className={styles.featureBlockDescription}>
+                Com o sistema de reservas do Bibliotech você garante seu lugar nos livros mais disputados sem precisar enfrentar fila na biblioteca.
+              </p>
+              <ul className={styles.featureBlockHighlights}>
+                <li>Reserve livros direto do celular, de qualquer lugar</li>
+                <li>Veja quando sua reserva estará pronta para retirada</li>
+                <li>Garanta prioridade em livros muito disputados da escola</li>
+                <li>Evite filas e organize suas leituras com antecedência</li>
+              </ul>
+              <a
+                className={styles.featureBlockButton}
+                href="https://bibliotech.tech/#planos"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Conhecer plano intermediário
+                <ArrowUpRight size={16} />
+              </a>
+              <span className={styles.featureBlockFootnote}>
+                Disponível nos planos Bibliotech Intermediário e Avançado.
+              </span>
+            </div>
+          </div>
+        ) : reservations.length === 0 ? (
           <div className={styles.emptyContainer}>
             <div className={styles.emptyIconContainer}>
               <BookOpen size={64} />
