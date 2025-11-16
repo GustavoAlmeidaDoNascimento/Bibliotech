@@ -249,7 +249,7 @@ const MyBooks: React.FC = () => {
                       planDisplayName
                     )}
                   </span>
-                  <h4>Reservas de livros disponíveis no plano Intermediário</h4>
+                  <h4>Reservas de livros disponíveis no plano Avançado</h4>
                 </div>
               </div>
               <p className={styles.featureBlockDescription}>
@@ -262,16 +262,16 @@ const MyBooks: React.FC = () => {
                 <li>Evite filas e organize suas leituras com antecedência</li>
               </ul>
               <a
-                className={styles.featureBlockButton}
+                className={`${styles.featureBlockButton} ${styles.featureBlockButtonAdvanced}`}
                 href="https://bibliotech.tech/#planos"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Conhecer plano intermediário
+                Conhecer plano avançado
                 <ArrowUpRight size={16} />
               </a>
               <span className={styles.featureBlockFootnote}>
-                Disponível nos planos Bibliotech Intermediário e Avançado.
+                Disponível apenas no plano Bibliotech Avançado.
               </span>
             </div>
           </div>

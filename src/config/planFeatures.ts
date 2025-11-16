@@ -24,7 +24,9 @@ const PLAN_FEATURE_BLOCKS: PlanFeatureBlocks = {
     FEATURE_BLOCK_KEYS.BlockStudentClassDashboard,
     FEATURE_BLOCK_KEYS.BlockStudentReservations
   ],
-  intermediate: [],
+  intermediate: [
+    FEATURE_BLOCK_KEYS.BlockStudentReservations
+  ],
   advanced: [],
   unknown: [
     FEATURE_BLOCK_KEYS.BlockClassDashboard,

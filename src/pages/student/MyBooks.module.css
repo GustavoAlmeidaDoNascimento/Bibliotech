@@ -695,6 +695,12 @@
   box-shadow: 0 18px 48px rgba(59, 130, 246, 0.85);
 }
 
+.featureBlockButtonAdvanced {
+  background: linear-gradient(135deg, #facc15, #f97316);
+  box-shadow: 0 18px 42px rgba(250, 204, 21, 0.55);
+  color: #111827;
+}
+
 .featureBlockButton svg {
   width: 1.1rem;
   height: 1.1rem;
