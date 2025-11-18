@@ -12,7 +12,7 @@ export { useLazySection, useMultipleLazySections } from './useLazySection';
 export { useOptimizedSearch } from './useOptimizedSearch';
 export { useResponsiveChart } from './useResponsiveChart';
 export { useDistinctCodes } from './useDistinctCodes';
-export { useFirestorePagination } from './useFirestorePagination';
+export { useFirestorePagination } from './useFirestorePagination'; 
 
 // UI Hooks
 export { useSearch } from './ui/useSearch';

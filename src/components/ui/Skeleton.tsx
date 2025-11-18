@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { COLORS, SIZES, ANIMATION_DURATION } from '../../constants';
 
 export interface SkeletonProps {
@@ -64,11 +64,11 @@ const StyledSkeleton = styled.div<{
   ${props => {
     switch (props.animation) {
       case 'pulse':
-        return `
+        return css`
           animation: ${pulse} ${ANIMATION_DURATION.MEDIUM * 2}s ease-in-out infinite;
         `;
       case 'wave':
-        return `
+        return css`
           position: relative;
           overflow: hidden;
           
