@@ -1,0 +1,157 @@
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  color: #F8FAFC;
+}
+
+.carouselContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.booksScroll {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 0.5rem 0 1rem 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  flex: 1;
+}
+
+.booksScroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.booksScroll::-webkit-scrollbar-track {
+  background: rgba(51, 65, 85, 0.3);
+  border-radius: 2px;
+}
+
+.booksScroll::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 2px;
+}
+
+.booksScroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+
+.navButton {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 50%;
+  color: #94A3B8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.navButton:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #0078d4;
+  color: #0078d4;
+  transform: scale(1.1);
+}
+
+.navButton:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+.navButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.navButton:disabled:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(51, 65, 85, 0.5);
+  color: #94A3B8;
+}
+
+/* Responsivo mobile */
+@media (max-width: 639px) {
+  .navButton {
+    display: none;
+  }
+  
+  .carouselContainer {
+    gap: 0;
+  }
+}
+
+/* Responsivo tablet */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .navButton {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .booksScroll {
+    gap: 1.5rem;
+  }
+}
+
+/* Responsivo desktop pequeno */
+@media (min-width: 1024px) {
+  .booksScroll {
+    gap: 2rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+  
+  .navButton {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .carouselContainer {
+    gap: 0.75rem;
+  }
+}
+
+/* Responsivo desktop médio */
+@media (min-width: 1280px) {
+  .navButton {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .carouselContainer {
+    gap: 1rem;
+  }
+}
+
+/* Responsivo desktop grande */
+@media (min-width: 1536px) {
+  .navButton {
+    width: 56px;
+    height: 56px;
+  }
+  
+  .carouselContainer {
+    gap: 1.25rem;
+  }
+}
+
