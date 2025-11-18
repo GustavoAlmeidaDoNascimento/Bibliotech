@@ -12,8 +12,8 @@ describe('Badge', () => {
     const { rerender } = render(<Badge variant="primary">Primary</Badge>);
     expect(screen.getByText(/primary/i)).toBeInTheDocument();
 
-    rerender(<Badge variant="secondary">Secondary</Badge>);
-    expect(screen.getByText(/secondary/i)).toBeInTheDocument();
+    rerender(<Badge variant="default">Default</Badge>);
+    expect(screen.getByText(/default/i)).toBeInTheDocument();
 
     rerender(<Badge variant="success">Success</Badge>);
     expect(screen.getByText(/success/i)).toBeInTheDocument();

@@ -62,7 +62,7 @@ interface TagsContextType {
   capitalizeTag: (tag: string) => string;
 }
 
-const TagsContext = createContext<TagsContextType | null>(null);
+export const TagsContext = createContext<TagsContextType | null>(null);
 
 export const useTags = () => {
   const context = useContext(TagsContext);
