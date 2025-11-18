@@ -10,3 +10,15 @@ import { TextEncoder, TextDecoder } from 'util';
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder as typeof global.TextDecoder;
 
+// Polyfill para ReadableStream (necessário para Firebase Auth em testes)
+if (typeof global.ReadableStream === 'undefined') {
+  global.ReadableStream = class ReadableStream {
+    constructor() {}
+    getReader() {
+      return {
+        read: () => Promise.resolve({ done: true, value: undefined })
+      };
+    }
+  } as any;
+}
+
