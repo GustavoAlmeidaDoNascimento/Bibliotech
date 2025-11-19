@@ -65,7 +65,7 @@ export const ROUTES = {
   CATALOG: '/catalog',
 } as const;
 
-// Perguntas de verificação para controle de leitura
+// Perguntas de verificação para controle de leitura (quando progresso > 50%)
 export const VERIFICATION_QUESTIONS = [
   'Qual o personagem que tu mais se identificou até a parte que você leu?',
   'Teve alguma frase ou diálogo que ficou na sua cabeça?',
@@ -76,8 +76,28 @@ export const VERIFICATION_QUESTIONS = [
   'Se você tivesse que discordar de alguma coisa que leu, o que seria? (não precisa ser algo que você discorde de verdade)'
 ];
 
+// Perguntas de feedback para quando o aluno não leu muito (progresso < 50%)
+export const FEEDBACK_QUESTIONS_LOW_PROGRESS = [
+  'Por qual motivo você não conseguiu avançar mais na leitura deste livro?',
+  'O que te impediu de ler mais? Foi falta de tempo, dificuldade com o texto ou falta de interesse?',
+  'Você teve alguma dificuldade específica com o livro? Se sim, qual foi?',
+  'O livro não despertou seu interesse inicialmente? O que poderia ter te motivado mais?',
+  'Você gostaria de tentar ler este livro novamente em outro momento?',
+  'O que poderia ter te ajudado a ler mais? Mais tempo, um livro diferente ou algum apoio?',
+  'Você acha que escolheu o livro certo para você neste momento?',
+  'Houve alguma situação pessoal ou escolar que te atrapalhou na leitura?',
+  'Se você pudesse escolher outro livro agora, qual tipo de história te interessaria mais?',
+  'Você sentiu que o livro estava muito difícil ou muito fácil para o seu nível de leitura?'
+];
+
 // Função para selecionar perguntas aleatórias
 export const selectRandomQuestions = (count: number = 3) => {
   const shuffled = [...VERIFICATION_QUESTIONS].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
+
+// Função para selecionar perguntas de feedback quando progresso é baixo
+export const selectRandomFeedbackQuestions = (count: number = 3) => {
+  const shuffled = [...FEEDBACK_QUESTIONS_LOW_PROGRESS].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }; 

@@ -4,7 +4,7 @@ import { doc, getDoc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/fir
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
-import { selectRandomQuestions } from '../../constants';
+import { selectRandomQuestions, selectRandomFeedbackQuestions } from '../../constants';
 import { 
   ArrowPathIcon, 
   CheckCircleIcon, 
@@ -317,12 +317,15 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
     // Considerar automaticamente como leitura concluída quando atingir 100%
     setReadingCompleted(value === 100);
 
-    // Mostrar perguntas se o progresso for maior que 50%
-    if (value > 50 && !showQuestions) {
+    // Mostrar perguntas diferentes baseado no progresso
+    if (value < 50) {
+      // Progresso baixo: mostrar perguntas de feedback
+      setSelectedQuestions(selectRandomFeedbackQuestions(3));
+      setShowQuestions(true);
+    } else if (value >= 50) {
+      // Progresso alto: mostrar perguntas de verificação
       setSelectedQuestions(selectRandomQuestions(3));
       setShowQuestions(true);
-    } else if (value <= 50) {
-      setShowQuestions(false);
     }
   };
 
@@ -519,8 +522,19 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
                   <button 
                     className={styles.returnButton}
                     onClick={() => {
-                      setReadingProgress(loan.readingProgress || 0);
+                      const initialProgress = loan.readingProgress || 0;
+                      setReadingProgress(initialProgress);
                       setReadingCompleted(loan.completed || false);
+                      // Mostrar perguntas apropriadas baseado no progresso inicial
+                      if (initialProgress < 50) {
+                        setSelectedQuestions(selectRandomFeedbackQuestions(3));
+                        setShowQuestions(true);
+                      } else if (initialProgress >= 50) {
+                        setSelectedQuestions(selectRandomQuestions(3));
+                        setShowQuestions(true);
+                      } else {
+                        setShowQuestions(false);
+                      }
                       setShowReturnDialog(true);
                     }}
                     disabled={processing}
@@ -574,23 +588,47 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
 
             {showQuestions && (
               <div className={styles.verificationSection}>
-                <div className={styles.verificationAlert}>
-                  <strong>Importante:</strong> Essas perguntas são essenciais para que tenhamos um bom controle de quanto o aluno leu. Pedimos que o ato de fazer as perguntas (quando os alunos falam que leram mais de 50%) vire rotina para ter um bom controle.
-                </div>
-                
-                <h4>Perguntas de Verificação</h4>
-                <p className={styles.verificationSubtitle}>
-                  Faça essas perguntas ao aluno para verificar se ele realmente leu o conteúdo:
-                </p>
-                
-                <div className={styles.questionsList}>
-                  {selectedQuestions.map((question, index) => (
-                    <div key={index} className={styles.questionItem}>
-                      <span className={styles.questionNumber}>{index + 1}.</span>
-                      <span className={styles.questionText}>{question}</span>
+                {readingProgress < 50 ? (
+                  <>
+                    <div className={styles.feedbackAlert}>
+                      <strong>Feedback importante:</strong> O aluno indicou que leu menos de 50% do livro. Essas perguntas ajudam a entender os motivos e melhorar a experiência de leitura.
                     </div>
-                  ))}
-                </div>
+                    
+                    <h4>Perguntas de Feedback</h4>
+                    <p className={styles.verificationSubtitle}>
+                      Recomendamos fazer as três perguntas abaixo ao aluno. Se preferir, você pode escolher fazer ao menos uma delas para entender por que ele não conseguiu avançar mais na leitura:
+                    </p>
+                    
+                    <div className={styles.questionsList}>
+                      {selectedQuestions.map((question, index) => (
+                        <div key={index} className={styles.questionItem}>
+                          <span className={styles.questionNumber}>{index + 1}.</span>
+                          <span className={styles.questionText}>{question}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className={styles.verificationAlert}>
+                      <strong>Importante:</strong> Essas perguntas são essenciais para que tenhamos um bom controle de quanto o aluno leu. Pedimos que o ato de fazer as perguntas (quando os alunos falam que leram mais de 50%) vire rotina para ter um bom controle.
+                    </div>
+                    
+                    <h4>Perguntas de Verificação</h4>
+                    <p className={styles.verificationSubtitle}>
+                      Faça essas perguntas ao aluno para verificar se ele realmente leu o conteúdo:
+                    </p>
+                    
+                    <div className={styles.questionsList}>
+                      {selectedQuestions.map((question, index) => (
+                        <div key={index} className={styles.questionItem}>
+                          <span className={styles.questionNumber}>{index + 1}.</span>
+                          <span className={styles.questionText}>{question}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
             
