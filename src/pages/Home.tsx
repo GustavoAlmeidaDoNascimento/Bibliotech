@@ -1421,7 +1421,7 @@ Aguardo retorno. Obrigado!`;
               >
                 {isDemoLoading ? 'Entrando...' : (
                   <>
-                    Acessar conta de demonstração (IFSul) 🚀
+                    Acessar conta de demonstração 🚀
                   </>
                 )}
               </DemoButton>
