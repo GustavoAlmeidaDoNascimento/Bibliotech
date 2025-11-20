@@ -18,7 +18,9 @@ import {
   ChartBarIcon,
   BellIcon,
   CalendarDaysIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  EllipsisVerticalIcon,
+  MegaphoneIcon
 } from '@heroicons/react/24/outline';
 import { ROUTES } from '../../constants';
 import styles from './Layout.module.css';
@@ -28,19 +30,20 @@ const Layout: React.FC = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [reservationsCount, setReservationsCount] = useState<number>(0);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { settings } = useSettings();
-  const { notifications, unreadCount, markAllAsRead, markAsRead, deleteNotification, loading, isEnabled } = useNotifications();
+  const { notifications, unreadCount, markAllAsRead, markAsRead, markAsUnread, deleteNotification, loading, isEnabled } = useNotifications();
 
-  // Marcar todas como lidas ao abrir
+  // Fechar dropdown quando a aba de notificações fechar
   useEffect(() => {
-    if (isNotificationsOpen && unreadCount > 0) {
-      markAllAsRead();
+    if (!isNotificationsOpen) {
+      setOpenDropdownId(null);
     }
-  }, [isNotificationsOpen, unreadCount, markAllAsRead]);
+  }, [isNotificationsOpen]);
 
   // Buscar contador de reservas
   useEffect(() => {
@@ -106,8 +109,10 @@ const Layout: React.FC = () => {
   };
 
   const handleNotificationClick = async (notification: Notification) => {
-    // Marcar como lida
-    await markAsRead(notification.id);
+    // Marcar como lida apenas quando clicar na notificação
+    if (!notification.read) {
+      await markAsRead(notification.id);
+    }
     
     // Verificar o tipo de notificação para navegação apropriada
     if (notification.type === 'update') {
@@ -119,6 +124,38 @@ const Layout: React.FC = () => {
       setIsNotificationsOpen(false);
     }
   };
+
+  const handleMarkAsRead = async (notificationId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    await markAsRead(notificationId);
+    setOpenDropdownId(null);
+  };
+
+  const handleMarkAsUnread = async (notificationId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    await markAsUnread(notificationId);
+    setOpenDropdownId(null);
+  };
+
+  const handleDropdownToggle = (notificationId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setOpenDropdownId(openDropdownId === notificationId ? null : notificationId);
+  };
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openDropdownId) {
+        const target = event.target as HTMLElement;
+        if (!target.closest(`[data-dropdown-id="${openDropdownId}"]`)) {
+          setOpenDropdownId(null);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openDropdownId]);
 
   const closeNotificationModal = () => {
     setSelectedNotification(null);
@@ -265,7 +302,8 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
       return (
         <>
           <div className={styles.notificationTitle}>
-            📢 {notification.title}
+            <MegaphoneIcon className={styles.notificationIcon} />
+            {notification.title}
           </div>
           <div className={styles.notificationMessage}>
             {truncateText(notification.message)}
@@ -366,7 +404,17 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
                 <span className={styles.notificationBadge}>{unreadCount}</span>
               )}
               {!isEnabled && (
-                <span className={styles.disabledIndicator}>🔕</span>
+                <BellIcon 
+                  className={styles.disabledIndicator}
+                  style={{ 
+                    width: '1rem', 
+                    height: '1rem', 
+                    position: 'absolute',
+                    top: '-6px',
+                    right: '-6px',
+                    opacity: 0.5
+                  }} 
+                />
               )}
             </button>
             <button
@@ -401,7 +449,7 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
           <div className={styles.notificationsList}>
             {!isEnabled ? (
               <div className={styles.emptyNotifications}>
-                <div style={{ marginBottom: '0.5rem', fontSize: '1.5rem' }}>🔕</div>
+                <BellIcon className={styles.emptyIcon} style={{ width: '2rem', height: '2rem', opacity: 0.3, marginBottom: '0.5rem' }} />
                 <strong>Notificações desabilitadas</strong>
                 <br />
                 Habilite em configurações da biblioteca
@@ -410,7 +458,7 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
               <div className={styles.emptyNotifications}>Carregando notificações...</div>
             ) : notifications.length === 0 ? (
               <div className={styles.emptyNotifications}>
-                <div style={{ marginBottom: '0.5rem' }}>🎉</div>
+                <BellIcon className={styles.emptyIcon} style={{ width: '2rem', height: '2rem', opacity: 0.5, marginBottom: '0.5rem' }} />
                 Nenhuma notificação pendente, está tudo em dia!
               </div>
             ) : (
@@ -420,6 +468,9 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
                   className={`${styles.notificationItem} ${notification.read ? styles.read : ''} ${notification.type === 'update' ? styles.updateNotification : ''}`}
                   onClick={() => handleNotificationClick(notification)}
                 >
+                  {!notification.read && (
+                    <div className={styles.unreadIndicator}></div>
+                  )}
                   <div className={styles.notificationContent}>
                     <div className={styles.notificationHeader}>
                       <button
@@ -430,6 +481,41 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
                       >
                         ×
                       </button>
+                      <div className={styles.notificationMenuContainer} data-dropdown-id={notification.id}>
+                        <button
+                          className={styles.notificationMenuButton}
+                          onClick={(e) => handleDropdownToggle(notification.id, e)}
+                          aria-label="Menu de opções"
+                          title="Menu de opções"
+                        >
+                          <EllipsisVerticalIcon className={styles.notificationMenuIcon} />
+                        </button>
+                        {openDropdownId === notification.id && (
+                          <div className={styles.dropdownMenu}>
+                            {!notification.read ? (
+                              <button
+                                className={styles.dropdownItem}
+                                onClick={(e) => handleMarkAsRead(notification.id, e)}
+                              >
+                                Marcar como lido
+                              </button>
+                            ) : (
+                              <button
+                                className={styles.dropdownItem}
+                                onClick={(e) => handleMarkAsUnread(notification.id, e)}
+                              >
+                                Marcar como não lido
+                              </button>
+                            )}
+                            <button
+                              className={styles.dropdownItem}
+                              onClick={(e) => handleDeleteNotification(notification.id, e)}
+                            >
+                              Deletar
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     {renderNotificationContent(notification)}
                   </div>
@@ -580,7 +666,10 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
         <div className={styles.notificationModalBackdrop} onClick={closeNotificationModal}>
           <div className={styles.notificationModal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.notificationModalHeader}>
-              <h3>📢 {selectedNotification.title}</h3>
+              <h3>
+                <MegaphoneIcon className={styles.modalHeaderIcon} />
+                {selectedNotification.title}
+              </h3>
               <button
                 className={styles.closeModalButton}
                 onClick={closeNotificationModal}

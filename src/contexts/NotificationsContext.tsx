@@ -24,6 +24,7 @@ interface NotificationsContextType {
   loading: boolean;
   isEnabled: boolean;
   markAsRead: (notificationId: string) => void;
+  markAsUnread: (notificationId: string) => void;
   markAllAsRead: () => void;
   deleteNotification: (notificationId: string) => void;
   refreshNotifications: () => Promise<void>;
@@ -399,6 +400,23 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     await saveReadNotifications(newReadNotifications);
   };
 
+  const markAsUnread = async (notificationId: string) => {
+    const newReadNotifications = new Set(readNotifications);
+    newReadNotifications.delete(notificationId);
+    
+    setReadNotifications(newReadNotifications);
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification.id === notificationId
+          ? { ...notification, read: false }
+          : notification
+      )
+    );
+
+    // salva no Firebase
+    await saveReadNotifications(newReadNotifications);
+  };
+
   const markAllAsRead = async () => {
     const allNotificationIds = notifications.map(n => n.id);
     const newReadNotifications = new Set([...Array.from(readNotifications), ...allNotificationIds]);
@@ -457,6 +475,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     loading,
     isEnabled,
     markAsRead,
+    markAsUnread,
     markAllAsRead,
     deleteNotification,
     refreshNotifications,
