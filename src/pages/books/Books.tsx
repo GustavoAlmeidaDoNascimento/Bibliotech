@@ -55,10 +55,13 @@ const Books = () => {
         // Se houver cache válido, os dados serão carregados pela paginação
         // mas podemos usar o cache para busca imediata
         setAllBooksLoaded(true);
+        // Ainda recarregar para garantir dados atualizados, mas manter allBooksLoaded como true
+        reload();
+      } else {
+        // Se não houver cache, recarregar normalmente
+        reload();
+        setAllBooksLoaded(false);
       }
-      
-      reload();
-      setAllBooksLoaded(false);
     }
   }, [currentUser?.uid, reload]); // Só recarregar quando o usuário mudar
 
