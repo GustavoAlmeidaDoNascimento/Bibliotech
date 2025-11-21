@@ -19,6 +19,8 @@
 .env.test.local
 .env.production.local
 
+
+
 # Cursor rules (configurações locais do editor)
 .cursor/
 
@@ -35,3 +37,4 @@ yarn-error.log*
 
 # Firebase config (não versionar credenciais)
 src/config/firebase.config.ts
+.prompts/
