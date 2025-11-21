@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { collection, query, getDocs, doc, deleteDoc, orderBy, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
@@ -7,6 +7,7 @@ import { useInfiniteScroll } from '../../hooks';
 import { FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styles from './Students.module.css';
 import { studentIndexService } from '../../services/studentIndexService';
+import { searchCacheService } from '../../services/searchCacheService';
 
 interface Student {
   id: string;
@@ -36,20 +37,103 @@ const Students = () => {
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
   const [filtersApplied, setFiltersApplied] = useState(false);
-  const [filters, setFilters] = useState<Filters>({
-    name: '',
-    classroom: '',
-    shift: ''
-  });
   
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  const fetchStudents = useCallback(async () => {
+  // Carregar filtros do cache ao inicializar
+  const getInitialFilters = (): Filters => {
+    if (currentUser?.uid) {
+      const cachedFilters = searchCacheService.getCachedFilters('students', currentUser.uid);
+      if (cachedFilters) {
+        return {
+          name: cachedFilters.name || '',
+          classroom: cachedFilters.classroom || '',
+          shift: cachedFilters.shift || ''
+        };
+      }
+    }
+    return {
+      name: '',
+      classroom: '',
+      shift: ''
+    };
+  };
+
+  const [filters, setFilters] = useState<Filters>(getInitialFilters);
+  const filtersRef = useRef<Filters>(filters);
+  
+  // Atualizar ref quando filters mudar
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
+  // Função auxiliar para aplicar filtros com dados específicos (definida antes de fetchStudents)
+  const applyFiltersWithData = useCallback((dataToFilter: Student[], filtersToApply: Filters) => {
+    let result = [...dataToFilter];
+    const hasActiveFilters = Object.values(filtersToApply).some(Boolean);
+    
+    if (!hasActiveFilters) {
+      setFilteredStudents([]);
+      setFiltersApplied(false);
+      return;
+    }
+
+    if (filtersToApply.name) {
+      result = result.filter(student => 
+        student.name.toLowerCase().includes(filtersToApply.name.toLowerCase())
+      );
+    }
+
+    if (filtersToApply.classroom) {
+      result = result.filter(student => 
+        student.classroom.toLowerCase().includes(filtersToApply.classroom.toLowerCase())
+      );
+    }
+
+    if (filtersToApply.shift) {
+      result = result.filter(student => 
+        student.shift.toLowerCase().includes(filtersToApply.shift.toLowerCase())
+      );
+    }
+
+    setFilteredStudents(result);
+    setFiltersApplied(true);
+  }, []);
+
+  const fetchStudents = useCallback(async (useCache = true) => {
     if (!currentUser) return;
     
     try {
       setLoading(true);
+      
+      // Tentar carregar do cache primeiro
+      if (useCache) {
+        const cached = searchCacheService.getCachedData<Student>('students', currentUser.uid);
+        if (cached && cached.data.length > 0) {
+          setStudents(cached.data);
+          setFilteredStudents(cached.data);
+          
+          // Aplicar filtros salvos se existirem
+          if (cached.filters && Object.values(cached.filters).some(Boolean)) {
+            const cachedFilters = cached.filters as Filters;
+            setFilters(cachedFilters);
+            // Aplicar filtros automaticamente
+            applyFiltersWithData(cached.data, cachedFilters);
+          }
+          
+          setLoading(false);
+          
+          // Carregar dados atualizados em background (sem bloquear UI)
+          // Usar setTimeout para evitar recursão imediata
+          setTimeout(() => {
+            fetchStudents(false);
+          }, 100);
+          return;
+        }
+      }
+      
+      // Se não houver cache ou useCache=false, buscar do banco
       const studentsRef = collection(db, `users/${currentUser.uid}/students`);
       const q = query(studentsRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
@@ -61,6 +145,9 @@ const Students = () => {
       
       setStudents(fetchedStudents);
       setFilteredStudents(fetchedStudents);
+
+      // Salvar no cache com filtros atuais (usar ref para evitar dependência circular)
+      searchCacheService.setCachedData('students', currentUser.uid, fetchedStudents, filtersRef.current);
 
       // Sincronizar índice global e garantir campo studentId nas fichas
       if (fetchedStudents.length > 0) {
@@ -91,11 +178,11 @@ const Students = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, applyFiltersWithData]);
 
   useEffect(() => {
-    fetchStudents();
-  }, [fetchStudents]);
+    fetchStudents(true); // Tentar usar cache primeiro
+  }, [currentUser?.uid]); // Só recarregar quando o usuário mudar
 
   const currentStudents = filtersApplied ? filteredStudents : students;
 
@@ -156,7 +243,7 @@ const Students = () => {
           console.warn(`⚠️ Não foi possível remover o aluno ${studentId} do índice global:`, indexError);
         }
       }
-      await fetchStudents();
+      await fetchStudents(false); // Recarregar do banco após deletar
       setSelectedStudents([]);
     } catch (error) {
       console.error('Erro ao excluir alunos:', error);
@@ -171,10 +258,19 @@ const Students = () => {
   };
 
   const handleFilterChange = (field: keyof Filters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Persistir filtros no cache
+      if (currentUser?.uid) {
+        searchCacheService.updateFilters('students', currentUser.uid, newFilters);
+      }
+      
+      return newFilters;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -188,46 +284,25 @@ const Students = () => {
     }
   };
 
-  const applyFilters = () => {
-    let result = [...students];
-    const hasActiveFilters = Object.values(filters).some(Boolean);
-    
-    if (!hasActiveFilters) {
-      setFilteredStudents([]);
-      setFiltersApplied(false);
-      return;
-    }
-
-    if (filters.name) {
-      result = result.filter(student => 
-        student.name.toLowerCase().includes(filters.name.toLowerCase())
-      );
-    }
-
-    if (filters.classroom) {
-      result = result.filter(student => 
-        student.classroom.toLowerCase().includes(filters.classroom.toLowerCase())
-      );
-    }
-
-    if (filters.shift) {
-      result = result.filter(student => 
-        student.shift.toLowerCase().includes(filters.shift.toLowerCase())
-      );
-    }
-
-    setFilteredStudents(result);
-    setFiltersApplied(true);
-  };
+  const applyFilters = useCallback(() => {
+    applyFiltersWithData(students, filters);
+  }, [students, filters, applyFiltersWithData]);
 
   const clearFilters = () => {
-    setFilters({
+    const emptyFilters = {
       name: '',
       classroom: '',
       shift: ''
-    });
+    };
+    
+    setFilters(emptyFilters);
     setFilteredStudents([]);
     setFiltersApplied(false);
+    
+    // Limpar filtros do cache
+    if (currentUser?.uid) {
+      searchCacheService.updateFilters('students', currentUser.uid, emptyFilters);
+    }
   };
 
   return (

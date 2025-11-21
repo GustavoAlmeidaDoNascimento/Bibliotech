@@ -1,5 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { SearchIndex, LRUCache, debounce, normalizeString } from '../utils/searchAlgorithms';
+import { searchCacheService } from '../services/searchCacheService';
+import { useAuth } from '../contexts/AuthContext';
 
 export interface Book {
   id: string;
@@ -29,16 +31,53 @@ interface UseOptimizedSearchProps {
   books: Book[];
   initialFilters?: SearchFilters;
   debounceMs?: number;
+  persistFilters?: boolean; // Nova prop para habilitar persistência
 }
 
 export const useOptimizedSearch = ({
   books,
   initialFilters = { title: '', code: '', author: '', tags: [] },
-  debounceMs = 300
+  debounceMs = 300,
+  persistFilters = true // Por padrão, persiste os filtros
 }: UseOptimizedSearchProps) => {
-  const [filters, setFilters] = useState<SearchFilters>(initialFilters);
-  const [debouncedFilters, setDebouncedFilters] = useState<SearchFilters>(initialFilters);
+  const { currentUser } = useAuth();
+  
+  // Função para obter filtros iniciais (carrega do cache se disponível)
+  const getInitialFilters = (): SearchFilters => {
+    if (persistFilters && currentUser?.uid) {
+      const cachedFilters = searchCacheService.getCachedFilters('books', currentUser.uid);
+      if (cachedFilters) {
+        return {
+          title: cachedFilters.title || '',
+          code: cachedFilters.code || '',
+          author: cachedFilters.author || '',
+          tags: Array.isArray(cachedFilters.tags) ? cachedFilters.tags : []
+        };
+      }
+    }
+    return initialFilters;
+  };
+
+  const [filters, setFilters] = useState<SearchFilters>(() => getInitialFilters());
+  const [debouncedFilters, setDebouncedFilters] = useState<SearchFilters>(() => getInitialFilters());
   const [isSearching, setIsSearching] = useState(false);
+  
+  // Sincronizar filtros quando o usuário mudar ou quando persistFilters mudar
+  useEffect(() => {
+    if (persistFilters && currentUser?.uid) {
+      const cachedFilters = searchCacheService.getCachedFilters('books', currentUser.uid);
+      if (cachedFilters) {
+        const newFilters = {
+          title: cachedFilters.title || '',
+          code: cachedFilters.code || '',
+          author: cachedFilters.author || '',
+          tags: Array.isArray(cachedFilters.tags) ? cachedFilters.tags : []
+        };
+        setFilters(newFilters);
+        setDebouncedFilters(newFilters);
+      }
+    }
+  }, [currentUser?.uid, persistFilters]);
 
   // Cache de resultados
   const cacheRef = useRef(new LRUCache<string, Book[]>(50));
@@ -219,39 +258,73 @@ export const useOptimizedSearch = ({
 
   // Atualizar filtro individual
   const updateFilter = useCallback((field: keyof SearchFilters, value: string | string[]) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  }, []);
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Persistir filtros no cache se habilitado
+      if (persistFilters && currentUser?.uid) {
+        searchCacheService.updateFilters('books', currentUser.uid, newFilters);
+      }
+      
+      return newFilters;
+    });
+  }, [persistFilters, currentUser?.uid]);
 
   // Limpar todos os filtros
   const clearFilters = useCallback(() => {
-    setFilters({
+    const emptyFilters = {
       title: '',
       code: '',
       author: '',
       tags: []
-    });
-  }, []);
+    };
+    
+    setFilters(emptyFilters);
+    
+    // Limpar filtros do cache se habilitado
+    if (persistFilters && currentUser?.uid) {
+      searchCacheService.updateFilters('books', currentUser.uid, emptyFilters);
+    }
+  }, [persistFilters, currentUser?.uid]);
 
   // Adicionar tag ao filtro
   const addTagFilter = useCallback((tagId: string) => {
     if (!tagId || filters.tags.includes(tagId)) return;
     
-    setFilters(prev => ({
-      ...prev,
-      tags: [...prev.tags, tagId]
-    }));
-  }, [filters.tags]);
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        tags: [...prev.tags, tagId]
+      };
+      
+      // Persistir filtros no cache se habilitado
+      if (persistFilters && currentUser?.uid) {
+        searchCacheService.updateFilters('books', currentUser.uid, newFilters);
+      }
+      
+      return newFilters;
+    });
+  }, [filters.tags, persistFilters, currentUser?.uid]);
 
   // Remover tag do filtro
   const removeTagFilter = useCallback((tagId: string) => {
-    setFilters(prev => ({
-      ...prev,
-      tags: prev.tags.filter(id => id !== tagId)
-    }));
-  }, []);
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        tags: prev.tags.filter(id => id !== tagId)
+      };
+      
+      // Persistir filtros no cache se habilitado
+      if (persistFilters && currentUser?.uid) {
+        searchCacheService.updateFilters('books', currentUser.uid, newFilters);
+      }
+      
+      return newFilters;
+    });
+  }, [persistFilters, currentUser?.uid]);
 
   return {
     filters,

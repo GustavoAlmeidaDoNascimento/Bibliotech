@@ -10,6 +10,7 @@ import { useOptimizedSearch, type Book } from '../../hooks/useOptimizedSearch';
 import { PlusIcon, TrashIcon, FunnelIcon, XMarkIcon, ListBulletIcon, Squares2X2Icon, ArrowsUpDownIcon, ArrowDownTrayIcon, PrinterIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import styles from './Books.module.css';
+import { searchCacheService } from '../../services/searchCacheService';
 
 type SortOption = 'alphabetical' | 'dateAdded';
 
@@ -45,13 +46,21 @@ const Books = () => {
     orderDirection: 'desc'
   });
 
-  // Carregar primeira página ao montar
+  // Carregar primeira página ao montar (com cache)
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser?.uid) {
+      // Tentar carregar do cache primeiro
+      const cached = searchCacheService.getCachedData<Book>('books', currentUser.uid);
+      if (cached && cached.data.length > 0) {
+        // Se houver cache válido, os dados serão carregados pela paginação
+        // mas podemos usar o cache para busca imediata
+        setAllBooksLoaded(true);
+      }
+      
       reload();
       setAllBooksLoaded(false);
     }
-  }, [currentUser, reload]);
+  }, [currentUser?.uid, reload]); // Só recarregar quando o usuário mudar
 
   // Hook de busca otimizada
   const {
@@ -66,16 +75,55 @@ const Books = () => {
     filteredCount
   } = useOptimizedSearch({
     books,
-    debounceMs: 300
+    debounceMs: 300,
+    persistFilters: true
   });
 
-  // Quando ativar filtros, carregar TODOS os livros automaticamente
+  // Salvar dados no cache quando carregados (sem filtros ativos)
   useEffect(() => {
-    if (hasActiveFilters && !allBooksLoaded) {
-      loadAllAndUpdate();
+    if (!hasActiveFilters && books.length > 0 && currentUser?.uid) {
+      // Salvar no cache apenas quando não há filtros ativos
+      // Isso evita sobrescrever o cache com dados parciais
+      searchCacheService.setCachedData('books', currentUser.uid, books, filters);
+    }
+  }, [books, hasActiveFilters, currentUser?.uid, filters]);
+
+  // Quando ativar filtros, tentar usar cache primeiro, depois carregar do banco se necessário
+  useEffect(() => {
+    if (hasActiveFilters && !allBooksLoaded && currentUser?.uid) {
+      // Tentar usar cache primeiro
+      const cached = searchCacheService.getCachedData<Book>('books', currentUser.uid);
+      if (cached && cached.data.length > 0) {
+        // Usar dados do cache temporariamente
+        setAllBooksLoaded(true);
+        // Carregar todos os livros em background para atualizar cache
+        loadAll().then(allBooks => {
+          if (allBooks && allBooks.length > 0 && currentUser.uid) {
+            // Atualizar estado com todos os livros
+            loadAllAndUpdate();
+            // Atualizar cache com todos os livros e filtros atuais
+            searchCacheService.setCachedData('books', currentUser.uid, allBooks, filters);
+          }
+        }).catch(error => {
+          console.error('Erro ao carregar todos os livros:', error);
+        });
+        return;
+      }
+      
+      // Se não houver cache, carregar do banco
+      loadAll().then(allBooks => {
+        if (allBooks && allBooks.length > 0 && currentUser.uid) {
+          // Atualizar estado com todos os livros
+          loadAllAndUpdate();
+          // Salvar no cache com filtros atuais
+          searchCacheService.setCachedData('books', currentUser.uid, allBooks, filters);
+        }
+      }).catch(error => {
+        console.error('Erro ao carregar todos os livros:', error);
+      });
       setAllBooksLoaded(true);
     }
-  }, [hasActiveFilters, allBooksLoaded, loadAllAndUpdate]);
+  }, [hasActiveFilters, allBooksLoaded, loadAll, loadAllAndUpdate, currentUser?.uid, filters]);
 
   const getDisplayCode = (book: Book): string => {
     if (book.codes && book.codes.length > 0) {
@@ -164,6 +212,10 @@ const Books = () => {
         const bookRef = doc(db, `users/${currentUser.uid}/books/${bookId}`);
         await deleteDoc(bookRef);
       }
+      
+      // Limpar cache após deletar
+      searchCacheService.clearCache('books', currentUser.uid);
+      
       await reload(); // Recarrega a primeira página
       setSelectedBooks([]);
     } catch (error) {
