@@ -96,22 +96,22 @@ const AnimatedStatsGrid: React.FC = () => {
     >
       <AnimatedStatCard
         icon={<Book />}
-        targetValue={2330}
-        label="Livros registrados"
+        targetValue={4015}
+        label="Livros no Acervo"
         delay={800}
       />
       
       <AnimatedStatCard
         icon={<Users />}
-        targetValue={605}
-        label="Leitores registrados"
+        targetValue={637}
+        label="Leitores Registrados"
         delay={1000}
       />
       
       <AnimatedStatCard
         icon={<TrendingUp />}
-        targetValue={221}
-        label="Leitores ativos"
+        targetValue={248}
+        label="Leitores Ativos"
         delay={1200}
       />
     </StatsGrid>
