@@ -150,6 +150,12 @@
 
 .studentLinkInfo {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.studentLinkRow {
+  display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
