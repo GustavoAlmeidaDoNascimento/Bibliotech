@@ -209,6 +209,37 @@
   transform: scale(0.98);
 }
 
+.actionButtons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.viewStudentButton {
+  background-color: #4a90e2;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  white-space: nowrap;
+}
+
+.viewStudentButton:hover {
+  background-color: #3a7bc8;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.viewStudentButton:active {
+  transform: scale(0.98);
+}
+
 .sendLinkButton {
   background-color: #ffffff;
   color: #128C7E;
@@ -565,6 +596,12 @@
     width: fit-content;
   }
 
+  .actionButtons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .viewStudentButton,
   .sendLinkButton {
     width: 100%;
     justify-content: center;
