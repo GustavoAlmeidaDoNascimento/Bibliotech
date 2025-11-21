@@ -940,6 +940,9 @@ const FooterColumn = styled.div`
 `;
 
 const FooterLogo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
@@ -947,6 +950,21 @@ const FooterLogo = styled.div`
   
   span {
     color: #0078d4;
+  }
+  
+  @media (max-width: 768px) {
+    gap: 8px;
+    font-size: 1.25rem;
+  }
+`;
+
+const FooterLogoImage = styled.img`
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  
+  @media (max-width: 768px) {
+    height: 36px;
   }
 `;
 
@@ -1826,6 +1844,10 @@ Aguardo retorno. Obrigado!`;
           <FooterContent>
             <FooterColumn>
               <FooterLogo>
+                <FooterLogoImage 
+                  src="/images/sys/logo.png" 
+                  alt="Bibliotech Logo"
+                />
                 Bibliotech<span>.tech</span>
               </FooterLogo>
               <FooterDescription>

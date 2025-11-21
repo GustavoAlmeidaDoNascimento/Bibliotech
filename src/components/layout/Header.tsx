@@ -33,7 +33,22 @@ const HeaderContainer = styled.header<{ isTransparent: boolean }>`
 const LogoContainer = styled.div`
   display: flex;
   align-items: center;
+  gap: 12px;
   cursor: pointer;
+  
+  @media (max-width: 768px) {
+    gap: 8px;
+  }
+`;
+
+const LogoImage = styled.img`
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  
+  @media (max-width: 768px) {
+    height: 32px;
+  }
 `;
 
 const LogoText = styled.h1`
@@ -260,6 +275,10 @@ const Header: React.FC = () => {
   return (
     <HeaderContainer isTransparent={isTransparent}>
       <LogoContainer onClick={() => scrollToSection('inicio')}>
+        <LogoImage 
+          src="/images/sys/logo.png" 
+          alt="Bibliotech Logo"
+        />
         <LogoText>
           Bibliotech.<span>tech</span>
         </LogoText>
