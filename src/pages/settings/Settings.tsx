@@ -21,13 +21,15 @@ import TagsTab from './components/TagsTab';
 import EducationalLevelsTab from './components/EducationalLevelsTab';
 import SupportTab from './components/SupportTab';
 import BackupTab from './components/BackupTab';
+import YearTurnoverTab from './components/YearTurnoverTab';
 import {
   Cog6ToothIcon,
   TagIcon,
   AcademicCapIcon,
   LifebuoyIcon,
   ArrowPathIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 import styles from './Settings.module.css';
 
@@ -648,6 +650,12 @@ const Settings = () => {
           onRestoreDataClick={handleRestoreDataClick}
         />
       )
+    },
+    {
+      id: 'year-turnover',
+      label: 'Gerenciar Virada de Ano',
+      icon: CalendarDaysIcon,
+      content: <YearTurnoverTab />
     }
   ];
 
