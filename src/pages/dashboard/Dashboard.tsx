@@ -26,7 +26,7 @@ import {
   PointElement,
   LineElement
 } from 'chart.js';
-import { subMonths, startOfMonth, endOfMonth, format, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { subMonths, startOfMonth, endOfMonth, format, parseISO, startOfDay, endOfDay, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import styles from './Dashboard.module.css';
 
@@ -184,6 +184,10 @@ const Dashboard = () => {
     endDate: '',
     loading: false
   });
+  
+  // Estado para filtro de ano
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
   
   // Estados para estatísticas principais
   const [activeLoansCount, setActiveLoansCount] = useState(cache.cachedData?.activeLoansCount || 0);
@@ -527,6 +531,26 @@ const Dashboard = () => {
     }
   }, [currentUser]);
 
+  // Função para extrair anos disponíveis dos empréstimos
+  const extractAvailableYears = useCallback((loans: Loan[]): number[] => {
+    const yearsSet = new Set<number>();
+    
+    loans.forEach(loan => {
+      if (loan.borrowDate) {
+        yearsSet.add(loan.borrowDate.getFullYear());
+      }
+      if (loan.returnDate) {
+        yearsSet.add(loan.returnDate.getFullYear());
+      }
+      if (loan.createdAt) {
+        yearsSet.add(loan.createdAt.getFullYear());
+      }
+    });
+    
+    const years = Array.from(yearsSet).sort((a, b) => b - a); // Ordena do mais recente para o mais antigo
+    return years.length > 0 ? years : [new Date().getFullYear()]; // Se não houver dados, retorna o ano atual
+  }, []);
+
   const fetchDashboardData = useCallback(async (options: { forceRefresh?: boolean; startDate?: Date; endDate?: Date } = {}) => {
     const { forceRefresh = false, startDate: filterStartDate, endDate: filterEndDate } = options;
     if (!currentUser) return;
@@ -649,7 +673,16 @@ const Dashboard = () => {
         setTotalReadersCount(students.length);
       }
       
-      // FASE 3: Processa estatísticas e gráficos
+      // FASE 3: Extrair anos disponíveis e atualizar estado
+      const years = extractAvailableYears(allLoansForStats);
+      setAvailableYears(years);
+      
+      // Se o ano selecionado não está mais disponível, seleciona o mais recente
+      if (!years.includes(selectedYear) && years.length > 0) {
+        setSelectedYear(years[0]);
+      }
+      
+      // FASE 4: Processa estatísticas e gráficos
       console.log('📊 Processando dados para gráficos...');
       
       // Ordena alunos para busca binária
@@ -720,7 +753,9 @@ const Dashboard = () => {
     syncLoans,
     syncBooks,
     syncStudents,
-    mergeData
+    mergeData,
+    selectedYear,
+    extractAvailableYears
   ]);
 
   // Cache invalidation quando dados importantes mudam
@@ -798,32 +833,47 @@ const Dashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cache.isStale]);
 
+  // Recarregar dados quando o ano selecionado mudar
+  useEffect(() => {
+    if (currentUser && availableYears.length > 0) {
+      console.log(`📅 Ano selecionado mudou para ${selectedYear}, recarregando dados...`);
+      fetchDashboardData({ forceRefresh: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedYear]);
+
   const processMainStats = (loans: Loan[], students: Student[]) => {
-    // Contagem de empréstimos ativos
+    // Filtrar empréstimos pelo ano selecionado
+    const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+    const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+    
+    const filteredLoans = loans.filter(loan => {
+      const loanDate = loan.borrowDate || loan.createdAt;
+      return loanDate && loanDate >= yearStart && loanDate <= yearEnd;
+    });
+    
+    // Contagem de empréstimos ativos (considera todos os empréstimos ativos, não apenas do ano)
     const activeLoans = loans.filter(loan => loan.status === 'active');
     setActiveLoansCount(activeLoans.length);
     
-    // Contagem de empréstimos atrasados
+    // Contagem de empréstimos atrasados (considera todos os empréstimos atrasados)
     const now = new Date();
     const overdueLoans = activeLoans.filter(loan => loan.dueDate < now);
     setOverdueLoansCount(overdueLoans.length);
     
-    // Contagem de leitores ativos (alunos com empréstimos ativos ou que leram no último trimestre)
-    const threeMonthsAgo = subMonths(new Date(), 3);
-    
-    // Conjunto de IDs únicos de alunos que têm empréstimos ativos ou recentes
+    // Contagem de leitores ativos do ano selecionado
     const activeReaderIds = new Set(
-      loans.filter(loan => 
+      filteredLoans.filter(loan => 
         loan.status === 'active' || 
-        (loan.returnDate && loan.returnDate >= threeMonthsAgo)
+        (loan.returnDate && loan.returnDate >= yearStart && loan.returnDate <= yearEnd)
       ).map(loan => loan.studentId)
     );
     
     setActiveReadersCount(activeReaderIds.size);
     
-    // Calcular total de livros lidos (considerando leituras parciais)
+    // Calcular total de livros lidos do ano selecionado (considerando leituras parciais)
     let totalReadCounter = 0;
-    loans.forEach(loan => {
+    filteredLoans.forEach(loan => {
       if (loan.status === 'returned') {
         if (loan.completed) {
           totalReadCounter += 1;
@@ -837,10 +887,19 @@ const Dashboard = () => {
   };
 
   const processGenreData = (loans: Loan[], books: Book[]) => {
+    // Filtrar empréstimos pelo ano selecionado
+    const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+    const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+    
+    const filteredLoans = loans.filter(loan => {
+      const loanDate = loan.borrowDate || loan.createdAt;
+      return loanDate && loanDate >= yearStart && loanDate <= yearEnd;
+    });
+    
     // Mapear empréstimos para gêneros
     const genreCounts: Record<string, number> = {};
     
-    loans.forEach(loan => {
+    filteredLoans.forEach(loan => {
       const book = books.find(b => b.id === loan.bookId);
       
       if (book?.genres && book.genres.length > 0) {
@@ -860,10 +919,19 @@ const Dashboard = () => {
   };
 
   const processTopBooks = (loans: Loan[]) => {
+    // Filtrar empréstimos pelo ano selecionado
+    const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+    const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+    
+    const filteredLoans = loans.filter(loan => {
+      const loanDate = loan.borrowDate || loan.createdAt;
+      return loanDate && loanDate >= yearStart && loanDate <= yearEnd;
+    });
+    
     // Contar empréstimos por livro
     const bookBorrowCounts: Record<string, { id: string, title: string, count: number }> = {};
     
-    loans.forEach(loan => {
+    filteredLoans.forEach(loan => {
       if (!bookBorrowCounts[loan.bookId]) {
         bookBorrowCounts[loan.bookId] = {
           id: loan.bookId,
@@ -889,6 +957,10 @@ const Dashboard = () => {
   };
 
   const processTopStudents = (loans: Loan[], students: Student[], startDate?: Date, endDate?: Date) => {
+    // Se não há filtro customizado, usar filtro de ano
+    const filterStartDate = startDate || startOfYear(new Date(selectedYear, 0, 1));
+    const filterEndDate = endDate || endOfYear(new Date(selectedYear, 11, 31));
+    
     // Contar livros lidos por aluno, considerando progresso parcial
     const studentReadCounts: Record<string, { id: string, name: string, classroom: string, count: number }> = {};
     
@@ -904,12 +976,10 @@ const Dashboard = () => {
     
     // Calcular pontuação baseada no progresso de leitura
     loans.forEach(loan => {
-      // Filtrar por data se os filtros estiverem ativos
-      if (startDate && endDate) {
-        const loanDate = loan.returnDate || loan.borrowDate;
-        if (!loanDate || loanDate < startDate || loanDate > endDate) {
-          return; // Pula este empréstimo se não estiver no período filtrado
-        }
+      // Filtrar por data (ano ou filtro customizado)
+      const loanDate = loan.returnDate || loan.borrowDate;
+      if (!loanDate || loanDate < filterStartDate || loanDate > filterEndDate) {
+        return; // Pula este empréstimo se não estiver no período filtrado
       }
       
       if (loan.status === 'returned' && studentReadCounts[loan.studentId]) {
@@ -941,6 +1011,10 @@ const Dashboard = () => {
   };
 
   const processClassroomPerformance = (loans: Loan[], students: Student[], startDate?: Date, endDate?: Date) => {
+    // Se não há filtro customizado, usar filtro de ano
+    const filterStartDate = startDate || startOfYear(new Date(selectedYear, 0, 1));
+    const filterEndDate = endDate || endOfYear(new Date(selectedYear, 11, 31));
+    
     // Agrupar alunos por turma e armazenar shift
     const classroomStudents: Record<string, string[]> = {};
     const classroomShifts: Record<string, string> = {};
@@ -972,12 +1046,10 @@ const Dashboard = () => {
     
     // Processar empréstimos (com busca binária otimizada)
     loans.forEach(loan => {
-      // Filtrar por data se os filtros estiverem ativos
-      if (startDate && endDate) {
-        const loanDate = loan.returnDate || loan.borrowDate;
-        if (!loanDate || loanDate < startDate || loanDate > endDate) {
-          return; // Pula este empréstimo se não estiver no período filtrado
-        }
+      // Filtrar por data (ano ou filtro customizado)
+      const loanDate = loan.returnDate || loan.borrowDate;
+      if (!loanDate || loanDate < filterStartDate || loanDate > filterEndDate) {
+        return; // Pula este empréstimo se não estiver no período filtrado
       }
       
       // Usa busca binária se alunos estão ordenados
@@ -1024,46 +1096,39 @@ const Dashboard = () => {
   };
 
   const processMonthlyLoanData = (loans: Loan[]) => {
-    // Gerar dados para os últimos 6 meses
-    const last6Months = Array.from({ length: 6 }).map((_, i) => {
-      const date = subMonths(new Date(), i);
+    // Filtrar empréstimos pelo ano selecionado
+    const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+    const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+    
+    const filteredLoans = loans.filter(loan => {
+      const loanDate = loan.borrowDate || loan.createdAt;
+      return loanDate && loanDate >= yearStart && loanDate <= yearEnd;
+    });
+    
+    // Gerar dados para os 12 meses do ano selecionado
+    const monthsOfYear = Array.from({ length: 12 }).map((_, i) => {
+      const date = new Date(selectedYear, i, 1);
       return {
         label: format(date, 'MMM/yy', { locale: ptBR }),
         startDate: startOfMonth(date),
         endDate: endOfMonth(date)
       };
-    }).reverse();
+    });
     
-    const monthlyData = last6Months.map(month => {
+    const monthlyData = monthsOfYear.map(month => {
       // Empréstimos iniciados no mês
-      const borrowed = loans.filter(loan => 
+      const borrowed = filteredLoans.filter(loan => 
         loan.borrowDate >= month.startDate && 
         loan.borrowDate <= month.endDate
       ).length;
       
       // Livros devolvidos no mês
-      const returned = loans.filter(loan => 
+      const returned = filteredLoans.filter(loan => 
         loan.status === 'returned' && 
         loan.returnDate && 
         loan.returnDate >= month.startDate && 
         loan.returnDate <= month.endDate
       ).length;
-      
-      // Para debugging - mostrar no console
-      console.log(`Mês: ${month.label}, Empréstimos: ${borrowed}, Devoluções: ${returned}`);
-      console.log(`Intervalo: ${month.startDate.toISOString()} - ${month.endDate.toISOString()}`);
-      
-      // Mostrar informações dos empréstimos devolvidos neste mês
-      const returnedLoansInMonth = loans.filter(loan => 
-        loan.status === 'returned' && 
-        loan.returnDate && 
-        loan.returnDate >= month.startDate && 
-        loan.returnDate <= month.endDate
-      );
-      
-      if (returnedLoansInMonth.length > 0) {
-        console.log('Empréstimos devolvidos neste mês:', returnedLoansInMonth);
-      }
       
       return {
         label: month.label,
@@ -1080,19 +1145,28 @@ const Dashboard = () => {
   };
 
   const processCompletionRateData = (loans: Loan[]) => {
+    // Filtrar empréstimos pelo ano selecionado
+    const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+    const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+    
+    const filteredLoans = loans.filter(loan => {
+      const loanDate = loan.borrowDate || loan.createdAt;
+      return loanDate && loanDate >= yearStart && loanDate <= yearEnd;
+    });
+    
     // Agrupar por mês e calcular taxa de conclusão
-    const last6Months = Array.from({ length: 6 }).map((_, i) => {
-      const date = subMonths(new Date(), i);
+    const monthsOfYear = Array.from({ length: 12 }).map((_, i) => {
+      const date = new Date(selectedYear, i, 1);
       return {
         label: format(date, 'MMM/yy', { locale: ptBR }),
         startDate: startOfMonth(date),
         endDate: endOfMonth(date)
       };
-    }).reverse();
+    });
     
-    const completionData = last6Months.map(month => {
+    const completionData = monthsOfYear.map(month => {
       // Empréstimos devolvidos neste mês
-      const returnedLoans = loans.filter(loan => 
+      const returnedLoans = filteredLoans.filter(loan => 
         loan.status === 'returned' && 
         loan.returnDate && 
         loan.returnDate >= month.startDate && 
@@ -1190,7 +1264,24 @@ const Dashboard = () => {
         </div>
       )}
       
-      <h2>Dashboard</h2>
+      <div className={styles.dashboardHeader}>
+        <h2>Dashboard</h2>
+        <div className={styles.yearSelectorContainer}>
+          <label htmlFor="year-selector" className={styles.yearSelectorLabel}>Ano:</label>
+          <select
+            id="year-selector"
+            className={styles.yearSelector}
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+          >
+            {availableYears.map(year => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       
       <div className={styles.statsGrid}>
         {stats.map((stat, index) => (
@@ -1204,6 +1295,23 @@ const Dashboard = () => {
           />
         ))}
       </div>
+      
+      {/* Verificar se há dados no ano selecionado para os gráficos */}
+      {(() => {
+        const hasChartData = genreData.length > 0 || topBooks.length > 0 || topStudents.length > 0 || 
+                            classroomPerformance.length > 0 || monthlyLoanData.labels.length > 0 ||
+                            completionRateData.labels.length > 0;
+        
+        if (!hasChartData && availableYears.length > 0 && !dashboardChartsFeature.isBlocked) {
+          return (
+            <div className={styles.noDataMessage}>
+              <p>Não há registros disponíveis para o ano {selectedYear}.</p>
+              <p className={styles.noDataSubtext}>Selecione outro ano para visualizar os dados.</p>
+            </div>
+          );
+        }
+        return null;
+      })()}
       
       {dashboardChartsFeature.isBlocked ? (
         <div className={styles.featureBlockContainer}>

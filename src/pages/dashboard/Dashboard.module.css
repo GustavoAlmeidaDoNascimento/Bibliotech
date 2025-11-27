@@ -4,10 +4,75 @@
   overflow-x: hidden;
 }
 
-.dashboard h2 {
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dashboard h2 {
+  margin: 0;
   color: #333;
   font-size: 1.5rem;
+}
+
+.yearSelectorContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.yearSelectorLabel {
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.yearSelector {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.yearSelector:hover {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.yearSelector:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+.noDataMessage {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+.noDataMessage p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.noDataSubtext {
+  margin-top: 0.5rem !important;
+  font-size: 0.9rem !important;
+  color: #888 !important;
 }
 
 /* Indicador de cache */
@@ -237,6 +302,21 @@
     padding: 0.75rem;
   }
 
+  .dashboardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .yearSelectorContainer {
+    width: 100%;
+  }
+
+  .yearSelector {
+    width: 100%;
+    max-width: 200px;
+  }
+
   .statsGrid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 0.75rem;
@@ -282,6 +362,27 @@
 @media (max-width: 480px) {
   .dashboard {
     padding: 0.5rem;
+  }
+
+  .dashboardHeader {
+    gap: 0.5rem;
+  }
+
+  .dashboard h2 {
+    font-size: 1.25rem;
+  }
+
+  .yearSelector {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .noDataMessage {
+    padding: 1.5rem;
+  }
+
+  .noDataMessage p {
+    font-size: 0.9rem;
   }
 
   .statsGrid {
