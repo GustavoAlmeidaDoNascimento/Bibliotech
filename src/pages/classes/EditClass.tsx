@@ -73,6 +73,10 @@ const EditClass: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  // Estado para filtro de ano
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
 
   const classDashboardFeature = useFeatureBlock(FEATURE_BLOCK_KEYS.BlockClassDashboard);
 
@@ -180,6 +184,36 @@ const EditClass: React.FC = () => {
 
       // Filtrar empréstimos dos alunos da turma
       const classLoans = allLoans.filter(loan => studentIds.includes(loan.studentId));
+      
+      // Extrair anos disponíveis dos empréstimos
+      const yearsSet = new Set<number>();
+      classLoans.forEach(loan => {
+        const borrowDate = loan.borrowDate?.toDate ? loan.borrowDate.toDate() : new Date(loan.borrowDate);
+        if (borrowDate) {
+          yearsSet.add(borrowDate.getFullYear());
+        }
+        if (loan.returnDate) {
+          const returnDate = loan.returnDate?.toDate ? loan.returnDate.toDate() : new Date(loan.returnDate);
+          if (returnDate) {
+            yearsSet.add(returnDate.getFullYear());
+          }
+        }
+      });
+      const years = Array.from(yearsSet).sort((a, b) => b - a);
+      setAvailableYears(years.length > 0 ? years : [new Date().getFullYear()]);
+      
+      // Se o ano selecionado não está mais disponível, seleciona o mais recente
+      if (!years.includes(selectedYear) && years.length > 0) {
+        setSelectedYear(years[0]);
+      }
+      
+      // Filtrar empréstimos pelo ano selecionado
+      const yearStart = new Date(selectedYear, 0, 1);
+      const yearEnd = new Date(selectedYear, 11, 31, 23, 59, 59);
+      const filteredLoans = classLoans.filter(loan => {
+        const borrowDate = loan.borrowDate?.toDate ? loan.borrowDate.toDate() : new Date(loan.borrowDate);
+        return borrowDate >= yearStart && borrowDate <= yearEnd;
+      });
 
       // Buscar detalhes dos livros para obter gêneros
       const booksRef = collection(db, `users/${currentUser.uid}/books`);
@@ -195,12 +229,12 @@ const EditClass: React.FC = () => {
         return acc;
       }, {} as { [key: string]: Book });
 
-      // Calcular estatísticas
+      // Calcular estatísticas (usando filteredLoans do ano selecionado)
       const stats: ClassStats = {
-        totalLoans: classLoans.length,
-        activeLoans: classLoans.filter(loan => !loan.returnDate).length,
-        returnedLoans: classLoans.filter(loan => loan.returnDate).length,
-        overdueLoans: classLoans.filter(loan => {
+        totalLoans: filteredLoans.length,
+        activeLoans: filteredLoans.filter(loan => !loan.returnDate).length,
+        returnedLoans: filteredLoans.filter(loan => loan.returnDate).length,
+        overdueLoans: filteredLoans.filter(loan => {
           if (loan.returnDate) return false;
           const dueDate = loan.dueDate?.toDate ? loan.dueDate.toDate() : new Date(loan.dueDate);
           return dueDate < new Date();
@@ -210,8 +244,8 @@ const EditClass: React.FC = () => {
         monthlyLoans: []
       };
 
-      // Calcular estatísticas por gênero
-      classLoans.forEach(loan => {
+      // Calcular estatísticas por gênero (do ano selecionado)
+      filteredLoans.forEach(loan => {
         const book = booksMap[loan.bookId];
         if (book?.genres) {
           book.genres.forEach(genre => {
@@ -220,9 +254,9 @@ const EditClass: React.FC = () => {
         }
       });
 
-      // Calcular ranking de alunos
+      // Calcular ranking de alunos (do ano selecionado)
       const studentLoanCounts = classInfo.students.map(student => {
-        const studentLoans = classLoans.filter(loan => loan.studentId === student.id);
+        const studentLoans = filteredLoans.filter(loan => loan.studentId === student.id);
         return {
           studentId: student.id,
           studentName: student.name,
@@ -232,18 +266,17 @@ const EditClass: React.FC = () => {
 
       stats.studentRanking = studentLoanCounts;
 
-      // Calcular empréstimos por mês (últimos 6 meses)
+      // Calcular empréstimos por mês (12 meses do ano selecionado)
       const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
       const monthlyData: { [key: string]: number } = {};
       
-      for (let i = 5; i >= 0; i--) {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
-        const monthKey = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+      // Inicializar todos os meses do ano selecionado
+      for (let i = 0; i < 12; i++) {
+        const monthKey = `${monthNames[i]} ${selectedYear}`;
         monthlyData[monthKey] = 0;
       }
 
-      classLoans.forEach(loan => {
+      filteredLoans.forEach(loan => {
         const borrowDate = loan.borrowDate?.toDate ? loan.borrowDate.toDate() : new Date(loan.borrowDate);
         const monthKey = `${monthNames[borrowDate.getMonth()]} ${borrowDate.getFullYear()}`;
         if (monthlyData.hasOwnProperty(monthKey)) {
@@ -263,7 +296,7 @@ const EditClass: React.FC = () => {
     } finally {
       setLoadingStats(false);
     }
-  }, [currentUser, classInfo]);
+  }, [currentUser, classInfo, selectedYear]);
 
   useEffect(() => {
     if (!classInfo) {
@@ -394,7 +427,26 @@ const EditClass: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.headerContent}>
-          <h2>Editar Turma</h2>
+          <div className={styles.headerTitleRow}>
+            <h2>Editar Turma</h2>
+            {availableYears.length > 0 && (
+              <div className={styles.yearSelectorContainer}>
+                <label htmlFor="year-selector" className={styles.yearSelectorLabel}>Ano:</label>
+                <select
+                  id="year-selector"
+                  className={styles.yearSelector}
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                >
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
           <button 
             className={styles.backButton}
             onClick={() => navigate('/classes')}
@@ -733,7 +785,7 @@ const EditClass: React.FC = () => {
 
               {/* Gráfico de Barras - Empréstimos por Mês */}
               <div className={styles.chartContainer}>
-                <h4>Empréstimos por Mês (Últimos 6 meses)</h4>
+                <h4>Empréstimos por Mês ({selectedYear})</h4>
                 <div className={styles.barChartWrapper}>
                   <Bar
                     data={{

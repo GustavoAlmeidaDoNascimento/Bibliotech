@@ -19,18 +19,61 @@
   width: 100%;
 }
 
+.headerTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
 .header h2 {
   margin: 0;
   color: var(--text-primary);
   font-size: 1.5rem;
   font-weight: 600;
   display: block;
-  width: 100%;
 }
 
 .headerContent .backButton {
   display: flex;
   width: auto;
+}
+
+.yearSelectorContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.yearSelectorLabel {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.yearSelector {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: white;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.yearSelector:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.yearSelector:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
 }
 
 .backButton, .deleteButton, .saveButton, .cancelButton {
@@ -251,8 +294,23 @@
     gap: 1rem;
   }
 
+  .headerTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .yearSelectorContainer {
+    width: 100%;
+  }
+
+  .yearSelector {
+    width: 100%;
+    max-width: 200px;
+  }
+
   .header h2 {
-    text-align: center;
+    text-align: left;
     order: -1;
   }
 
