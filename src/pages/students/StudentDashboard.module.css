@@ -8,8 +8,17 @@
   margin-bottom: 20px;
 }
 
-.header h2 {
+.headerTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.header h2 {
+  margin: 0 0 0.5rem 0;
   color: #333;
 }
 
@@ -17,6 +26,42 @@
   font-size: 1.1rem;
   color: #666;
   margin-top: 5px;
+  margin-bottom: 0;
+}
+
+.yearSelectorContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.yearSelectorLabel {
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.yearSelector {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.yearSelector:hover {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.yearSelector:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
 }
 
 .headerButtons {
@@ -568,6 +613,21 @@
 
   .chartCard {
     min-height: 250px;
+  }
+
+  .headerTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .yearSelectorContainer {
+    width: 100%;
+  }
+
+  .yearSelector {
+    width: 100%;
+    max-width: 200px;
   }
 
   .headerButtons {

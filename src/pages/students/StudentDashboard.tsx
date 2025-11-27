@@ -16,7 +16,7 @@ import {
   PointElement,
   LineElement
 } from 'chart.js';
-import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, subMonths } from 'date-fns';
+import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, subMonths, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import BookRecommendations from '../../components/recommendations/BookRecommendations';
 import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
@@ -100,6 +100,10 @@ const StudentDashboard = () => {
     completed: [] 
   });
   const [quarterlyData, setQuarterlyData] = useState<{labels: string[], data: number[]}>({ labels: [], data: [] });
+  
+  // Estado para filtro de ano
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
   
   // Métricas calculadas
   const [totalBooksRead, setTotalBooksRead] = useState(0);
@@ -195,6 +199,27 @@ const StudentDashboard = () => {
         
         setBooks(booksData);
         
+        // Extrair anos disponíveis
+        const yearsSet = new Set<number>();
+        loansData.forEach(loan => {
+          if (loan.borrowDate) {
+            yearsSet.add(loan.borrowDate.getFullYear());
+          }
+          if (loan.returnDate) {
+            yearsSet.add(loan.returnDate.getFullYear());
+          }
+          if (loan.createdAt) {
+            yearsSet.add(loan.createdAt.getFullYear());
+          }
+        });
+        const years = Array.from(yearsSet).sort((a, b) => b - a);
+        setAvailableYears(years.length > 0 ? years : [new Date().getFullYear()]);
+        
+        // Se o ano selecionado não está mais disponível, seleciona o mais recente
+        if (!years.includes(selectedYear) && years.length > 0) {
+          setSelectedYear(years[0]);
+        }
+        
         // Processar dados para visualizações
         processData(loansData, booksData);
       } catch (error) {
@@ -208,17 +233,33 @@ const StudentDashboard = () => {
     fetchStudentData();
   }, [currentUser, studentId, studentDashboardFeature.loading, studentDashboardFeature.isBlocked]);
   
+  // Reprocessar dados quando o ano selecionado mudar
+  useEffect(() => {
+    if (loans.length > 0 && books.length > 0) {
+      processData(loans, books);
+    }
+  }, [selectedYear]);
+  
   const processData = (loansData: Loan[], booksData: Book[]) => {
     if (loansData.length === 0) return;
     
-    // total de livros lidos (só os devolvidos)
-    const completedLoans = loansData.filter(loan => loan.status === 'returned');
+    // Filtrar empréstimos pelo ano selecionado
+    const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+    const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+    
+    const filteredLoans = loansData.filter(loan => {
+      const loanDate = loan.borrowDate || loan.createdAt;
+      return loanDate && loanDate >= yearStart && loanDate <= yearEnd;
+    });
+    
+    // total de livros lidos (só os devolvidos) do ano selecionado
+    const completedLoans = filteredLoans.filter(loan => loan.status === 'returned');
     setTotalBooksRead(completedLoans.length);
     
-    // calcula gêneros mais lidos
+    // calcula gêneros mais lidos do ano selecionado
     const genreCounts: {[key: string]: number} = {};
     
-    loansData.forEach(loan => {
+    filteredLoans.forEach(loan => {
       const book = booksData.find(b => b.id === loan.bookId);
       
       if (book?.genres) {
@@ -242,19 +283,19 @@ const StudentDashboard = () => {
       });
     }
     
-    // empréstimos por mês (últimos 6 meses)
-    const lastSixMonths = Array.from({ length: 6 }).map((_, i) => {
-      const date = subMonths(new Date(), i);
+    // empréstimos por mês do ano selecionado (12 meses)
+    const monthsOfYear = Array.from({ length: 12 }).map((_, i) => {
+      const date = new Date(selectedYear, i, 1);
       return {
         label: format(date, 'MMM/yyyy', { locale: ptBR }),
         startDate: startOfMonth(date),
         endDate: endOfMonth(date)
       };
-    }).reverse();
+    });
     
-    const monthlyLoans = lastSixMonths.map(month => {
+    const monthlyLoans = monthsOfYear.map(month => {
       // todos os empréstimos realizados no mês
-      const borrowedCount = loansData.filter(loan => 
+      const borrowedCount = filteredLoans.filter(loan => 
         isWithinInterval(loan.borrowDate, {
           start: month.startDate,
           end: month.endDate
@@ -265,7 +306,7 @@ const StudentDashboard = () => {
       // se um livro tem readPercentage, usa esse valor, senão verifica se completed
       let completedCount = 0;
       
-      loansData.forEach(loan => {
+      filteredLoans.forEach(loan => {
         if (loan.status === 'returned' && 
             loan.returnDate && 
             isWithinInterval(loan.returnDate, {
@@ -298,7 +339,7 @@ const StudentDashboard = () => {
       completed: monthlyLoans.map(m => m.completed)
     });
     
-    // Determinar em qual trimestre o estudante leu mais
+    // Determinar em qual trimestre o estudante leu mais (do ano selecionado)
     const quarters = [
       { name: '1º Trimestre', months: [0, 1, 2] },
       { name: '2º Trimestre', months: [3, 4, 5] },
@@ -307,9 +348,10 @@ const StudentDashboard = () => {
     ];
     
     const quarterCounts = quarters.map(quarter => {
-      const count = loansData.filter(loan => {
+      const count = filteredLoans.filter(loan => {
+        const loanYear = loan.borrowDate.getFullYear();
         const month = loan.borrowDate.getMonth();
-        return quarter.months.includes(month);
+        return loanYear === selectedYear && quarter.months.includes(month);
       }).length;
       
       return { name: quarter.name, count };
@@ -330,7 +372,7 @@ const StudentDashboard = () => {
       setBestQuarter(bestQ.name);
     }
     
-    // calcula velocidade média de leitura (dias)
+    // calcula velocidade média de leitura (dias) do ano selecionado
     if (completedLoans.length > 0) {
       const totalDays = completedLoans.reduce((sum, loan) => {
         if (loan.returnDate) {
@@ -600,8 +642,29 @@ const StudentDashboard = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2>Dashboard do Aluno: {student.name}</h2>
-        <p className={styles.classroom}>Turma: {student.classroom}</p>
+        <div className={styles.headerTitleRow}>
+          <div>
+            <h2>Dashboard do Aluno: {student.name}</h2>
+            <p className={styles.classroom}>Turma: {student.classroom}</p>
+          </div>
+          {availableYears.length > 0 && (
+            <div className={styles.yearSelectorContainer}>
+              <label htmlFor="year-selector" className={styles.yearSelectorLabel}>Ano:</label>
+              <select
+                id="year-selector"
+                className={styles.yearSelector}
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+              >
+                {availableYears.map(year => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
         <div className={styles.headerButtons}>
           <button 
             className={styles.backButton}
@@ -705,7 +768,25 @@ const StudentDashboard = () => {
           <h3>Este aluno ainda não possui histórico de leitura</h3>
           <p>Quando o aluno começar a retirar livros, os dados aparecerão aqui.</p>
         </div>
-      ) : (
+      ) : (() => {
+        // Verificar se há dados no ano selecionado
+        const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+        const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+        const hasDataForYear = loans.some(loan => {
+          const loanDate = loan.borrowDate || loan.createdAt;
+          return loanDate && loanDate >= yearStart && loanDate <= yearEnd;
+        });
+        
+        if (!hasDataForYear && availableYears.length > 0) {
+          return (
+            <div className={styles.emptyState}>
+              <h3>Não há registros disponíveis para o ano {selectedYear}</h3>
+              <p>Selecione outro ano para visualizar os dados.</p>
+            </div>
+          );
+        }
+        
+        return (
         <>
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>
@@ -882,7 +963,16 @@ const StudentDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {loans.slice(0, 5).map(loan => (
+                    {(() => {
+                      // Filtrar empréstimos pelo ano selecionado para a tabela
+                      const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+                      const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+                      const filteredLoansForTable = loans.filter(loan => {
+                        const loanDate = loan.borrowDate || loan.createdAt;
+                        return loanDate && loanDate >= yearStart && loanDate <= yearEnd;
+                      });
+                      return filteredLoansForTable.slice(0, 5);
+                    })().map(loan => (
                       <tr 
                         key={loan.id}
                         onClick={() => navigate(`/student-loan-detail/${loan.id}`)}
@@ -898,14 +988,23 @@ const StudentDashboard = () => {
                     ))}
                   </tbody>
                 </table>
-                {loans.length > 5 && (
-                  <p className={styles.moreLoans}>Exibindo 5 dos {loans.length} empréstimos</p>
-                )}
+                {(() => {
+                  const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+                  const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+                  const filteredLoansForTable = loans.filter(loan => {
+                    const loanDate = loan.borrowDate || loan.createdAt;
+                    return loanDate && loanDate >= yearStart && loanDate <= yearEnd;
+                  });
+                  return filteredLoansForTable.length > 5 && (
+                    <p className={styles.moreLoans}>Exibindo 5 dos {filteredLoansForTable.length} empréstimos</p>
+                  );
+                })()}
               </div>
             </div>
           </div>
         </>
-      )}
+        );
+      })()}
 
       <div className={styles.recommendationsSection}>
         <BookRecommendations
