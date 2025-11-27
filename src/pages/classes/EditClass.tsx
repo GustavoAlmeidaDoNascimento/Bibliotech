@@ -393,14 +393,16 @@ const EditClass: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <button 
-          className={styles.backButton}
-          onClick={() => navigate('/classes')}
-        >
-          <ArrowLeftIcon className={styles.buttonIcon} />
-          Voltar
-        </button>
-        <h2>Editar Turma</h2>
+        <div className={styles.headerContent}>
+          <h2>Editar Turma</h2>
+          <button 
+            className={styles.backButton}
+            onClick={() => navigate('/classes')}
+          >
+            <ArrowLeftIcon className={styles.buttonIcon} />
+            Voltar
+          </button>
+        </div>
       </div>
 
       {error && (
