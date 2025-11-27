@@ -12,7 +12,6 @@ const PageContainer = styled.div`
   min-height: 100vh;
   background: #0a0e1a;
   color: white;
-  padding-bottom: 20px;
 `;
 
 const HeroSection = styled.section`
@@ -1927,7 +1926,7 @@ Aguardo retorno. Obrigado!`;
         <WhatsAppButton 
           phoneNumber="5551996468758"
           message="Olá! Referente ao sistema Bibliotech;"
-        />%
+        />
 
         {/* Image Modal */}
         {selectedImage && (
