@@ -11,7 +11,11 @@ const YearTurnoverTab: React.FC = () => {
         </p>
         
         <div className={styles.settingsSection}>
-          <p>Funcionalidade em desenvolvimento...</p>
+          <p>
+            Não se preocupe! Entraremos em contato com cada cliente por telefone 
+            para auxiliar e notificar sobre a virada de ano. Nossa equipe cuidará 
+            de todo o processo de transição de dados entre anos letivos.
+          </p>
         </div>
       </div>
     </div>
