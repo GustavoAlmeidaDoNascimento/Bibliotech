@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useResponsiveChart } from '../../hooks/useResponsiveChart';
 import { useClassStatsCache } from '../../hooks/useClassStatsCache';
 import { Bar, Pie } from 'react-chartjs-2';
+import { startOfYear, endOfYear } from 'date-fns';
 import { 
   BookOpenIcon, 
   TrophyIcon,
@@ -29,9 +30,10 @@ interface ClassDashboardProps {
   studentClassName: string;
   studentId: string;
   currentUserId?: string;
+  selectedYear?: number;
 }
 
-const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, studentId, currentUserId }) => {
+const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, studentId, currentUserId, selectedYear = new Date().getFullYear() }) => {
   console.log('🏫 ClassDashboard renderizado com props:', { studentClassName, studentId, currentUserId });
   
   const { currentUser } = useAuth();
@@ -49,22 +51,15 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
   console.log('🏫 effectiveUserId:', effectiveUserId);
 
   useEffect(() => {
-    console.log('🏫 useEffect disparado - studentClassName:', studentClassName, 'effectiveUserId:', effectiveUserId);
+    console.log('🏫 useEffect disparado - studentClassName:', studentClassName, 'effectiveUserId:', effectiveUserId, 'selectedYear:', selectedYear);
     
-    // Se já temos dados em cache, não precisamos buscar novamente
-    if (cachedData) {
-      console.log('✅ Usando dados do cache');
-      setClassStats(cachedData);
-      setLoading(false);
-      return;
-    }
-    
-    // Só buscar dados se não temos cache
-    if (!cachedData && effectiveUserId && studentClassName) {
+    // Sempre recarregar quando o ano mudar, mesmo se tiver cache
+    // O cache não inclui filtro por ano
+    if (effectiveUserId && studentClassName) {
       console.log('🔄 Buscando dados do servidor...');
       fetchClassStats();
     }
-  }, [studentClassName, effectiveUserId, cachedData]);
+  }, [studentClassName, effectiveUserId, selectedYear]);
 
   const fetchClassStats = async () => {
     console.log('🏫 Iniciando fetchClassStats...');
@@ -114,16 +109,44 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
 
       console.log('📚 Primeiros 3 empréstimos do sistema:', allLoans.slice(0, 3));
 
-      // Filtrar empréstimos dos alunos da turma
+      // Filtrar empréstimos dos alunos da turma e pelo ano selecionado
       console.log('🔍 Filtrando empréstimos da turma...');
       console.log('🔍 IDs dos alunos da turma:', studentIds);
+      console.log('📅 Ano selecionado:', selectedYear);
+      
+      const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+      const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
       
       const classLoans = allLoans.filter((loan: any) => {
         const isFromClass = studentIds.includes((loan as any).studentId);
         if (!isFromClass) {
           console.log('🔍 Empréstimo ignorado (não é da turma):', { loanId: loan.id, studentId: (loan as any).studentId });
+          return false;
         }
-        return isFromClass;
+        
+        // Filtrar por ano
+        let loanDate = null;
+        if (loan.borrowedAt && typeof loan.borrowedAt.toDate === 'function') {
+          loanDate = loan.borrowedAt.toDate();
+        } else if (loan.borrowDate && typeof loan.borrowDate.toDate === 'function') {
+          loanDate = loan.borrowDate.toDate();
+        } else if (loan.createdAt && typeof loan.createdAt.toDate === 'function') {
+          loanDate = loan.createdAt.toDate();
+        } else if (loan.borrowedAt) {
+          loanDate = new Date(loan.borrowedAt);
+        } else if (loan.borrowDate) {
+          loanDate = new Date(loan.borrowDate);
+        }
+        
+        if (!loanDate) {
+          return false;
+        }
+        
+        const isInYear = loanDate >= yearStart && loanDate <= yearEnd;
+        if (!isInYear) {
+          console.log('🔍 Empréstimo ignorado (fora do ano selecionado):', { loanId: loan.id, loanDate });
+        }
+        return isInYear;
       });
       
       console.log('📚 Empréstimos da turma filtrados:', classLoans.length);
@@ -248,15 +271,13 @@ const ClassDashboard: React.FC<ClassDashboardProps> = ({ studentClassName, stude
         }))
         .sort((a, b) => b.totalBooks - a.totalBooks);
 
-      // Calcular empréstimos por mês (últimos 6 meses)
-      console.log('📅 Calculando estatísticas mensais...');
+      // Calcular empréstimos por mês do ano selecionado (12 meses)
+      console.log('📅 Calculando estatísticas mensais para o ano:', selectedYear);
       const monthlyStats: { [monthKey: string]: number } = {};
-      const monthsToShow = 6;
       
-      // Criar estrutura para os últimos 6 meses
-      for (let i = monthsToShow - 1; i >= 0; i--) {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
+      // Criar estrutura para os 12 meses do ano selecionado
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(selectedYear, i, 1);
         const monthName = date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
         monthlyStats[monthName] = 0;
         console.log('📅 Mês inicializado:', monthName);
