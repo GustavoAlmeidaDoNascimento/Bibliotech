@@ -449,17 +449,17 @@
 }
 
 .yearSelectorContainer {
-  display: flex;
-  gap: 1rem;
+  display: block;
 }
 
 .yearSelector {
-  flex: 1;
+  width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid rgba(51, 65, 85, 0.5);
   border-radius: 12px;
   background: rgba(30, 41, 59, 0.5);
   color: #F8FAFC;
+  box-sizing: border-box;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
