@@ -370,7 +370,9 @@ const StudentStats: React.FC = () => {
         {/* Header Skeleton */}
         <header className={styles.header}>
           <div className={styles.headerContent}>
-            <div className={styles.headerTitleSkeleton}></div>
+            <div className={styles.headerTitleRow}>
+              <div className={styles.headerTitleSkeleton}></div>
+            </div>
             <div className={styles.headerSubtitleSkeleton}></div>
           </div>
         </header>
@@ -456,12 +458,31 @@ const StudentStats: React.FC = () => {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <h1>Estatísticas</h1>
+          <div className={styles.headerTitleRow}>
+            <h1>Estatísticas</h1>
+            {availableYears.length > 0 && (
+              <div className={styles.yearSelectorContainer}>
+                <label htmlFor="year-selector" className={styles.yearSelectorLabel}>Ano:</label>
+                <select
+                  id="year-selector"
+                  className={styles.yearSelector}
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                >
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
           <p>Acompanhe seu progresso de leitura</p>
         </div>
       </header>
 
-      {/* Tabs e Seletor de Ano */}
+      {/* Tabs */}
       <div className={styles.tabsAndYearContainer}>
         <div className={styles.tabsContainer}>
           <button
@@ -477,23 +498,6 @@ const StudentStats: React.FC = () => {
             Turma
           </button>
         </div>
-        {availableYears.length > 0 && (
-          <div className={styles.yearSelectorContainer}>
-            <label htmlFor="year-selector" className={styles.yearSelectorLabel}>Ano:</label>
-            <select
-              id="year-selector"
-              className={styles.yearSelector}
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-            >
-              {availableYears.map(year => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
       </div>
 
       {/* Content */}

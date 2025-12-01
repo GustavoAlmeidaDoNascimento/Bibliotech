@@ -387,11 +387,22 @@
   margin: 0 auto;
 }
 
+.headerTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .headerContent h1 {
   font-size: 1.75rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0;
+  margin: 0;
   color: #F8FAFC;
+  flex: 1;
+  min-width: 0;
 }
 
 .headerContent p {
@@ -453,7 +464,7 @@
   align-items: center;
   gap: 0.75rem;
   justify-content: flex-end;
-  padding: 0.5rem 0;
+  flex-shrink: 0;
 }
 
 .yearSelectorLabel {
@@ -1038,9 +1049,15 @@
     padding: 0.75rem;
   }
 
+  .headerTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
   .yearSelectorContainer {
     justify-content: flex-start;
-    padding: 0.25rem 0;
+    width: 100%;
   }
 
   .yearSelector {
@@ -1199,6 +1216,10 @@
 
   .headerContent h1 {
     font-size: 2rem;
+  }
+
+  .headerTitleRow {
+    gap: 1.5rem;
   }
 
   .tabsContainer {
