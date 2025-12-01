@@ -387,22 +387,11 @@
   margin: 0 auto;
 }
 
-.headerTitleRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-}
-
 .headerContent h1 {
   font-size: 1.75rem;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 0.5rem 0;
   color: #F8FAFC;
-  flex: 1;
-  min-width: 0;
 }
 
 .headerContent p {
@@ -461,30 +450,20 @@
 
 .yearSelectorContainer {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: flex-end;
-  flex-shrink: 0;
-}
-
-.yearSelectorLabel {
-  font-size: 0.875rem;
-  color: #94A3B8;
-  font-weight: 500;
-  white-space: nowrap;
+  gap: 1rem;
 }
 
 .yearSelector {
-  padding: 0.5rem 0.75rem;
+  flex: 1;
+  padding: 0.75rem 1rem;
   border: 1px solid rgba(51, 65, 85, 0.5);
-  border-radius: 8px;
-  background: rgba(30, 41, 59, 0.7);
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.5);
   color: #F8FAFC;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 100px;
-  font-weight: 500;
 }
 
 .yearSelector:hover {
@@ -1049,19 +1028,7 @@
     padding: 0.75rem;
   }
 
-  .headerTitleRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .yearSelectorContainer {
-    justify-content: flex-start;
-    width: 100%;
-  }
-
   .yearSelector {
-    min-width: 90px;
     font-size: 0.8rem;
   }
   .featureBlockCard {
@@ -1216,10 +1183,6 @@
 
   .headerContent h1 {
     font-size: 2rem;
-  }
-
-  .headerTitleRow {
-    gap: 1.5rem;
   }
 
   .tabsContainer {
