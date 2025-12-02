@@ -463,20 +463,6 @@ const StudentStats: React.FC = () => {
 
       {/* Tabs e Seletor de Ano */}
       <div className={styles.tabsAndYearContainer}>
-        <div className={styles.tabsContainer}>
-          <button
-            className={`${styles.tab} ${activeTab === 'aluno' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('aluno')}
-          >
-            Aluno
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'turma' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('turma')}
-          >
-            Turma
-          </button>
-        </div>
         {availableYears.length > 0 && (
           <div className={styles.yearSelectorContainer}>
             <select
@@ -493,6 +479,20 @@ const StudentStats: React.FC = () => {
             </select>
           </div>
         )}
+        <div className={styles.tabsContainer}>
+          <button
+            className={`${styles.tab} ${activeTab === 'aluno' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('aluno')}
+          >
+            Aluno
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'turma' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('turma')}
+          >
+            Turma
+          </button>
+        </div>
       </div>
 
       {/* Content */}
