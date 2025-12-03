@@ -26,6 +26,7 @@ export interface LibrarySettings {
   themeColor: ThemeColor;
   useDistinctCodes: boolean;
   useGuardianContact: boolean;
+  fastCheckoutEnabled: boolean;
 }
 
 interface SettingsContextType {
@@ -44,7 +45,8 @@ const defaultSettings: LibrarySettings = {
   allowDashboard: true,
   themeColor: 'blue',
   useDistinctCodes: false,
-  useGuardianContact: false
+  useGuardianContact: false,
+  fastCheckoutEnabled: false
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);

@@ -128,6 +128,21 @@ const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
               devolução.
             </p>
           </div>
+
+          <div className={`${styles.settingGroup} ${styles.toggleGroup}`}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={settings.fastCheckoutEnabled}
+                onChange={(e) => onSettingChange('fastCheckoutEnabled', e.target.checked)}
+              />
+              Registro de retiradas ágeis (experimental)
+            </label>
+            <p className={styles.helpText}>
+              Quando ativado, muda o processo de registro de retiradas para um processo mais ágil e
+              simplificado, otimizando o fluxo de empréstimos.
+            </p>
+          </div>
         </div>
 
         <div className={styles.buttonContainer}>
