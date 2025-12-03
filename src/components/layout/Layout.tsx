@@ -119,8 +119,8 @@ const Layout: React.FC = () => {
       // Para notificações de atualização, abrir modal
       setSelectedNotification(notification);
     } else if (notification.type === 'reservation' && notification.reservationId) {
-      // Para notificações de reserva, navegar para página de reservas
-      navigate('/reservations');
+      // Para notificações de reserva, navegar para detalhes da reserva específica
+      navigate(`/reservation-detail/${notification.reservationId}`);
       setIsNotificationsOpen(false);
     } else if (notification.loanId) {
       // Para notificações de empréstimo, navegar para detalhes
