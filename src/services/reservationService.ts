@@ -12,8 +12,10 @@ import {
   orderBy,
   Timestamp,
   writeBatch,
-  serverTimestamp
+  serverTimestamp,
+  setDoc
 } from 'firebase/firestore';
+import { studentService } from './studentService';
 
 export interface Reservation {
   id: string;
@@ -50,16 +52,42 @@ class ReservationService {
     bookCoverUrl: string | undefined,
     isAvailable: boolean
   ): Promise<string> {
+    console.log('🚀 createReservation chamado:', { userId, studentId, studentName, bookTitle });
     try {
       // Criar reserva na coleção da escola (para gestores)
       const schoolReservationId = await this.createSchoolReservation(
         userId, studentId, studentName, bookId, bookTitle, bookAuthor, bookCoverUrl, isAvailable
       );
+      console.log('✅ Reserva da escola criada:', schoolReservationId);
       
       // Criar reserva na coleção global (para alunos)
       const globalReservationId = await this.createGlobalReservation(
         userId, studentId, studentName, bookId, bookTitle, bookAuthor, bookCoverUrl, isAvailable
       );
+      console.log('✅ Reserva global criada:', globalReservationId);
+      
+      // Criar notificação para o gestor
+      console.log('📢 Tentando criar notificação de reserva...', {
+        schoolReservationId,
+        studentName,
+        bookTitle,
+        bookId,
+        userId
+      });
+      try {
+        await this.createReservationNotification(
+          schoolReservationId,
+          studentName,
+          bookTitle,
+          bookId,
+          userId
+        );
+        console.log('✅ Notificação de reserva criada com sucesso');
+      } catch (notificationError) {
+        // Não falhar a criação da reserva se a notificação falhar
+        console.error('❌ Erro ao criar notificação de reserva:', notificationError);
+        console.error('Stack:', notificationError instanceof Error ? notificationError.stack : 'N/A');
+      }
       
       console.log('✅ Reserva criada com sucesso:', { schoolReservationId, globalReservationId });
       return schoolReservationId; // Retorna o ID da escola como principal
@@ -611,6 +639,101 @@ class ReservationService {
     } catch (error) {
       console.error('Erro ao atualizar fila de espera:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Cria uma notificação de reserva para o gestor
+   */
+  async createReservationNotification(
+    reservationId: string,
+    studentName: string,
+    bookTitle: string,
+    bookId: string,
+    userId: string
+  ): Promise<void> {
+    try {
+      console.log('🔔 Iniciando criação de notificação de reserva:', {
+        reservationId,
+        studentName,
+        bookTitle,
+        bookId,
+        userId
+      });
+
+      // Verificar se o livro está emprestado para alguém
+      let message = '';
+      let title = '';
+      
+      try {
+        const activeLoans = await studentService.getActiveLoansByBook(bookId, userId);
+        console.log('📚 Empréstimos ativos encontrados:', activeLoans.length);
+        
+        if (activeLoans.length > 0 && activeLoans[0].studentName) {
+          // Livro está com outro aluno
+          title = `Nova Reserva: ${studentName} reservou "${bookTitle}"`;
+          message = `${studentName} reservou o livro "${bookTitle}", que está com ${activeLoans[0].studentName}`;
+        } else {
+          // Livro está disponível
+          title = `Nova Reserva: ${studentName} reservou "${bookTitle}"`;
+          message = `${studentName} reservou o livro "${bookTitle}"`;
+        }
+      } catch (error) {
+        // Em caso de erro, usar mensagem padrão
+        console.error('Erro ao verificar empréstimos ativos:', error);
+        title = `Nova Reserva: ${studentName} reservou "${bookTitle}"`;
+        message = `${studentName} reservou o livro "${bookTitle}"`;
+      }
+
+      const notificationId = `reservation-${reservationId}`;
+      const newNotification = {
+        id: notificationId,
+        title,
+        message,
+        type: 'reservation',
+        reservationId,
+        studentName,
+        bookTitle,
+        createdAt: Timestamp.now()
+      };
+
+      console.log('📝 Notificação criada:', newNotification);
+
+      // Salvar na coleção de notificações de reserva do gestor
+      const reservationNotificationsRef = doc(db, `users/${userId}/reservationNotifications/notifications`);
+      console.log('💾 Salvando em:', `users/${userId}/reservationNotifications/notifications`);
+      
+      const reservationNotificationsDoc = await getDoc(reservationNotificationsRef);
+      
+      let existingNotifications = [];
+      if (reservationNotificationsDoc.exists()) {
+        const data = reservationNotificationsDoc.data();
+        existingNotifications = data.notifications || [];
+        console.log('📋 Notificações existentes:', existingNotifications.length);
+      } else {
+        console.log('📋 Nenhuma notificação existente encontrada');
+      }
+      
+      // Adicionar nova notificação no início da lista
+      const updatedNotifications = [newNotification, ...existingNotifications];
+      
+      // Manter apenas as últimas 100 notificações para não sobrecarregar
+      const limitedNotifications = updatedNotifications.slice(0, 100);
+      
+      console.log('💾 Tentando salvar notificação no Firebase...');
+      await setDoc(reservationNotificationsRef, {
+        notifications: limitedNotifications,
+        lastUpdated: Timestamp.now()
+      }, { merge: true });
+      
+      console.log('✅ Notificação de reserva salva com sucesso:', notificationId);
+      console.log('📊 Total de notificações:', limitedNotifications.length);
+    } catch (error: any) {
+      console.error('❌ Erro ao criar notificação de reserva:', error);
+      console.error('Erro code:', error?.code);
+      console.error('Erro message:', error?.message);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'N/A');
+      // Não lançar erro para não quebrar o fluxo de criação de reserva
     }
   }
 

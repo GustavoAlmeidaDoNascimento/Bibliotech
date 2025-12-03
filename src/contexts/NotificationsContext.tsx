@@ -1,18 +1,20 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { collection, query, getDocs, where, doc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, query, getDocs, where, doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from './AuthContext';
 import { useSettings } from './SettingsContext';
+import { studentService } from '../services/studentService';
 
 export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'overdue' | 'warning' | 'info' | 'update';
+  type: 'overdue' | 'warning' | 'info' | 'update' | 'reservation';
   studentId?: string;
   studentName?: string;
   bookTitle?: string;
   loanId?: string;
+  reservationId?: string;
   daysOverdue?: number;
   read: boolean;
   createdAt: Date;
@@ -29,6 +31,7 @@ interface NotificationsContextType {
   deleteNotification: (notificationId: string) => void;
   refreshNotifications: () => Promise<void>;
   sendUpdateNotificationToAllUsers: (title: string, content: string) => Promise<void>;
+  createReservationNotification: (reservationId: string, studentName: string, bookTitle: string, bookId: string, userId: string) => Promise<void>;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | null>(null);
@@ -223,6 +226,71 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // Carregar notificações de reserva do Firebase
+  const loadReservationNotifications = async (): Promise<Notification[]> => {
+    if (!currentUser) {
+      console.log('⚠️ loadReservationNotifications: currentUser não existe');
+      return [];
+    }
+
+    try {
+      console.log('🔍 Carregando notificações de reserva para:', currentUser.uid);
+      const reservationNotificationsRef = doc(db, `users/${currentUser.uid}/reservationNotifications/notifications`);
+      const reservationNotificationsDoc = await getDoc(reservationNotificationsRef);
+      
+      if (reservationNotificationsDoc.exists()) {
+        const data = reservationNotificationsDoc.data();
+        console.log('📦 Dados encontrados:', {
+          hasNotifications: !!data.notifications,
+          notificationsCount: data.notifications?.length || 0
+        });
+        
+        const notifications: Notification[] = [];
+        
+        if (data.notifications && Array.isArray(data.notifications)) {
+          // Carregar IDs das notificações lidas e deletadas
+          const [readIds, deletedIds] = await Promise.all([
+            loadReadNotifications(),
+            loadDeletedNotifications()
+          ]);
+          
+          console.log('📋 Status das notificações:', {
+            total: data.notifications.length,
+            lidas: readIds.size,
+            deletadas: deletedIds.size
+          });
+          
+          data.notifications.forEach((notif: any) => {
+            if (!deletedIds.has(notif.id)) {
+              const isRead = readIds.has(notif.id);
+              
+              notifications.push({
+                id: notif.id,
+                title: notif.title,
+                message: notif.message,
+                type: 'reservation',
+                reservationId: notif.reservationId,
+                studentName: notif.studentName,
+                bookTitle: notif.bookTitle,
+                read: isRead,
+                createdAt: notif.createdAt?.toDate ? notif.createdAt.toDate() : (notif.createdAt ? new Date(notif.createdAt) : new Date())
+              });
+            }
+          });
+        }
+        
+        console.log('✅ Notificações de reserva carregadas:', notifications.length);
+        return notifications;
+      }
+      
+      console.log('ℹ️ Nenhuma notificação de reserva encontrada');
+      return [];
+    } catch (error) {
+      console.error('❌ Erro ao carregar notificações de reserva:', error);
+      return [];
+    }
+  };
+
   // Enviar notificação de atualização para todos os usuários
   const sendUpdateNotificationToAllUsers = async (title: string, content: string): Promise<void> => {
     if (!currentUser) throw new Error('Usuário não autenticado');
@@ -264,6 +332,78 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       
     } catch (error) {
       console.error('Erro ao enviar notificação de atualização:', error);
+      throw error;
+    }
+  };
+
+  // Criar notificação de reserva para o gestor
+  const createReservationNotification = async (
+    reservationId: string,
+    studentName: string,
+    bookTitle: string,
+    bookId: string,
+    userId: string
+  ): Promise<void> => {
+    try {
+      // Verificar se o livro está emprestado para alguém
+      let message = '';
+      let title = '';
+      
+      try {
+        const activeLoans = await studentService.getActiveLoansByBook(bookId, userId);
+        
+        if (activeLoans.length > 0 && activeLoans[0].studentName) {
+          // Livro está com outro aluno
+          title = `Nova Reserva: ${studentName} reservou "${bookTitle}"`;
+          message = `${studentName} reservou o livro "${bookTitle}", que está com ${activeLoans[0].studentName}`;
+        } else {
+          // Livro está disponível
+          title = `Nova Reserva: ${studentName} reservou "${bookTitle}"`;
+          message = `${studentName} reservou o livro "${bookTitle}"`;
+        }
+      } catch (error) {
+        // Em caso de erro, usar mensagem padrão
+        console.error('Erro ao verificar empréstimos ativos:', error);
+        title = `Nova Reserva: ${studentName} reservou "${bookTitle}"`;
+        message = `${studentName} reservou o livro "${bookTitle}"`;
+      }
+
+      const notificationId = `reservation-${reservationId}`;
+      const newNotification = {
+        id: notificationId,
+        title,
+        message,
+        type: 'reservation',
+        reservationId,
+        studentName,
+        bookTitle,
+        createdAt: new Date()
+      };
+
+      // Salvar na coleção de notificações de reserva do gestor
+      const reservationNotificationsRef = doc(db, `users/${userId}/reservationNotifications/notifications`);
+      const reservationNotificationsDoc = await getDoc(reservationNotificationsRef);
+      
+      let existingNotifications = [];
+      if (reservationNotificationsDoc.exists()) {
+        const data = reservationNotificationsDoc.data();
+        existingNotifications = data.notifications || [];
+      }
+      
+      // Adicionar nova notificação no início da lista
+      const updatedNotifications = [newNotification, ...existingNotifications];
+      
+      // Manter apenas as últimas 100 notificações para não sobrecarregar
+      const limitedNotifications = updatedNotifications.slice(0, 100);
+      
+      await setDoc(reservationNotificationsRef, {
+        notifications: limitedNotifications,
+        lastUpdated: new Date()
+      }, { merge: true });
+      
+      console.log('✅ Notificação de reserva criada:', notificationId);
+    } catch (error) {
+      console.error('Erro ao criar notificação de reserva:', error);
       throw error;
     }
   };
@@ -363,21 +503,30 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
+    console.log('🔄 Atualizando notificações...');
     setLoading(true);
     try {
-      // Buscar tanto notificações de empréstimos atrasados quanto de atualização
-      const [overdueNotifications, updateNotifications] = await Promise.all([
+      // Buscar notificações de empréstimos atrasados, de atualização e de reserva
+      const [overdueNotifications, updateNotifications, reservationNotifications] = await Promise.all([
         fetchOverdueLoans(),
-        loadUpdateNotifications()
+        loadUpdateNotifications(),
+        loadReservationNotifications()
       ]);
       
+      console.log('📊 Notificações encontradas:', {
+        overdue: overdueNotifications.length,
+        update: updateNotifications.length,
+        reservation: reservationNotifications.length
+      });
+      
       // Combinar e ordenar por data de criação (mais recentes primeiro)
-      const allNotifications = [...overdueNotifications, ...updateNotifications]
+      const allNotifications = [...overdueNotifications, ...updateNotifications, ...reservationNotifications]
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
       
+      console.log('✅ Total de notificações:', allNotifications.length);
       setNotifications(allNotifications);
     } catch (error) {
-      console.error('Erro ao atualizar notificações:', error);
+      console.error('❌ Erro ao atualizar notificações:', error);
     } finally {
       setLoading(false);
     }
@@ -457,16 +606,39 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // busca notificações ao carregar e a cada 5 minutos
+  // também escuta mudanças em tempo real nas notificações de reserva
   useEffect(() => {
-    if (currentUser) {
-      refreshNotifications();
-      
-      // só configura o intervalo se as notificações estiverem habilitadas
-      if (settings.enableNotifications) {
-        const interval = setInterval(refreshNotifications, 5 * 60 * 1000); // 5 minutos
-        return () => clearInterval(interval);
-      }
+    if (!currentUser || !settings.enableNotifications) {
+      return;
     }
+
+    // Carregar notificações inicialmente
+    refreshNotifications();
+    
+    // Configurar listener em tempo real para notificações de reserva
+    const reservationNotificationsRef = doc(db, `users/${currentUser.uid}/reservationNotifications/notifications`);
+    
+    const unsubscribe = onSnapshot(
+      reservationNotificationsRef,
+      async (snapshot) => {
+        if (snapshot.exists()) {
+          // Quando há mudanças nas notificações de reserva, atualizar todas as notificações
+          console.log('🔄 Notificação de reserva atualizada - recarregando notificações');
+          await refreshNotifications();
+        }
+      },
+      (error) => {
+        console.error('Erro no listener de notificações de reserva:', error);
+      }
+    );
+    
+    // Configurar intervalo de atualização periódica (5 minutos) para outras notificações
+    const interval = setInterval(refreshNotifications, 5 * 60 * 1000);
+    
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
   }, [currentUser, settings.enableNotifications, refreshNotifications]);
 
   const value = {
@@ -479,7 +651,8 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     markAllAsRead,
     deleteNotification,
     refreshNotifications,
-    sendUpdateNotificationToAllUsers
+    sendUpdateNotificationToAllUsers,
+    createReservationNotification
   };
 
   return (
