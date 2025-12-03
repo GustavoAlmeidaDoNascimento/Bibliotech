@@ -5,7 +5,7 @@ import { reservationService, Reservation } from '../../services/reservationServi
 import { studentService } from '../../services/studentService';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircleIcon, BookOpenIcon, UserIcon } from '@heroicons/react/24/outline';
+import { BookOpenIcon } from '@heroicons/react/24/outline';
 import { BookOpen } from 'lucide-react';
 import styles from './Reservations.module.css';
 
@@ -18,8 +18,6 @@ const Reservations: React.FC = () => {
   const { currentUser } = useAuth();
   const [reservations, setReservations] = useState<DisplayReservation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [selectedReservation, setSelectedReservation] = useState<DisplayReservation | null>(null);
 
   useEffect(() => {
     loadReservations();
@@ -96,34 +94,8 @@ const Reservations: React.FC = () => {
     }
   };
 
-  const handleMarkAsDone = (reservation: DisplayReservation) => {
-    setSelectedReservation(reservation);
-    setShowConfirmModal(true);
-  };
-
   const handleReservationClick = (reservation: DisplayReservation) => {
     navigate(`/reservation-detail/${reservation.id}`);
-  };
-
-  const handleConfirmDone = async () => {
-    if (!selectedReservation) return;
-
-    try {
-      await reservationService.deleteReservation(currentUser!.uid, selectedReservation.id);
-      
-      // Atualizar lista local
-      setReservations(prev => prev.filter(r => r.id !== selectedReservation.id));
-      
-      setShowConfirmModal(false);
-      setSelectedReservation(null);
-    } catch (error) {
-      console.error('Erro ao marcar reserva como concluída:', error);
-    }
-  };
-
-  const handleCancelModal = () => {
-    setShowConfirmModal(false);
-    setSelectedReservation(null);
   };
 
   if (loading) {
@@ -200,79 +172,8 @@ const Reservations: React.FC = () => {
                 </div>
               </div>
 
-              <div className={styles.actions}>
-                <button
-                  className={styles.doneButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleMarkAsDone(reservation);
-                  }}
-                  title="Marcar como retirado"
-                >
-                  <CheckCircleIcon className={styles.doneIcon} />
-                  Feito
-                </button>
-              </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Modal de Confirmação */}
-      {showConfirmModal && selectedReservation && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3>Confirmar Retirada</h3>
-            </div>
-            
-            <div className={styles.modalBody}>
-                    <div className={styles.confirmationInfo}>
-                      <div className={styles.modalBookCoverWrapper}>
-                        {selectedReservation.bookCoverUrl ? (
-                          <img 
-                            src={selectedReservation.bookCoverUrl} 
-                            alt={selectedReservation.bookTitle}
-                            className={styles.modalBookCover}
-                          />
-                        ) : (
-                          <div className={styles.modalBookCoverPlaceholder}>
-                            <BookOpen size={32} />
-                          </div>
-                        )}
-                      </div>
-                      <div className={styles.modalBookDetails}>
-                        <h4>{selectedReservation.bookTitle}</h4>
-                        <p><strong>Aluno:</strong> {selectedReservation.studentName}</p>
-                        <p><strong>Reservado em:</strong> {formatDate(selectedReservation.createdAt)}</p>
-                      </div>
-                    </div>
-              
-              <p className={styles.confirmationText}>
-                O aluno <strong>{selectedReservation.studentName}</strong> já retirou o livro 
-                <strong> "{selectedReservation.bookTitle}"</strong>?
-              </p>
-              
-              <p className={styles.warningText}>
-                ⚠️ Esta ação irá remover a reserva permanentemente do sistema.
-              </p>
-            </div>
-
-            <div className={styles.modalActions}>
-              <button 
-                className={styles.cancelButton}
-                onClick={handleCancelModal}
-              >
-                Cancelar
-              </button>
-              <button 
-                className={styles.confirmButton}
-                onClick={handleConfirmDone}
-              >
-                Sim, livro foi retirado
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>
