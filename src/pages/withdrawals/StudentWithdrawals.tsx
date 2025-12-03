@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, where, addDoc, serverTimestamp, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
-import { BookOpenIcon } from '@heroicons/react/24/outline';
+import { useSettings } from '../../contexts/SettingsContext';
+import { BookOpenIcon, MagnifyingGlassIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './Withdrawals.module.css';
 
@@ -11,6 +12,15 @@ interface Student {
   name: string;
   classroom: string;
   contact: string;
+}
+
+interface Book {
+  id: string;
+  code?: string;
+  codes?: string[];
+  title: string;
+  authors?: string[] | string;
+  availableCodes?: string[];
 }
 
 interface Filters {
@@ -29,12 +39,29 @@ const StudentWithdrawals = () => {
     classroom: ''
   });
   
+  // Estados para modo rápido
+  const [fastCheckoutMode, setFastCheckoutMode] = useState(false);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [bookSearch, setBookSearch] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [booksLoading, setBooksLoading] = useState(false);
+  const [confirmClickCount, setConfirmClickCount] = useState(0);
+  const [processing, setProcessing] = useState(false);
+  
   const { currentUser } = useAuth();
+  const { settings } = useSettings();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchStudents();
-  }, [currentUser]);
+    if (settings.fastCheckoutEnabled) {
+      setFastCheckoutMode(true);
+      fetchBooks();
+    }
+  }, [currentUser, settings.fastCheckoutEnabled]);
 
   const fetchStudents = async () => {
     if (!currentUser) return;
@@ -111,7 +138,365 @@ const StudentWithdrawals = () => {
     });
   };
 
+  // Funções para modo rápido
+  const fetchBooks = async () => {
+    if (!currentUser) return;
+    
+    try {
+      setBooksLoading(true);
+      const booksRef = collection(db, `users/${currentUser.uid}/books`);
+      const q = query(booksRef);
+      const querySnapshot = await getDocs(q);
+      
+      const fetchedBooks = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Book[];
+      
+      // Calcular códigos disponíveis para cada livro
+      const booksWithAvailability = await Promise.all(
+        fetchedBooks.map(async (book) => {
+          const availableCodes = await calculateAvailableCodes(book);
+          return {
+            ...book,
+            availableCodes
+          };
+        })
+      );
+      
+      setBooks(booksWithAvailability);
+    } catch (error) {
+      console.error('Erro ao buscar livros:', error);
+    } finally {
+      setBooksLoading(false);
+    }
+  };
+
+  const calculateAvailableCodes = async (book: Book): Promise<string[]> => {
+    if (!currentUser) return [];
+    
+    try {
+      const allCodes = book.codes && book.codes.length > 0 ? book.codes : (book.code ? [book.code] : []);
+      if (allCodes.length === 0) return [];
+      
+      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
+      const activeLoansQuery = query(
+        loansRef,
+        where('bookId', '==', book.id),
+        where('status', '==', 'active')
+      );
+      
+      const activeLoansSnapshot = await getDocs(activeLoansQuery);
+      const borrowedCodes = activeLoansSnapshot.docs
+        .map(doc => doc.data().bookCode)
+        .filter(code => code);
+      
+      return allCodes.filter(code => !borrowedCodes.includes(code));
+    } catch (error) {
+      console.error('Erro ao calcular códigos disponíveis:', error);
+      return [];
+    }
+  };
+
+  const filteredStudentsForFast = students.filter(student => {
+    const searchLower = studentSearch.toLowerCase().trim();
+    if (!searchLower) return false;
+    return student.name.toLowerCase().includes(searchLower) ||
+           student.classroom.toLowerCase().includes(searchLower);
+  });
+
+  const filteredBooksForFast = books.filter(book => {
+    const searchLower = bookSearch.toLowerCase().trim();
+    if (!searchLower) return false;
+    const matchesTitle = book.title.toLowerCase().includes(searchLower);
+    const matchesAuthor = book.authors ? (
+      Array.isArray(book.authors) 
+        ? book.authors.some(a => a.toLowerCase().includes(searchLower))
+        : book.authors.toLowerCase().includes(searchLower)
+    ) : false;
+    const matchesCode = (book.codes || (book.code ? [book.code] : [])).some(
+      code => code.toLowerCase().includes(searchLower)
+    );
+    return matchesTitle || matchesAuthor || matchesCode;
+  });
+
+  const handleStudentSelect = (student: Student) => {
+    setSelectedStudent(student);
+    setStudentSearch(student.name);
+  };
+
+  const handleBookSelect = (book: Book) => {
+    setSelectedBook(book);
+    setBookSearch(book.title);
+    if (book.availableCodes && book.availableCodes.length === 1) {
+      setSelectedCode(book.availableCodes[0]);
+    } else if (book.availableCodes && book.availableCodes.length > 1) {
+      setSelectedCode(null);
+    } else {
+      setSelectedCode(null);
+    }
+  };
+
+  const handleFastWithdraw = async () => {
+    if (!currentUser || !selectedStudent || !selectedBook) return;
+    
+    if (confirmClickCount === 0) {
+      setConfirmClickCount(1);
+      return;
+    }
+
+    // Verificar se precisa selecionar código (apenas se houver mais de um)
+    if (!selectedCode && selectedBook.availableCodes && selectedBook.availableCodes.length > 1) {
+      return;
+    }
+
+    try {
+      setProcessing(true);
+      
+      const loanDurationDays = Math.max(1, settings.loanDuration || 30);
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + loanDurationDays);
+
+      // Determinar o código a ser usado
+      let bookCode = '';
+      if (selectedCode) {
+        bookCode = selectedCode;
+      } else if (selectedBook.availableCodes && selectedBook.availableCodes.length === 1) {
+        bookCode = selectedBook.availableCodes[0];
+      } else if (selectedBook.availableCodes && selectedBook.availableCodes.length > 0) {
+        bookCode = selectedBook.availableCodes[0];
+      } else {
+        throw new Error('Nenhum código disponível para este livro');
+      }
+
+      const loanData = {
+        studentId: selectedStudent.id,
+        studentName: selectedStudent.name,
+        bookId: selectedBook.id,
+        bookTitle: selectedBook.title,
+        bookCode,
+        borrowDate: serverTimestamp(),
+        status: 'active' as const,
+        dueDate: Timestamp.fromDate(dueDate),
+        loanDurationDays,
+        createdAt: serverTimestamp()
+      };
+      
+      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
+      await addDoc(loansRef, loanData);
+      
+      // Reset form
+      setSelectedStudent(null);
+      setSelectedBook(null);
+      setSelectedCode(null);
+      setStudentSearch('');
+      setBookSearch('');
+      setConfirmClickCount(0);
+      
+      // Recarregar livros para atualizar disponibilidade
+      await fetchBooks();
+      
+      navigate('/student-loans', { 
+        state: { 
+          message: `Livro "${selectedBook.title}" retirado com sucesso por ${selectedStudent.name}` 
+        } 
+      });
+    } catch (error) {
+      console.error('Erro ao registrar retirada:', error);
+      alert('Erro ao registrar a retirada. Por favor, tente novamente.');
+    } finally {
+      setProcessing(false);
+      setConfirmClickCount(0);
+    }
+  };
+
   const currentStudents = filtersApplied ? filteredStudents : students;
+
+  // Renderizar modo rápido
+  if (fastCheckoutMode) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h2>Retirada Rápida</h2>
+        </div>
+
+        <div className={styles.fastCheckoutContainer}>
+          <div className={styles.fastCheckoutForms}>
+            {/* Formulário de Aluno */}
+            <div className={styles.fastFormSection}>
+              <h3>Aluno</h3>
+              <div className={styles.searchWrapper}>
+                <MagnifyingGlassIcon className={styles.searchIcon} />
+                <input
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="Buscar aluno por nome ou turma..."
+                  value={studentSearch}
+                  onChange={(e) => {
+                    setStudentSearch(e.target.value);
+                    setSelectedStudent(null);
+                  }}
+                />
+              </div>
+              {studentSearch && !selectedStudent && (
+                <div className={styles.searchResults}>
+                  {filteredStudentsForFast.length > 0 ? (
+                    filteredStudentsForFast.map(student => (
+                      <div
+                        key={student.id}
+                        className={styles.searchResultItem}
+                        onClick={() => handleStudentSelect(student)}
+                      >
+                        <div className={styles.resultName}>{student.name}</div>
+                        {student.classroom && (
+                          <div className={styles.resultMeta}>{student.classroom}</div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className={styles.noResults}>Nenhum aluno encontrado</div>
+                  )}
+                </div>
+              )}
+              {selectedStudent && (
+                <div className={styles.selectedItem}>
+                  <div className={styles.selectedItemContent}>
+                    <div className={styles.selectedItemName}>{selectedStudent.name}</div>
+                    {selectedStudent.classroom && (
+                      <div className={styles.selectedItemMeta}>{selectedStudent.classroom}</div>
+                    )}
+                  </div>
+                  <button
+                    className={styles.clearSelectionButton}
+                    onClick={() => {
+                      setSelectedStudent(null);
+                      setStudentSearch('');
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Formulário de Livro */}
+            <div className={styles.fastFormSection}>
+              <h3>Livro</h3>
+              <div className={styles.searchWrapper}>
+                <MagnifyingGlassIcon className={styles.searchIcon} />
+                <input
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="Buscar livro por título, autor ou código..."
+                  value={bookSearch}
+                  onChange={(e) => {
+                    setBookSearch(e.target.value);
+                    setSelectedBook(null);
+                    setSelectedCode(null);
+                  }}
+                />
+              </div>
+              {bookSearch && !selectedBook && (
+                <div className={styles.searchResults}>
+                  {booksLoading ? (
+                    <div className={styles.loading}>Carregando...</div>
+                  ) : filteredBooksForFast.length > 0 ? (
+                    filteredBooksForFast
+                      .filter(book => (book.availableCodes?.length || 0) > 0)
+                      .map(book => (
+                        <div
+                          key={book.id}
+                          className={styles.searchResultItem}
+                          onClick={() => handleBookSelect(book)}
+                        >
+                          <div className={styles.resultName}>{book.title}</div>
+                          {book.authors && (
+                            <div className={styles.resultMeta}>
+                              {Array.isArray(book.authors) ? book.authors.join(', ') : book.authors}
+                            </div>
+                          )}
+                          {book.availableCodes && (
+                            <div className={styles.availableInfo}>
+                              {book.availableCodes.length} disponível(is)
+                            </div>
+                          )}
+                        </div>
+                      ))
+                  ) : (
+                    <div className={styles.noResults}>Nenhum livro encontrado</div>
+                  )}
+                </div>
+              )}
+              {selectedBook && (
+                <div className={styles.selectedItem}>
+                  <div className={styles.selectedItemContent}>
+                    <div className={styles.selectedItemName}>{selectedBook.title}</div>
+                    {selectedBook.authors && (
+                      <div className={styles.selectedItemMeta}>
+                        {Array.isArray(selectedBook.authors) 
+                          ? selectedBook.authors.join(', ') 
+                          : selectedBook.authors}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    className={styles.clearSelectionButton}
+                    onClick={() => {
+                      setSelectedBook(null);
+                      setSelectedCode(null);
+                      setBookSearch('');
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+
+              {/* Seleção de Código */}
+              {selectedBook && selectedBook.availableCodes && selectedBook.availableCodes.length > 1 && (
+                <div className={styles.codeSelection}>
+                  <label>Selecione o código:</label>
+                  <div className={styles.codesGrid}>
+                    {selectedBook.availableCodes.map(code => (
+                      <button
+                        key={code}
+                        className={`${styles.codeCard} ${selectedCode === code ? styles.codeCardSelected : ''}`}
+                        onClick={() => setSelectedCode(code)}
+                      >
+                        {code}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Botão de Retirar */}
+          <div className={styles.fastCheckoutActions}>
+            <button
+              className={styles.fastWithdrawButton}
+              onClick={handleFastWithdraw}
+              disabled={!selectedStudent || !selectedBook || processing || 
+                       (selectedBook.availableCodes && selectedBook.availableCodes.length > 1 && !selectedCode) ||
+                       (selectedBook.availableCodes && selectedBook.availableCodes.length === 0)}
+            >
+              {processing ? (
+                'Processando...'
+              ) : confirmClickCount === 1 ? (
+                'Clique novamente para confirmar'
+              ) : (
+                <>
+                  <BookOpenIcon className={styles.buttonIcon} />
+                  Retirar
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
