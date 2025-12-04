@@ -69,7 +69,9 @@ const TagAutocomplete: React.FC<TagAutocompleteProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setValue(newValue);
-    setIsOpen(true);
+    // Sempre abrir dropdown quando há texto digitado
+    const shouldOpen = !!newValue.trim();
+    setIsOpen(shouldOpen);
     setHighlightedIndex(0);
   };
 
@@ -155,15 +157,22 @@ const TagAutocomplete: React.FC<TagAutocompleteProps> = ({
     }
   };
 
-  const handleBlur = () => {
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     // Delay para permitir clique nas sugestões
+    // Verificar se o foco está indo para um elemento dentro do dropdown
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    if (relatedTarget && listRef.current?.contains(relatedTarget)) {
+      return; // Não fechar se o foco está indo para o dropdown
+    }
+    
     setTimeout(() => {
       setIsOpen(false);
-    }, 200);
+    }, 300);
   };
 
   const handleFocus = () => {
-    if (suggestions.length > 0) {
+    // Abrir dropdown se houver texto digitado ou sugestões disponíveis
+    if (value.trim() || suggestions.length > 0) {
       setIsOpen(true);
     }
   };
