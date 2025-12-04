@@ -57,8 +57,9 @@ const StudentWithdrawals = () => {
 
   useEffect(() => {
     fetchStudents();
-    if (settings.fastCheckoutEnabled) {
-      setFastCheckoutMode(true);
+    const isFastCheckoutEnabled = settings.fastCheckoutEnabled ?? false;
+    setFastCheckoutMode(isFastCheckoutEnabled);
+    if (isFastCheckoutEnabled) {
       fetchBooks();
     }
   }, [currentUser, settings.fastCheckoutEnabled]);

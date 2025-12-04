@@ -79,15 +79,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const settingsDoc = await getDoc(settingsRef);
 
         if (settingsDoc.exists()) {
-          const data = settingsDoc.data() as LibrarySettings;
-          setSettings({
+          const data = settingsDoc.data();
+          // Garantir que todos os campos do defaultSettings sejam preservados
+          const mergedSettings: LibrarySettings = {
             ...defaultSettings,
-            ...data
-          });
-          setPersistedSettings({
-            ...defaultSettings,
-            ...data
-          });
+            ...data,
+            // Garantir que campos booleanos não sejam undefined
+            fastCheckoutEnabled: data.fastCheckoutEnabled !== undefined ? Boolean(data.fastCheckoutEnabled) : defaultSettings.fastCheckoutEnabled,
+            useDistinctCodes: data.useDistinctCodes !== undefined ? Boolean(data.useDistinctCodes) : defaultSettings.useDistinctCodes,
+            useGuardianContact: data.useGuardianContact !== undefined ? Boolean(data.useGuardianContact) : defaultSettings.useGuardianContact,
+            enableNotifications: data.enableNotifications !== undefined ? Boolean(data.enableNotifications) : defaultSettings.enableNotifications,
+            showOverdueWarnings: data.showOverdueWarnings !== undefined ? Boolean(data.showOverdueWarnings) : defaultSettings.showOverdueWarnings,
+            allowDashboard: data.allowDashboard !== undefined ? Boolean(data.allowDashboard) : defaultSettings.allowDashboard,
+          };
+          console.log('Configurações carregadas:', mergedSettings);
+          setSettings(mergedSettings);
+          setPersistedSettings(mergedSettings);
         } else {
           // cria documento de configurações padrão se não existir
           await setDoc(settingsRef, {
@@ -166,16 +173,35 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       const loanDurationChanged = settings.loanDuration !== persistedSettings.loanDuration;
 
-      await updateDoc(settingsRef, {
-        ...settings,
+      // Garantir que todos os campos sejam salvos explicitamente
+      const settingsToSave: LibrarySettings = {
+        schoolName: settings.schoolName,
+        loanDuration: settings.loanDuration,
+        maxBooksPerStudent: settings.maxBooksPerStudent,
+        enableNotifications: settings.enableNotifications ?? false,
+        showOverdueWarnings: settings.showOverdueWarnings ?? false,
+        allowDashboard: settings.allowDashboard ?? false,
+        themeColor: settings.themeColor,
+        useDistinctCodes: settings.useDistinctCodes ?? false,
+        useGuardianContact: settings.useGuardianContact ?? false,
+        fastCheckoutEnabled: settings.fastCheckoutEnabled ?? false,
+      };
+
+      console.log('Salvando configurações:', settingsToSave);
+
+      // Usar setDoc com merge para garantir que todos os campos sejam salvos
+      await setDoc(settingsRef, {
+        ...settingsToSave,
         updatedAt: serverTimestamp()
-      });
+      }, { merge: true });
+
+      console.log('Configurações salvas com sucesso');
 
       if (loanDurationChanged) {
         await recalculateLoanDueDates(settings.loanDuration);
       }
 
-      setPersistedSettings(settings);
+      setPersistedSettings(settingsToSave);
       
       return Promise.resolve();
     } catch (error) {

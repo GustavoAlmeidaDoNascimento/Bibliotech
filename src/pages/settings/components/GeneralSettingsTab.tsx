@@ -133,7 +133,7 @@ const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
-                checked={settings.fastCheckoutEnabled}
+                checked={settings.fastCheckoutEnabled ?? false}
                 onChange={(e) => onSettingChange('fastCheckoutEnabled', e.target.checked)}
               />
               Registro de retiradas ágeis (experimental)
