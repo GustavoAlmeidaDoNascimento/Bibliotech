@@ -1,5 +1,11 @@
 import React from 'react';
 import type { LibrarySettings } from '../../../contexts/SettingsContext';
+import {
+  BellIcon,
+  HashtagIcon,
+  UserGroupIcon,
+  BoltIcon
+} from '@heroicons/react/24/outline';
 import styles from '../Settings.module.css';
 
 interface GeneralSettingsTabProps {
@@ -84,11 +90,16 @@ const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
 
           <div className={`${styles.settingGroup} ${styles.toggleGroup}`}>
             <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={settings.enableNotifications}
-                onChange={(e) => onSettingChange('enableNotifications', e.target.checked)}
-              />
+              <div className={styles.checkboxIconGroup}>
+                <input
+                  type="checkbox"
+                  checked={settings.enableNotifications}
+                  onChange={(e) => onSettingChange('enableNotifications', e.target.checked)}
+                />
+                <div className={`${styles.iconWrapper} ${styles.iconNotifications}`}>
+                  <BellIcon className={styles.checkboxIcon} />
+                </div>
+              </div>
               Habilitar notificações
             </label>
             <p className={styles.helpText}>
@@ -99,11 +110,16 @@ const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
 
           <div className={`${styles.settingGroup} ${styles.toggleGroup}`}>
             <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={settings.useDistinctCodes}
-                onChange={(e) => onSettingChange('useDistinctCodes', e.target.checked)}
-              />
+              <div className={styles.checkboxIconGroup}>
+                <input
+                  type="checkbox"
+                  checked={settings.useDistinctCodes}
+                  onChange={(e) => onSettingChange('useDistinctCodes', e.target.checked)}
+                />
+                <div className={`${styles.iconWrapper} ${styles.iconCodes}`}>
+                  <HashtagIcon className={styles.checkboxIcon} />
+                </div>
+              </div>
               Minha biblioteca usa códigos distintos para o mesmo título
             </label>
             <p className={styles.helpText}>
@@ -115,11 +131,16 @@ const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
 
           <div className={`${styles.settingGroup} ${styles.toggleGroup}`}>
             <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={settings.useGuardianContact}
-                onChange={(e) => onSettingChange('useGuardianContact', e.target.checked)}
-              />
+              <div className={styles.checkboxIconGroup}>
+                <input
+                  type="checkbox"
+                  checked={settings.useGuardianContact}
+                  onChange={(e) => onSettingChange('useGuardianContact', e.target.checked)}
+                />
+                <div className={`${styles.iconWrapper} ${styles.iconGuardians}`}>
+                  <UserGroupIcon className={styles.checkboxIcon} />
+                </div>
+              </div>
               Usar contato dos responsáveis
             </label>
             <p className={styles.helpText}>
@@ -131,11 +152,16 @@ const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
 
           <div className={`${styles.settingGroup} ${styles.toggleGroup}`}>
             <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={settings.fastCheckoutEnabled ?? false}
-                onChange={(e) => onSettingChange('fastCheckoutEnabled', e.target.checked)}
-              />
+              <div className={styles.checkboxIconGroup}>
+                <input
+                  type="checkbox"
+                  checked={settings.fastCheckoutEnabled ?? false}
+                  onChange={(e) => onSettingChange('fastCheckoutEnabled', e.target.checked)}
+                />
+                <div className={`${styles.iconWrapper} ${styles.iconFastCheckout}`}>
+                  <BoltIcon className={styles.checkboxIcon} />
+                </div>
+              </div>
               Registro de retiradas ágeis (experimental)
             </label>
             <p className={styles.helpText}>
