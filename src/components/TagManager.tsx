@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTags } from '../contexts/TagsContext';
 import { Tag } from '../types/common';
+import { PencilIcon } from '@heroicons/react/24/outline';
 import styles from './TagManager.module.css';
 
 interface TagEditorProps {
@@ -190,7 +191,9 @@ const TagManager: React.FC = () => {
                   <span className={styles.colorCode}>{tag.color}</span>
                 </div>
               </div>
-              <div className={styles.editIcon}>✏️</div>
+              <div className={styles.editIcon}>
+                <PencilIcon width={18} height={18} />
+              </div>
             </div>
           ))}
         </div>
