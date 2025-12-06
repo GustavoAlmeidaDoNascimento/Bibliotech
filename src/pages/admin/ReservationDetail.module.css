@@ -517,17 +517,22 @@
 .actionIcon {
   width: 48px;
   height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   background: linear-gradient(135deg, #5c88e1, #4a7bd8);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+  flex-shrink: 0;
 }
 
 .actionIcon svg {
   width: 24px;
   height: 24px;
+  flex-shrink: 0;
+  display: block;
 }
 
 .actionCardInfo h4 {
