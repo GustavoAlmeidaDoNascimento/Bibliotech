@@ -601,6 +601,7 @@
   width: 20px;
   height: 20px;
   margin-right: 0.5rem;
+  filter: brightness(0) invert(1);
 }
 
 .retrievedButton {

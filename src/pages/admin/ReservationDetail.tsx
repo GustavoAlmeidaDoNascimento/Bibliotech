@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSettings } from '../../contexts/SettingsContext';
 import { reservationService, Reservation } from '../../services/reservationService';
 import { studentService } from '../../services/studentService';
 import { doc, getDoc } from 'firebase/firestore';
@@ -49,6 +50,7 @@ const ReservationDetail: React.FC = () => {
   const navigate = useNavigate();
   const { reservationId } = useParams<{ reservationId: string }>();
   const { currentUser } = useAuth();
+  const { settings } = useSettings();
   
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -369,6 +371,121 @@ Por favor, lembre-se de devolver o livro na biblioteca da escola.
     }
   };
 
+  const handleNotifyReservationStudent = async () => {
+    if (!reservation || !currentUser) return;
+    
+    try {
+      setNotifyingStudent(true);
+      
+      // Buscar dados do aluno que reservou
+      let studentData = null;
+      try {
+        const studentRef = doc(db, `users/${currentUser.uid}/students/${reservation.studentId}`);
+        const studentDoc = await getDoc(studentRef);
+        
+        if (studentDoc.exists()) {
+          studentData = { id: studentDoc.id, ...studentDoc.data() };
+        } else {
+          studentData = await studentService.findStudentById(reservation.studentId);
+        }
+      } catch (error) {
+        console.log('⚠️ Erro ao buscar na escola atual, usando studentService...', error);
+        studentData = await studentService.findStudentById(reservation.studentId);
+      }
+      
+      if (!studentData) {
+        alert('Dados do aluno não encontrados');
+        setNotifyingStudent(false);
+        return;
+      }
+
+      // Verificar se o aluno tem número de telefone
+      const phoneNumber = (studentData as any).contact || (studentData as any).number;
+      
+      if (!phoneNumber) {
+        const useDefaultNumber = window.confirm(
+          `O aluno ${reservation.studentName} não possui número de telefone cadastrado.\n\n` +
+          `Deseja usar um número padrão para teste (55 51 99999-9999) ou continuar sem enviar WhatsApp?\n\n` +
+          `Clique em "OK" para usar número padrão ou "Cancelar" para cancelar.`
+        );
+        
+        if (!useDefaultNumber) {
+          setNotifyingStudent(false);
+          return;
+        }
+      }
+
+      // Limpar número de telefone (remover caracteres não numéricos)
+      const cleanPhoneNumber = phoneNumber 
+        ? phoneNumber.replace(/\D/g, '') 
+        : '5551999999999';
+      
+      if (cleanPhoneNumber.length < 10) {
+        alert('Número de telefone inválido');
+        setNotifyingStudent(false);
+        return;
+      }
+
+      // Buscar informações do aluno que está com o livro (primeiro da lista)
+      const studentWithBook = activeLoans.length > 0 ? activeLoans[0] : null;
+      const studentWithBookName = studentWithBook?.studentName || 'outro aluno';
+      
+      // Gerar mensagem baseada na configuração
+      const useGuardianContact = settings.useGuardianContact || false;
+      const studentName = reservation.studentName;
+      const bookTitle = reservation.bookTitle;
+      
+      let message = '';
+      
+      if (useGuardianContact) {
+        // Mensagem para responsáveis
+        message = `*NOTIFICAÇÃO DE RESERVA - BIBLIOTECH*
+
+Prezados responsáveis,
+
+O aluno *${studentName}* reservou o livro "*${bookTitle}*" na biblioteca.
+
+No entanto, o livro está atualmente com o aluno *${studentWithBookName}*. Vamos notificá-lo para que realize a devolução. Quando o livro estiver disponível à pronta entrega, vocês serão notificados imediatamente.
+
+Agradecemos a compreensão.
+
+*Biblioteca Escolar*
+*Feito através do Bibliotech*`;
+      } else {
+        // Mensagem direta para o aluno
+        message = `*NOTIFICAÇÃO DE RESERVA - BIBLIOTECH*
+
+Olá, *${studentName}*!
+
+Você reservou o livro "*${bookTitle}*" na biblioteca.
+
+No momento, o livro está com o aluno *${studentWithBookName}*. Vamos notificá-lo para que realize a devolução. Assim que o livro estiver disponível à pronta entrega, você será notificado novamente.
+
+Fique atento às notificações!
+
+*Biblioteca Escolar*
+*Feito através do Bibliotech*`;
+      }
+
+      const encodedMessage = encodeURIComponent(message);
+      
+      // Adicionar código do país (55 para Brasil) se não estiver presente
+      const fullPhoneNumber = cleanPhoneNumber.startsWith('55') 
+        ? cleanPhoneNumber 
+        : `55${cleanPhoneNumber}`;
+      
+      // Abrir WhatsApp
+      const whatsappUrl = `https://wa.me/${fullPhoneNumber}?text=${encodedMessage}`;
+      window.open(whatsappUrl, '_blank');
+      
+      setNotifyingStudent(false);
+    } catch (error) {
+      console.error('Erro ao notificar aluno que reservou:', error);
+      alert('Erro ao enviar notificação');
+      setNotifyingStudent(false);
+    }
+  };
+
   const handleNotifyStudent = () => {
     if (!reservation) return;
     
@@ -615,12 +732,34 @@ Por favor, lembre-se de devolver o livro na biblioteca da escola.
           </div>
         ) : (
           <div className={styles.actionItem}>
-            <div className={styles.waitingCard}>
-              <div className={styles.waitingIcon}>⏳</div>
-              <div className={styles.waitingInfo}>
-                <h4>Aguardando Devolução</h4>
-                <p>O livro está com outro aluno. Após a devolução, você poderá notificar <strong>{reservation.studentName}</strong> que o livro está pronto para retirada.</p>
+            <div className={styles.actionCard}>
+              <div className={styles.actionCardHeader}>
+                <div className={styles.actionIcon}>
+                  <ChatBubbleLeftRightIcon />
+                </div>
+                <div className={styles.actionCardInfo}>
+                  <h4>Avisar {reservation.studentName}</h4>
+                  {activeLoans.length > 0 ? (
+                    <p>
+                      O aluno <strong>{activeLoans[0].studentName}</strong> está com o livro "{reservation.bookTitle}".
+                      Vamos notificá-lo para a devolução. Assim que ele devolver, poderemos notificar <strong>{reservation.studentName}</strong>.
+                    </p>
+                  ) : (
+                    <p>
+                      O livro está com outro aluno. Vamos notificar o aluno para a devolução.
+                      Assim que o livro estiver disponível, poderemos notificar <strong>{reservation.studentName}</strong>.
+                    </p>
+                  )}
+                </div>
               </div>
+              <button
+                className={styles.notifyStudentButton}
+                onClick={handleNotifyReservationStudent}
+                disabled={notifyingStudent}
+              >
+                <img src="/images/home/icone/wpp.png" alt="WhatsApp" width="20" height="20" />
+                {notifyingStudent ? 'Enviando...' : `Avisar ${reservation.studentName}`}
+              </button>
             </div>
           </div>
         )}
