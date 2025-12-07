@@ -578,8 +578,27 @@ export const studentService = {
         const totalCopies = bookData.totalCopies || bookData.quantity || 1;
         const availableCopies = Math.max(0, totalCopies - activeLoansCount);
         
-        // Um livro está disponível se tem cópias disponíveis > 0
-        const isAvailable = availableCopies > 0;
+        // CORREÇÃO: Verificar se todas as cópias disponíveis foram RESERVADAS
+        // Se não está emprestado, verificar reservas ativas 'ready'
+        let isAvailable = availableCopies > 0;
+        
+        if (isAvailable && activeLoansCount === 0) {
+          // Se há cópias disponíveis e não está emprestado, verificar se todas foram reservadas
+          try {
+            const { reservationService } = await import('./reservationService');
+            const activeReservations = await reservationService.getActiveReservationsByBook(schoolId, bookId);
+            const readyReservations = activeReservations.filter(res => res.status === 'ready');
+            
+            // Se todas as cópias disponíveis foram reservadas, livro não está mais "à pronta entrega"
+            if (readyReservations.length >= availableCopies) {
+              isAvailable = false;
+              console.log(`⛔ Todas as ${availableCopies} cópias disponíveis foram reservadas`);
+            }
+          } catch (reservationError) {
+            console.error('Erro ao verificar reservas para cálculo de disponibilidade:', reservationError);
+            // Em caso de erro, manter o cálculo baseado apenas em empréstimos
+          }
+        }
           
           const book = {
             id: bookSnapshot.id,

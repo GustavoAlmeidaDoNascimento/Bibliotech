@@ -48,6 +48,20 @@ export const bookRecommendationService = {
       const loansRef = collection(db, `users/${schoolId}/loans`);
       const loansSnapshot = await getDocs(loansRef);
       
+      // Buscar todas as reservas ativas 'ready' para calcular disponibilidade
+      const reservationsRef = collection(db, `users/${schoolId}/reservations`);
+      const reservationsSnapshot = await getDocs(reservationsRef);
+      
+      // Contar reservas 'ready' por livro
+      const readyReservationsCount: { [bookId: string]: number } = {};
+      reservationsSnapshot.docs.forEach(doc => {
+        const reservationData = doc.data();
+        if (reservationData.status === 'ready') {
+          const bookId = reservationData.bookId;
+          readyReservationsCount[bookId] = (readyReservationsCount[bookId] || 0) + 1;
+        }
+      });
+      
       // Calcular estatísticas de empréstimo por livro
       const loanStats: { [bookId: string]: { count: number; activeLoans: number; lastDate?: Date } } = {};
       
@@ -105,7 +119,18 @@ export const bookRecommendationService = {
         const totalCopies = bookData.totalCopies || bookData.quantity || 1;
         const activeLoansCount = stats.activeLoans || 0;
         const availableCopies = Math.max(0, totalCopies - activeLoansCount);
-        const isAvailable = availableCopies > 0;
+        let isAvailable = availableCopies > 0;
+        
+        // CORREÇÃO: Verificar se todas as cópias disponíveis foram RESERVADAS
+        // Se não está emprestado e tem cópias disponíveis, verificar reservas 'ready'
+        if (isAvailable && activeLoansCount === 0) {
+          const readyReservations = readyReservationsCount[bookId] || 0;
+          
+          // Se todas as cópias disponíveis foram reservadas, livro não está mais "à pronta entrega"
+          if (readyReservations >= availableCopies) {
+            isAvailable = false;
+          }
+        }
         
         return {
           id: bookId,

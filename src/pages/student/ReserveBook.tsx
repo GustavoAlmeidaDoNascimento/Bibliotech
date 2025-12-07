@@ -13,6 +13,7 @@ interface BookData {
   coverUrl?: string;
   available: boolean;
   availableCopies: number;
+  totalCopies: number;
   userId: string;
 }
 
@@ -27,6 +28,7 @@ const ReserveBook: React.FC = () => {
   const [error, setError] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [allCopiesReserved, setAllCopiesReserved] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -52,6 +54,55 @@ const ReserveBook: React.FC = () => {
         setError('Livro não encontrado');
         return;
       }
+
+      // CORREÇÃO: Verificar se o livro está EMPRESTADO (retirado) vs RESERVADO
+      // - Se está emprestado (há loans ativos) → permitir reserva (entrar na fila)
+      // - Se não está emprestado mas todas as cópias foram RESERVADAS → não permitir reserva
+      
+      let allReserved = false;
+      try {
+        // Primeiro, verificar se o livro está emprestado (retirado)
+        const activeLoans = await studentService.getActiveLoansByBook(bookId, studentData.userId);
+        const isLoaned = activeLoans.length > 0;
+        
+        console.log('🔍 Verificando disponibilidade do livro:', {
+          bookId,
+          totalCopies: bookData.totalCopies,
+          availableCopies: bookData.availableCopies,
+          isLoaned,
+          activeLoansCount: activeLoans.length
+        });
+        
+        // Se NÃO está emprestado E tem cópias disponíveis, verificar se todas foram reservadas
+        if (!isLoaned && bookData.availableCopies > 0) {
+          const activeReservations = await reservationService.getActiveReservationsByBook(
+            studentData.userId,
+            bookId
+          );
+          const readyReservations = activeReservations.filter(res => res.status === 'ready');
+          
+          // Verificar se o aluno já tem uma reserva ativa para este livro
+          const studentReservation = readyReservations.find(res => res.studentId === studentId);
+          
+          console.log('📊 Verificando reservas:', {
+            readyReservationsCount: readyReservations.length,
+            availableCopies: bookData.availableCopies,
+            studentHasReservation: !!studentReservation
+          });
+          
+          // Se todas as cópias já foram reservadas por outros alunos (e não está emprestado)
+          if (!studentReservation && readyReservations.length >= bookData.availableCopies) {
+            allReserved = true;
+            setAllCopiesReserved(true);
+            setError('Todas as cópias deste livro já foram reservadas por outros alunos.');
+          }
+        }
+        // Se está emprestado (isLoaned = true), não bloqueia - permite entrar na fila normalmente
+      } catch (reservationError) {
+        console.error('Erro ao verificar reservas/empréstimos:', reservationError);
+        // Continuar normalmente se houver erro na verificação
+      }
+
       setBook({
         id: bookData.id,
         title: bookData.title,
@@ -59,11 +110,14 @@ const ReserveBook: React.FC = () => {
         coverUrl: bookData.coverUrl,
         available: bookData.available,
         availableCopies: bookData.availableCopies,
+        totalCopies: bookData.totalCopies,
         userId: studentData.userId
       });
 
-      // Mostrar confirmação automaticamente
-      setShowConfirmation(true);
+      // Mostrar confirmação apenas se não todas as cópias estiverem reservadas
+      if (!allReserved) {
+        setShowConfirmation(true);
+      }
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error);
       setError(error.message || 'Erro ao carregar dados');
@@ -73,7 +127,7 @@ const ReserveBook: React.FC = () => {
   };
 
   const handleConfirmReservation = async () => {
-    if (!book || !student) return;
+    if (!book || !student || allCopiesReserved) return;
 
     try {
       setCreating(true);
@@ -209,7 +263,76 @@ const ReserveBook: React.FC = () => {
       </header>
 
       <main className={styles.main}>
-        {showConfirmation && book && (
+        {allCopiesReserved && book && (
+          <div className={styles.confirmationContainer}>
+            {/* Book Preview */}
+            <div className={styles.bookPreview}>
+              {book.coverUrl ? (
+                <img src={book.coverUrl} alt={book.title} className={styles.bookCover} />
+              ) : (
+                <div className={styles.coverPlaceholder}>
+                  <BookOpen size={48} />
+                </div>
+              )}
+              <div className={styles.bookInfo}>
+                <h2>{book.title}</h2>
+                <p>{book.author || 'Autor não informado'}</p>
+              </div>
+            </div>
+
+            {/* All Copies Reserved Message */}
+            <div className={styles.confirmationMessage}>
+              <div className={styles.iconContainer}>
+                <Calendar size={48} className={styles.calendarIcon} />
+              </div>
+              
+              <h3>Todas as cópias já foram reservadas</h3>
+              
+              <p className={styles.description}>
+                <strong>Este livro ainda não foi retirado, mas todas as cópias já foram reservadas por outros alunos.</strong><br/><br/>
+                Quando uma cópia for disponibilizada (cancelamento de reserva ou retirada), você poderá reservá-la. Por enquanto, não é possível fazer nova reserva.
+              </p>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className={styles.errorMessage}>
+                <X size={20} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className={styles.buttonGroup}>
+              <button 
+                onClick={handleCancelReservation}
+                className={styles.cancelButton}
+              >
+                <X size={20} />
+                Voltar
+              </button>
+              <button 
+                onClick={handleConfirmReservation}
+                className={styles.confirmButton}
+                disabled={creating || allCopiesReserved}
+              >
+                {creating ? (
+                  <>
+                    <Loader size={20} className={styles.spinner} />
+                    Entrando na fila...
+                  </>
+                ) : (
+                  <>
+                    <Calendar size={20} />
+                    {allCopiesReserved ? 'Não disponível' : 'Entrar na fila de espera'}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!allCopiesReserved && showConfirmation && book && (
           <div className={styles.confirmationContainer}>
             {/* Book Preview */}
             <div className={styles.bookPreview}>

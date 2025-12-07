@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, User, Tag, Clock, Heart, CheckCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, User, Tag, Clock, Heart, CheckCircle, X } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService } from '../../services/studentService';
 import { reservationService, Reservation } from '../../services/reservationService';
@@ -33,6 +33,7 @@ const BookDetails: React.FC = () => {
   const [error, setError] = useState('');
   const [isAlreadyReserved, setIsAlreadyReserved] = useState(false);
   const [reservationStatus, setReservationStatus] = useState<'pending' | 'ready' | 'completed' | 'cancelled' | 'expired' | null>(null);
+  const [allCopiesReserved, setAllCopiesReserved] = useState(false);
 
   useEffect(() => {
     if (!studentId || !bookId) {
@@ -57,7 +58,38 @@ const BookDetails: React.FC = () => {
           setBook(bookData);
           
           // Verificar se o aluno já reservou este livro
-          await checkIfBookIsReserved(studentId, bookId, student.userId);
+          const reservedByStudent = await checkIfBookIsReserved(studentId, bookId, student.userId);
+          
+          // CORREÇÃO: Verificar se todas as cópias foram RESERVADAS (não emprestadas)
+          // - Se está emprestado (há loans ativos) → permitir reserva (entrar na fila)
+          // - Se não está emprestado mas todas as cópias foram RESERVADAS → não permitir reserva
+          if (!reservedByStudent) {
+            try {
+              // Verificar se o livro está emprestado (retirado)
+              const activeLoans = await studentService.getActiveLoansByBook(bookId, student.userId);
+              const isLoaned = activeLoans.length > 0;
+              
+              // Se NÃO está emprestado E tem cópias disponíveis, verificar se todas foram reservadas
+              if (!isLoaned && bookData.availableCopies > 0) {
+                const activeReservations = await reservationService.getActiveReservationsByBook(
+                  student.userId,
+                  bookId
+                );
+                // Filtrar apenas reservas 'ready' de outros alunos (excluir a própria reserva se houver)
+                const readyReservations = activeReservations.filter(
+                  res => res.status === 'ready' && res.studentId !== studentId
+                );
+                
+                // Verificar se todas as cópias disponíveis já foram reservadas por outros alunos
+                if (readyReservations.length >= bookData.availableCopies) {
+                  setAllCopiesReserved(true);
+                }
+              }
+              // Se está emprestado (isLoaned = true), não marca allCopiesReserved - permite reservar normalmente
+            } catch (reservationError) {
+              console.error('Erro ao verificar reservas/empréstimos:', reservationError);
+            }
+          }
         } else {
           setError('Livro não encontrado');
         }
@@ -69,7 +101,7 @@ const BookDetails: React.FC = () => {
       }
     };
 
-    const checkIfBookIsReserved = async (studentId: string, bookId: string, schoolId: string) => {
+    const checkIfBookIsReserved = async (studentId: string, bookId: string, schoolId: string): Promise<boolean> => {
       try {
         console.log('🔍 Verificando se o livro já foi reservado pelo aluno:', { studentId, bookId });
         
@@ -83,16 +115,19 @@ const BookDetails: React.FC = () => {
           console.log('✅ Livro já reservado pelo aluno:', existingReservation);
           setIsAlreadyReserved(true);
           setReservationStatus(existingReservation.status);
+          return true;
         } else {
           console.log('📚 Livro não foi reservado pelo aluno ainda');
           setIsAlreadyReserved(false);
           setReservationStatus(null);
+          return false;
         }
       } catch (error) {
         console.error('Erro ao verificar reservas do aluno:', error);
         // Em caso de erro, assumir que não foi reservado para não bloquear o usuário
         setIsAlreadyReserved(false);
         setReservationStatus(null);
+        return false;
       }
     };
 
@@ -309,13 +344,18 @@ const BookDetails: React.FC = () => {
             {/* Reserve Button */}
             <button 
               onClick={handleReserve}
-              className={`${styles.reserveButton} ${isAlreadyReserved ? styles.reserveButtonDisabled : ''}`}
-              disabled={isAlreadyReserved}
+              className={`${styles.reserveButton} ${isAlreadyReserved || allCopiesReserved ? styles.reserveButtonDisabled : ''}`}
+              disabled={isAlreadyReserved || allCopiesReserved}
             >
               {isAlreadyReserved ? (
                 <>
                   <CheckCircle size={20} />
                   Você já reservou esse livro
+                </>
+              ) : allCopiesReserved ? (
+                <>
+                  <X size={20} />
+                  Todas as cópias reservadas
                 </>
               ) : (
                 <>
@@ -338,6 +378,15 @@ const BookDetails: React.FC = () => {
                   </p>
                   <p className={styles.alreadyReservedDetails}>
                     Acesse "Meus Livros Reservados" para acompanhar o status da sua reserva.
+                  </p>
+                </div>
+              ) : allCopiesReserved ? (
+                <div className={styles.waitlistInfo}>
+                  <p className={styles.waitlistMessage}>
+                    ⚠️ <strong>Todas as cópias deste livro já foram reservadas por outros alunos.</strong>
+                  </p>
+                  <p className={styles.waitlistDetails}>
+                    Este livro ainda não foi retirado, mas todas as cópias já estão reservadas. Quando uma cópia for disponibilizada (cancelamento de reserva ou retirada), você poderá reservá-la.
                   </p>
                 </div>
               ) : book.availableCopies > 0 ? (

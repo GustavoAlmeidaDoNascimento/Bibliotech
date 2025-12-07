@@ -41,6 +41,7 @@ class ReservationService {
   /**
    * Cria uma nova reserva
    * Salva tanto na coleção da escola quanto na coleção global para alunos
+   * Valida se há cópias disponíveis considerando reservas ativas
    */
   async createReservation(
     userId: string,
@@ -54,6 +55,51 @@ class ReservationService {
   ): Promise<string> {
     console.log('🚀 createReservation chamado:', { userId, studentId, studentName, bookTitle });
     try {
+      // 🆕 VALIDAÇÃO: Verificar se há cópias disponíveis para reservar
+      // Se o livro está disponível (isAvailable = true), verificar se ainda há cópias livres
+      if (isAvailable) {
+        // Buscar dados do livro para obter total de cópias
+        const bookData = await studentService.getBookById(bookId, userId);
+        if (!bookData) {
+          throw new Error('Livro não encontrado');
+        }
+
+        // CORREÇÃO: Verificar se o livro está emprestado (retirado)
+        // Se está emprestado, permite reserva (entrar na fila) mesmo que todas as cópias estejam reservadas
+        const activeLoans = await studentService.getActiveLoansByBook(bookId, userId);
+        const isLoaned = activeLoans.length > 0;
+
+        // Se NÃO está emprestado, verificar se todas as cópias foram reservadas
+        if (!isLoaned) {
+          // Buscar reservas ativas do livro (status 'ready' ou 'pending')
+          const activeReservations = await this.getActiveReservationsByBook(userId, bookId);
+          
+          // Contar apenas reservas com status 'ready' de outros alunos (excluir a própria se houver)
+          // Reservas 'pending' são para livros emprestados, então não ocupam cópias disponíveis
+          const readyReservations = activeReservations.filter(
+            res => res.status === 'ready' && res.studentId !== studentId
+          );
+          
+          console.log(`📊 Validação de reservas:`, {
+            totalCopies: bookData.totalCopies,
+            availableCopies: bookData.availableCopies,
+            readyReservationsCount: readyReservations.length,
+            activeReservationsCount: activeReservations.length,
+            isLoaned,
+            activeLoansCount: activeLoans.length,
+            studentId
+          });
+
+          // Verificar se todas as cópias já foram reservadas por outros alunos (apenas se não está emprestado)
+          // Uma cópia está reservada quando há uma reserva 'ready' para ela
+          if (readyReservations.length >= bookData.availableCopies) {
+            console.log('⛔ Todas as cópias já foram reservadas por outros alunos (livro não está emprestado)');
+            throw new Error('Todas as cópias deste livro já foram reservadas por outros alunos.');
+          }
+        }
+        // Se está emprestado (isLoaned = true), não bloqueia - permite criar reserva normalmente
+      }
+
       // Criar reserva na coleção da escola (para gestores)
       const schoolReservationId = await this.createSchoolReservation(
         userId, studentId, studentName, bookId, bookTitle, bookAuthor, bookCoverUrl, isAvailable
@@ -215,6 +261,41 @@ class ReservationService {
       } as Reservation));
     } catch (error) {
       console.error('Erro ao buscar reservas por status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Busca reservas ativas de um livro específico (status 'ready' ou 'pending')
+   * Usado para validar se todas as cópias já foram reservadas
+   */
+  async getActiveReservationsByBook(userId: string, bookId: string): Promise<Reservation[]> {
+    try {
+      console.log('🔍 Buscando reservas ativas do livro:', { userId, bookId });
+      const reservationsRef = collection(db, `users/${userId}/reservations`);
+      
+      // Buscar todas as reservas do livro
+      const q = query(
+        reservationsRef,
+        where('bookId', '==', bookId)
+        // Não usar orderBy para evitar erro de índice, vamos filtrar client-side
+      );
+      const snapshot = await getDocs(q);
+      
+      const allReservations = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Reservation));
+      
+      // Filtrar apenas reservas ativas (ready ou pending), excluindo completed, cancelled, expired
+      const activeReservations = allReservations.filter(res => 
+        res.status === 'ready' || res.status === 'pending'
+      );
+      
+      console.log(`📚 Reservas ativas encontradas para o livro: ${activeReservations.length} de ${allReservations.length} total`);
+      return activeReservations;
+    } catch (error) {
+      console.error('Erro ao buscar reservas ativas do livro:', error);
       throw error;
     }
   }
