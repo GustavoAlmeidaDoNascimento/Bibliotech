@@ -178,7 +178,7 @@ const ReserveBook: React.FC = () => {
               {book?.availableCopies && book.availableCopies > 0 ? (
                 <>
                   ✅ Seu livro está pronto para retirada!<br/>
-                  Você tem 7 dias para pegá-lo na biblioteca.
+                  Você poderá pegá-lo na biblioteca quando quiser.
                 </>
               ) : (
                 <>
@@ -247,8 +247,7 @@ const ReserveBook: React.FC = () => {
                 {book.availableCopies > 0 ? (
                   <>
                     ✅ <strong>Este livro está disponível!</strong><br/>
-                    Você poderá pegá-lo na biblioteca quando quiser.<br/>
-                    <em>Prazo: 7 dias para retirada</em>
+                    Você poderá pegá-lo na biblioteca quando quiser.
                   </>
                 ) : (
                   <>
