@@ -61,31 +61,41 @@ const BookDetails: React.FC = () => {
           const reservedByStudent = await checkIfBookIsReserved(studentId, bookId, student.userId);
           
           // CORREÇÃO: Verificar se todas as cópias foram RESERVADAS (não emprestadas)
-          // - Se está emprestado (há loans ativos) → permitir reserva (entrar na fila)
-          // - Se não está emprestado mas todas as cópias foram RESERVADAS → não permitir reserva
+          // CASO 1: Livro emprestado → verificar vagas na fila de espera
+          // CASO 2: Livro não emprestado → verificar se todas as cópias foram reservadas
           if (!reservedByStudent) {
             try {
               // Verificar se o livro está emprestado (retirado)
               const activeLoans = await studentService.getActiveLoansByBook(bookId, student.userId);
               const isLoaned = activeLoans.length > 0;
               
-              // Se NÃO está emprestado E tem cópias disponíveis, verificar se todas foram reservadas
-              if (!isLoaned && bookData.availableCopies > 0) {
-                const activeReservations = await reservationService.getActiveReservationsByBook(
-                  student.userId,
-                  bookId
-                );
-                // Filtrar apenas reservas 'ready' de outros alunos (excluir a própria reserva se houver)
-                const readyReservations = activeReservations.filter(
-                  res => res.status === 'ready' && res.studentId !== studentId
-                );
-                
+              // Buscar reservas ativas
+              const activeReservations = await reservationService.getActiveReservationsByBook(
+                student.userId,
+                bookId
+              );
+              const readyReservations = activeReservations.filter(
+                res => res.status === 'ready' && res.studentId !== studentId
+              );
+              const pendingReservations = activeReservations.filter(
+                res => res.status === 'pending' && res.studentId !== studentId
+              );
+              
+              // CASO 1: Livro emprestado - verificar se há vagas na fila de espera
+              if (isLoaned) {
+                // Cada cópia emprestada pode ter 1 reserva 'pending' (fila de espera)
+                // Se já tem reservas 'pending' >= empréstimos ativos, não permite mais reservas
+                if (pendingReservations.length >= activeLoans.length) {
+                  setAllCopiesReserved(true);
+                }
+              }
+              // CASO 2: Livro não emprestado - verificar se todas as cópias foram reservadas
+              else if (bookData.availableCopies > 0) {
                 // Verificar se todas as cópias disponíveis já foram reservadas por outros alunos
                 if (readyReservations.length >= bookData.availableCopies) {
                   setAllCopiesReserved(true);
                 }
               }
-              // Se está emprestado (isLoaned = true), não marca allCopiesReserved - permite reservar normalmente
             } catch (reservationError) {
               console.error('Erro ao verificar reservas/empréstimos:', reservationError);
             }

@@ -64,40 +64,48 @@ class ReservationService {
           throw new Error('Livro não encontrado');
         }
 
-        // CORREÇÃO: Verificar se o livro está emprestado (retirado)
-        // Se está emprestado, permite reserva (entrar na fila) mesmo que todas as cópias estejam reservadas
+        // CORREÇÃO: Verificar disponibilidade real considerando empréstimos e reservas
         const activeLoans = await studentService.getActiveLoansByBook(bookId, userId);
         const isLoaned = activeLoans.length > 0;
+        
+        // Buscar reservas ativas do livro
+        const activeReservations = await this.getActiveReservationsByBook(userId, bookId);
+        const readyReservations = activeReservations.filter(
+          res => res.status === 'ready' && res.studentId !== studentId
+        );
+        const pendingReservations = activeReservations.filter(
+          res => res.status === 'pending' && res.studentId !== studentId
+        );
+        
+        console.log(`📊 Validação de reservas:`, {
+          totalCopies: bookData.totalCopies,
+          availableCopies: bookData.availableCopies,
+          readyReservationsCount: readyReservations.length,
+          pendingReservationsCount: pendingReservations.length,
+          activeReservationsCount: activeReservations.length,
+          isLoaned,
+          activeLoansCount: activeLoans.length,
+          studentId
+        });
 
-        // Se NÃO está emprestado, verificar se todas as cópias foram reservadas
-        if (!isLoaned) {
-          // Buscar reservas ativas do livro (status 'ready' ou 'pending')
-          const activeReservations = await this.getActiveReservationsByBook(userId, bookId);
-          
-          // Contar apenas reservas com status 'ready' de outros alunos (excluir a própria se houver)
-          // Reservas 'pending' são para livros emprestados, então não ocupam cópias disponíveis
-          const readyReservations = activeReservations.filter(
-            res => res.status === 'ready' && res.studentId !== studentId
-          );
-          
-          console.log(`📊 Validação de reservas:`, {
-            totalCopies: bookData.totalCopies,
-            availableCopies: bookData.availableCopies,
-            readyReservationsCount: readyReservations.length,
-            activeReservationsCount: activeReservations.length,
-            isLoaned,
-            activeLoansCount: activeLoans.length,
-            studentId
-          });
-
-          // Verificar se todas as cópias já foram reservadas por outros alunos (apenas se não está emprestado)
+        // CASO 1: Livro emprestado - verificar se há vagas na fila de espera
+        if (isLoaned) {
+          // Cada cópia emprestada pode ter 1 reserva 'pending' (fila de espera)
+          // Se já tem reservas 'pending' >= empréstimos ativos, não permite mais reservas
+          if (pendingReservations.length >= activeLoans.length) {
+            console.log('⛔ Todas as vagas na fila de espera já foram preenchidas');
+            throw new Error('Todas as vagas na fila de espera já foram preenchidas.');
+          }
+        }
+        // CASO 2: Livro não emprestado - verificar se todas as cópias foram reservadas
+        else {
+          // Verificar se todas as cópias já foram reservadas por outros alunos
           // Uma cópia está reservada quando há uma reserva 'ready' para ela
           if (readyReservations.length >= bookData.availableCopies) {
             console.log('⛔ Todas as cópias já foram reservadas por outros alunos (livro não está emprestado)');
             throw new Error('Todas as cópias deste livro já foram reservadas por outros alunos.');
           }
         }
-        // Se está emprestado (isLoaned = true), não bloqueia - permite criar reserva normalmente
       }
 
       // Criar reserva na coleção da escola (para gestores)
