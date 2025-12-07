@@ -404,6 +404,119 @@ class ReservationService {
   }
 
   /**
+   * Cancela/deleta uma reserva feita por um aluno (sem autenticação)
+   * Tenta deletar tanto da coleção da escola quanto da coleção global
+   */
+  async cancelStudentReservation(
+    reservationId: string,
+    studentId: string,
+    userId?: string
+  ): Promise<void> {
+    try {
+      console.log('🗑️ Cancelando reserva do aluno:', { reservationId, studentId, userId });
+      
+      let deletedFromSchool = false;
+      let deletedFromGlobal = false;
+      
+      // Tentar deletar da coleção global (student-reservations)
+      try {
+        const globalReservationRef = doc(db, 'student-reservations', reservationId);
+        const globalReservationSnap = await getDoc(globalReservationRef);
+        
+        if (globalReservationSnap.exists()) {
+          const reservationData = globalReservationSnap.data() as Reservation;
+          
+          // Validar que o studentId corresponde
+          if (reservationData.studentId === studentId) {
+            await deleteDoc(globalReservationRef);
+            console.log('✅ Reserva deletada da coleção global');
+            deletedFromGlobal = true;
+          } else {
+            console.log('⚠️ StudentId não corresponde na coleção global');
+          }
+        }
+      } catch (globalError: any) {
+        console.log('⚠️ Erro ao deletar da coleção global (continuando):', globalError.message);
+      }
+      
+      // Tentar deletar da coleção da escola (se userId fornecido)
+      if (userId) {
+        try {
+          const schoolReservationRef = doc(db, `users/${userId}/reservations`, reservationId);
+          const schoolReservationSnap = await getDoc(schoolReservationRef);
+          
+          if (schoolReservationSnap.exists()) {
+            const reservationData = schoolReservationSnap.data() as Reservation;
+            
+            // Validar que o studentId corresponde
+            if (reservationData.studentId === studentId) {
+              await deleteDoc(schoolReservationRef);
+              console.log('✅ Reserva deletada da coleção da escola');
+              deletedFromSchool = true;
+            } else {
+              console.log('⚠️ StudentId não corresponde na coleção da escola');
+            }
+          }
+        } catch (schoolError: any) {
+          console.log('⚠️ Erro ao deletar da coleção da escola (continuando):', schoolError.message);
+        }
+      }
+      
+      if (!deletedFromGlobal && !deletedFromSchool) {
+        // Tentar buscar por studentId e bookId se não encontrou pelo ID
+        console.log('⚠️ Reserva não encontrada pelos IDs, tentando buscar por studentId...');
+        
+        if (userId) {
+          try {
+            const schoolReservationsRef = collection(db, `users/${userId}/reservations`);
+            const schoolQuery = query(
+              schoolReservationsRef,
+              where('studentId', '==', studentId)
+            );
+            const schoolSnapshot = await getDocs(schoolQuery);
+            
+            const matchingReservation = schoolSnapshot.docs.find(doc => doc.id === reservationId);
+            if (matchingReservation) {
+              await deleteDoc(matchingReservation.ref);
+              console.log('✅ Reserva deletada da coleção da escola (busca por studentId)');
+              deletedFromSchool = true;
+            }
+          } catch (error) {
+            console.log('⚠️ Erro na busca alternativa na escola:', error);
+          }
+        }
+        
+        try {
+          const globalReservationsRef = collection(db, 'student-reservations');
+          const globalQuery = query(
+            globalReservationsRef,
+            where('studentId', '==', studentId)
+          );
+          const globalSnapshot = await getDocs(globalQuery);
+          
+          const matchingReservation = globalSnapshot.docs.find(doc => doc.id === reservationId);
+          if (matchingReservation) {
+            await deleteDoc(matchingReservation.ref);
+            console.log('✅ Reserva deletada da coleção global (busca por studentId)');
+            deletedFromGlobal = true;
+          }
+        } catch (error) {
+          console.log('⚠️ Erro na busca alternativa na global:', error);
+        }
+      }
+      
+      if (!deletedFromGlobal && !deletedFromSchool) {
+        throw new Error('Reserva não encontrada ou não autorizado para cancelar');
+      }
+      
+      console.log('✅ Processo de cancelamento concluído');
+    } catch (error) {
+      console.error('❌ Erro ao cancelar reserva:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Deletar reserva (quando livro foi retirado)
    * Deleta tanto da coleção da escola quanto da coleção global (student-reservations)
    */

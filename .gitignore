@@ -38,3 +38,5 @@ yarn-error.log*
 # Firebase config (não versionar credenciais)
 src/config/firebase.config.ts
 .prompts/
+
+firestore-rules.txt 

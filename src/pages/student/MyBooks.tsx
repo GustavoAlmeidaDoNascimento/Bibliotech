@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Clock, CheckCircle, AlertCircle, Calendar, Lock, ArrowUpRight } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, CheckCircle, AlertCircle, Calendar, Lock, ArrowUpRight, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import BottomNavigation from '../../components/student/BottomNavigation';
@@ -17,6 +17,10 @@ const MyBooks: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
+  const [schoolId, setSchoolId] = useState<string | null>(null);
+  const [cancelReservationId, setCancelReservationId] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     loadReservations();
@@ -38,6 +42,7 @@ const MyBooks: React.FC = () => {
       }
       
       console.log('🏫 Escola do aluno:', student.userId);
+      setSchoolId(student.userId);
 
       // Buscar plano da escola
       const plan = await studentService.getSchoolSubscriptionPlan(student.userId);
@@ -128,6 +133,48 @@ const MyBooks: React.FC = () => {
     () => formatPlanDisplayName(subscriptionPlan ?? null),
     [subscriptionPlan]
   );
+
+  const handleCancelClick = (reservationId: string) => {
+    setCancelReservationId(reservationId);
+    setShowCancelModal(true);
+  };
+
+  const handleCancelConfirm = async () => {
+    if (!cancelReservationId || !studentId) return;
+    
+    try {
+      setCancelling(true);
+      await reservationService.cancelStudentReservation(
+        cancelReservationId,
+        studentId,
+        schoolId || undefined
+      );
+      
+      // Recarregar reservas após cancelamento
+      await loadReservations();
+      
+      setShowCancelModal(false);
+      setCancelReservationId(null);
+    } catch (err: any) {
+      console.error('❌ Erro ao cancelar reserva:', err);
+      setError(err.message || 'Erro ao cancelar reserva. Tente novamente.');
+      setShowCancelModal(false);
+      setCancelReservationId(null);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleCancelModalClose = () => {
+    if (!cancelling) {
+      setShowCancelModal(false);
+      setCancelReservationId(null);
+    }
+  };
+
+  const reservationToCancel = cancelReservationId 
+    ? reservations.find(r => r.id === cancelReservationId)
+    : null;
 
   if (loading) {
     return (
@@ -332,17 +379,28 @@ const MyBooks: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className={styles.statusInfo}>
-                      <div 
-                        className={styles.statusBadge}
-                        style={{ 
-                          backgroundColor: statusInfo.bgColor,
-                          color: statusInfo.color 
-                        }}
-                      >
-                        {statusInfo.icon}
-                        <span>{statusInfo.text}</span>
+                    <div className={styles.cardFooter}>
+                      <div className={styles.statusInfo}>
+                        <div 
+                          className={styles.statusBadge}
+                          style={{ 
+                            backgroundColor: statusInfo.bgColor,
+                            color: statusInfo.color 
+                          }}
+                        >
+                          {statusInfo.icon}
+                          <span>{statusInfo.text}</span>
+                        </div>
                       </div>
+
+                      <button
+                        className={styles.cancelButton}
+                        onClick={() => handleCancelClick(reservation.id)}
+                        disabled={cancelling}
+                      >
+                        <X size={18} />
+                        <span>Cancelar reserva</span>
+                      </button>
                     </div>
                   </div>
                 );
@@ -351,6 +409,51 @@ const MyBooks: React.FC = () => {
           </div>
         )}
       </main>
+
+      {/* Modal de Confirmação de Cancelamento */}
+      {showCancelModal && reservationToCancel && (
+        <div className={styles.modalOverlay} onClick={handleCancelModalClose}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Cancelar Reserva</h3>
+              <button 
+                className={styles.modalCloseButton}
+                onClick={handleCancelModalClose}
+                disabled={cancelling}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <p>
+                Tem certeza que deseja cancelar a reserva do livro{' '}
+                <strong>"{reservationToCancel.bookTitle}"</strong>?
+              </p>
+              <p className={styles.modalWarning}>
+                Esta ação não pode ser desfeita. O livro retornará ao acervo e você perderá sua posição na fila.
+              </p>
+            </div>
+            
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelButton}
+                onClick={handleCancelModalClose}
+                disabled={cancelling}
+              >
+                Não, manter reserva
+              </button>
+              <button
+                className={styles.modalConfirmButton}
+                onClick={handleCancelConfirm}
+                disabled={cancelling}
+              >
+                {cancelling ? 'Cancelando...' : 'Sim, cancelar reserva'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BottomNavigation studentId={studentId || ''} activePage="profile" />
     </div>
