@@ -67,6 +67,9 @@
 .tabLabel {
   flex: 1;
   text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .tabContent {
