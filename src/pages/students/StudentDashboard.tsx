@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, query, doc, getDoc, getDocs, where, orderBy } from 'firebase/firestore';
+import { collection, query, doc, getDoc, getDocs, where, orderBy, deleteDoc, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Bar, Pie, Line } from 'react-chartjs-2';
@@ -21,8 +21,10 @@ import { ptBR } from 'date-fns/locale';
 import BookRecommendations from '../../components/recommendations/BookRecommendations';
 import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
 import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
-import { Lock, ArrowUpRight, Eye } from 'lucide-react';
+import { Lock, ArrowUpRight, Eye, Trash2 } from 'lucide-react';
 import styles from './StudentDashboard.module.css';
+import { studentIndexService } from '../../services/studentIndexService';
+import { reservationService } from '../../services/reservationService';
 
 // Registrando os componentes necessários do Chart.js
 ChartJS.register(
@@ -110,6 +112,11 @@ const StudentDashboard = () => {
   const [favoriteGenre, setFavoriteGenre] = useState('');
   const [readingSpeed, setReadingSpeed] = useState(0);
   const [bestQuarter, setBestQuarter] = useState('');
+  
+  // Estados para deletar aluno
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [activeLoansForDelete, setActiveLoansForDelete] = useState<Loan[]>([]);
 
   useEffect(() => {
     if (!currentUser || !studentId) return;
@@ -510,6 +517,122 @@ const StudentDashboard = () => {
     
     window.open(whatsappUrl, '_blank');
   };
+
+  // Abre modal de confirmação de deleção
+  const handleDeleteClick = async () => {
+    if (!currentUser || !studentId) return;
+    
+    try {
+      // Buscar empréstimos ativos do aluno
+      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
+      const q = query(loansRef, where('studentId', '==', studentId), where('status', '==', 'active'));
+      const loansSnap = await getDocs(q);
+      
+      const activeLoans = loansSnap.docs.map(doc => {
+        const data = doc.data();
+        const borrowDate = data.borrowDate?.toDate ? data.borrowDate.toDate() : new Date();
+        const dueDate = data.dueDate?.toDate ? data.dueDate.toDate() : new Date();
+        
+        return {
+          id: doc.id,
+          ...data,
+          borrowDate,
+          dueDate,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date()
+        } as Loan;
+      });
+      
+      setActiveLoansForDelete(activeLoans);
+      setShowDeleteModal(true);
+    } catch (error) {
+      console.error('Erro ao verificar empréstimos ativos:', error);
+      alert('Erro ao verificar empréstimos. Tente novamente.');
+    }
+  };
+
+  // Deleta o aluno
+  const handleDeleteStudent = async () => {
+    if (!currentUser || !studentId || !student) return;
+    
+    try {
+      setDeleting(true);
+      
+      // 1. Anonimizar todos os empréstimos do aluno
+      console.log('📝 Anonimizando empréstimos do aluno...');
+      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
+      const loansQuery = query(loansRef, where('studentId', '==', studentId));
+      const loansSnap = await getDocs(loansQuery);
+      
+      const batch = writeBatch(db);
+      loansSnap.docs.forEach(loanDoc => {
+        batch.update(loanDoc.ref, { studentName: 'Aluno Removido' });
+      });
+      await batch.commit();
+      console.log(`✅ ${loansSnap.size} empréstimos anonimizados`);
+      
+      // 2. Cancelar todas as reservas do aluno
+      console.log('📚 Cancelando reservas do aluno...');
+      try {
+        const reservations = await reservationService.getStudentReservations(studentId, currentUser.uid);
+        console.log(`📋 ${reservations.length} reservas encontradas`);
+        
+        for (const reservation of reservations) {
+          try {
+            if (reservation.status === 'pending' || reservation.status === 'ready') {
+              await reservationService.cancelStudentReservation(reservation.id, studentId, currentUser.uid);
+              console.log(`✅ Reserva ${reservation.id} cancelada`);
+            }
+          } catch (reservationError) {
+            console.warn(`⚠️ Erro ao cancelar reserva ${reservation.id}:`, reservationError);
+          }
+        }
+      } catch (reservationError) {
+        console.warn('⚠️ Erro ao buscar/cancelar reservas:', reservationError);
+      }
+      
+      // 3. Remover do índice global
+      console.log('🗑️ Removendo do índice global...');
+      try {
+        await studentIndexService.removeEntry(studentId);
+        console.log('✅ Índice global atualizado');
+      } catch (indexError) {
+        console.warn('⚠️ Erro ao remover do índice global:', indexError);
+      }
+      
+      // 4. Limpar caches (localStorage)
+      console.log('🧹 Limpando caches...');
+      try {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.includes(studentId)) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        console.log(`✅ ${keysToRemove.length} entradas de cache removidas`);
+      } catch (cacheError) {
+        console.warn('⚠️ Erro ao limpar caches:', cacheError);
+      }
+      
+      // 5. Deletar o documento do aluno
+      console.log('🗑️ Deletando documento do aluno...');
+      const studentRef = doc(db, `users/${currentUser.uid}/students/${studentId}`);
+      await deleteDoc(studentRef);
+      console.log('✅ Aluno deletado com sucesso');
+      
+      // Navegar de volta para lista de alunos
+      alert('Aluno deletado com sucesso!');
+      navigate('/students');
+      
+    } catch (error) {
+      console.error('❌ Erro ao deletar aluno:', error);
+      alert('Erro ao deletar aluno. Tente novamente.');
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
   
   if (studentDashboardFeature.loading) {
     return <div className={styles.loading}>Carregando informações do plano...</div>;
@@ -697,6 +820,15 @@ const StudentDashboard = () => {
               Chamar no WhatsApp
             </button>
           )}
+          
+          <button 
+            className={styles.deleteButton}
+            onClick={handleDeleteClick}
+            title="Deletar aluno"
+          >
+            <Trash2 size={18} />
+            Deletar
+          </button>
         </div>
       </div>
 
@@ -1016,6 +1148,82 @@ const StudentDashboard = () => {
           }}
         />
       </div>
+
+      {/* Modal de confirmação de deleção */}
+      {showDeleteModal && (
+        <div className={styles.modalOverlay} onClick={() => !deleting && setShowDeleteModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <Trash2 size={24} className={styles.modalIcon} />
+              <h3>Confirmar Exclusão</h3>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <p className={styles.modalWarning}>
+                Você está prestes a deletar o aluno <strong>{student.name}</strong>.
+              </p>
+              
+              {activeLoansForDelete.length > 0 ? (
+                <>
+                  <div className={styles.alertBox}>
+                    <p className={styles.alertTitle}>
+                      ⚠️ Este aluno possui {activeLoansForDelete.length} {activeLoansForDelete.length === 1 ? 'livro' : 'livros'} emprestado{activeLoansForDelete.length > 1 ? 's' : ''}:
+                    </p>
+                    <ul className={styles.booksList}>
+                      {activeLoansForDelete.map(loan => (
+                        <li key={loan.id}>
+                          <strong>{loan.bookTitle}</strong>
+                          <span className={styles.loanDate}>
+                            (Retirado em {format(loan.borrowDate, 'dd/MM/yyyy')})
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className={styles.alertMessage}>
+                      As devoluções vão continuar atrasadas até serem canceladas ou devolvidas manualmente.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className={styles.infoMessage}>
+                  Este aluno não possui empréstimos ativos.
+                </p>
+              )}
+              
+              <div className={styles.modalInfo}>
+                <p><strong>O que acontecerá:</strong></p>
+                <ul className={styles.actionsList}>
+                  <li>✓ O histórico de empréstimos será mantido com nome "Aluno Removido"</li>
+                  <li>✓ Todas as reservas ativas serão canceladas automaticamente</li>
+                  <li>✓ O aluno será removido permanentemente do sistema</li>
+                  <li>✓ Esta ação não pode ser desfeita</li>
+                </ul>
+              </div>
+              
+              <p className={styles.confirmQuestion}>
+                Tem certeza que deseja continuar?
+              </p>
+            </div>
+            
+            <div className={styles.modalFooter}>
+              <button 
+                className={styles.cancelButton}
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+              >
+                Cancelar
+              </button>
+              <button 
+                className={styles.confirmDeleteButton}
+                onClick={handleDeleteStudent}
+                disabled={deleting}
+              >
+                {deleting ? 'Deletando...' : 'Sim, Deletar Aluno'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
