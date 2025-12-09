@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { BookOpenIcon, MagnifyingGlassIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
+import NewBadge from '../../components/NewBadge';
 import styles from './Withdrawals.module.css';
 
 interface Student {
@@ -44,8 +45,8 @@ const StudentWithdrawals = () => {
   const [studentSearch, setStudentSearch] = useState('');
   const [bookSearch, setBookSearch] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [selectedBooks, setSelectedBooks] = useState<Book[]>([]);
+  const [selectedCodes, setSelectedCodes] = useState<{ [bookId: string]: string }>({});
   const [books, setBooks] = useState<Book[]>([]);
   const [booksLoading, setBooksLoading] = useState(false);
   const [confirmClickCount, setConfirmClickCount] = useState(0);
@@ -227,28 +228,58 @@ const StudentWithdrawals = () => {
   };
 
   const handleBookSelect = (book: Book) => {
-    setSelectedBook(book);
-    setBookSearch(book.title);
-    if (book.availableCodes && book.availableCodes.length === 1) {
-      setSelectedCode(book.availableCodes[0]);
-    } else if (book.availableCodes && book.availableCodes.length > 1) {
-      setSelectedCode(null);
-    } else {
-      setSelectedCode(null);
+    // Verifica se já atingiu o limite de 3 livros
+    if (selectedBooks.length >= 3) {
+      alert('Você pode selecionar no máximo 3 livros por retirada');
+      return;
     }
+    
+    // Verifica se o livro já foi selecionado
+    if (selectedBooks.some(b => b.id === book.id)) {
+      alert('Este livro já foi selecionado');
+      return;
+    }
+    
+    // Adiciona o livro à lista
+    setSelectedBooks(prev => [...prev, book]);
+    
+    // Se houver apenas um código disponível, seleciona automaticamente
+    if (book.availableCodes && book.availableCodes.length === 1) {
+      setSelectedCodes(prev => ({ ...prev, [book.id]: book.availableCodes![0] }));
+    }
+    
+    // Limpa a busca para permitir nova pesquisa
+    setBookSearch('');
+  };
+
+  const handleRemoveBook = (bookId: string) => {
+    setSelectedBooks(prev => prev.filter(b => b.id !== bookId));
+    setSelectedCodes(prev => {
+      const newCodes = { ...prev };
+      delete newCodes[bookId];
+      return newCodes;
+    });
+  };
+
+  const handleCodeSelect = (bookId: string, code: string) => {
+    setSelectedCodes(prev => ({ ...prev, [bookId]: code }));
   };
 
   const handleFastWithdraw = async () => {
-    if (!currentUser || !selectedStudent || !selectedBook) return;
+    if (!currentUser || !selectedStudent || selectedBooks.length === 0) return;
     
     if (confirmClickCount === 0) {
       setConfirmClickCount(1);
       return;
     }
 
-    // Verificar se precisa selecionar código (apenas se houver mais de um)
-    if (!selectedCode && selectedBook.availableCodes && selectedBook.availableCodes.length > 1) {
-      return;
+    // Verificar se todos os livros que precisam de código têm um código selecionado
+    for (const book of selectedBooks) {
+      if (book.availableCodes && book.availableCodes.length > 1 && !selectedCodes[book.id]) {
+        alert(`Por favor, selecione um código para o livro "${book.title}"`);
+        setConfirmClickCount(0);
+        return;
+      }
     }
 
     try {
@@ -258,38 +289,45 @@ const StudentWithdrawals = () => {
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + loanDurationDays);
 
-      // Determinar o código a ser usado
-      let bookCode = '';
-      if (selectedCode) {
-        bookCode = selectedCode;
-      } else if (selectedBook.availableCodes && selectedBook.availableCodes.length === 1) {
-        bookCode = selectedBook.availableCodes[0];
-      } else if (selectedBook.availableCodes && selectedBook.availableCodes.length > 0) {
-        bookCode = selectedBook.availableCodes[0];
-      } else {
-        throw new Error('Nenhum código disponível para este livro');
-      }
-
-      const loanData = {
-        studentId: selectedStudent.id,
-        studentName: selectedStudent.name,
-        bookId: selectedBook.id,
-        bookTitle: selectedBook.title,
-        bookCode,
-        borrowDate: serverTimestamp(),
-        status: 'active' as const,
-        dueDate: Timestamp.fromDate(dueDate),
-        loanDurationDays,
-        createdAt: serverTimestamp()
-      };
-      
       const loansRef = collection(db, `users/${currentUser.uid}/loans`);
-      await addDoc(loansRef, loanData);
+
+      // Criar um empréstimo para cada livro selecionado
+      for (const book of selectedBooks) {
+        // Determinar o código a ser usado
+        let bookCode = '';
+        if (selectedCodes[book.id]) {
+          bookCode = selectedCodes[book.id];
+        } else if (book.availableCodes && book.availableCodes.length === 1) {
+          bookCode = book.availableCodes[0];
+        } else if (book.availableCodes && book.availableCodes.length > 0) {
+          bookCode = book.availableCodes[0];
+        } else {
+          throw new Error(`Nenhum código disponível para o livro "${book.title}"`);
+        }
+
+        const loanData = {
+          studentId: selectedStudent.id,
+          studentName: selectedStudent.name,
+          bookId: book.id,
+          bookTitle: book.title,
+          bookCode,
+          borrowDate: serverTimestamp(),
+          status: 'active' as const,
+          dueDate: Timestamp.fromDate(dueDate),
+          loanDurationDays,
+          createdAt: serverTimestamp()
+        };
+        
+        await addDoc(loansRef, loanData);
+      }
+      
+      const bookCount = selectedBooks.length;
+      const bookTitles = selectedBooks.map(b => b.title).join(', ');
       
       // Reset form
       setSelectedStudent(null);
-      setSelectedBook(null);
-      setSelectedCode(null);
+      setSelectedBooks([]);
+      setSelectedCodes({});
       setStudentSearch('');
       setBookSearch('');
       setConfirmClickCount(0);
@@ -299,7 +337,7 @@ const StudentWithdrawals = () => {
       
       navigate('/student-loans', { 
         state: { 
-          message: `Livro "${selectedBook.title}" retirado com sucesso por ${selectedStudent.name}` 
+          message: `${bookCount} livro${bookCount > 1 ? 's' : ''} retirado${bookCount > 1 ? 's' : ''} com sucesso por ${selectedStudent.name}` 
         } 
       });
     } catch (error) {
@@ -318,7 +356,10 @@ const StudentWithdrawals = () => {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <h2>Retirada Rápida</h2>
+          <h2>
+            Retirada Rápida
+            <NewBadge />
+          </h2>
         </div>
 
         <div className={styles.fastCheckoutContainer}>
@@ -380,30 +421,39 @@ const StudentWithdrawals = () => {
               )}
             </div>
 
-            {/* Formulário de Livro */}
+            {/* Formulário de Livros */}
             <div className={styles.fastFormSection}>
-              <h3>Livro</h3>
+              <div className={styles.booksSectionHeader}>
+                <h3>Livros ({selectedBooks.length}/3)</h3>
+                {selectedBooks.length > 0 && (
+                  <span className={styles.bookCountBadge}>
+                    {selectedBooks.length === 3 ? 'Limite atingido' : `${3 - selectedBooks.length} restante${3 - selectedBooks.length > 1 ? 's' : ''}`}
+                  </span>
+                )}
+              </div>
+              
+              {/* Campo de busca sempre visível */}
               <div className={styles.searchWrapper}>
                 <MagnifyingGlassIcon className={styles.searchIcon} />
                 <input
                   type="text"
                   className={styles.searchInput}
-                  placeholder="Buscar livro por título, autor ou código..."
+                  placeholder={selectedBooks.length >= 3 ? "Limite de 3 livros atingido" : "Buscar livro por título, autor ou código..."}
                   value={bookSearch}
-                  onChange={(e) => {
-                    setBookSearch(e.target.value);
-                    setSelectedBook(null);
-                    setSelectedCode(null);
-                  }}
+                  onChange={(e) => setBookSearch(e.target.value)}
+                  disabled={selectedBooks.length >= 3}
                 />
               </div>
-              {bookSearch && !selectedBook && (
+
+              {/* Resultados da busca */}
+              {bookSearch && selectedBooks.length < 3 && (
                 <div className={styles.searchResults}>
                   {booksLoading ? (
                     <div className={styles.loading}>Carregando...</div>
                   ) : filteredBooksForFast.length > 0 ? (
                     filteredBooksForFast
                       .filter(book => (book.availableCodes?.length || 0) > 0)
+                      .filter(book => !selectedBooks.some(sb => sb.id === book.id))
                       .map(book => (
                         <div
                           key={book.id}
@@ -428,46 +478,58 @@ const StudentWithdrawals = () => {
                   )}
                 </div>
               )}
-              {selectedBook && (
-                <div className={styles.selectedItem}>
-                  <div className={styles.selectedItemContent}>
-                    <div className={styles.selectedItemName}>{selectedBook.title}</div>
-                    {selectedBook.authors && (
-                      <div className={styles.selectedItemMeta}>
-                        {Array.isArray(selectedBook.authors) 
-                          ? selectedBook.authors.join(', ') 
-                          : selectedBook.authors}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    className={styles.clearSelectionButton}
-                    onClick={() => {
-                      setSelectedBook(null);
-                      setSelectedCode(null);
-                      setBookSearch('');
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
 
-              {/* Seleção de Código */}
-              {selectedBook && selectedBook.availableCodes && selectedBook.availableCodes.length > 1 && (
-                <div className={styles.codeSelection}>
-                  <label>Selecione o código:</label>
-                  <div className={styles.codesGrid}>
-                    {selectedBook.availableCodes.map(code => (
-                      <button
-                        key={code}
-                        className={`${styles.codeCard} ${selectedCode === code ? styles.codeCardSelected : ''}`}
-                        onClick={() => setSelectedCode(code)}
-                      >
-                        {code}
-                      </button>
-                    ))}
-                  </div>
+              {/* Lista de livros selecionados */}
+              {selectedBooks.length > 0 && (
+                <div className={styles.selectedBooksList}>
+                  {selectedBooks.map((book, index) => (
+                    <div key={book.id} className={styles.selectedBookCard} data-index={index}>
+                      <div className={styles.selectedBookHeader}>
+                        <div className={styles.selectedBookNumber}>{index + 1}</div>
+                        <button
+                          className={styles.removeBookButton}
+                          onClick={() => handleRemoveBook(book.id)}
+                          title="Remover livro"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className={styles.selectedBookContent}>
+                        <div className={styles.selectedBookTitle}>{book.title}</div>
+                        {book.authors && (
+                          <div className={styles.selectedBookAuthors}>
+                            {Array.isArray(book.authors) 
+                              ? book.authors.join(', ') 
+                              : book.authors}
+                          </div>
+                        )}
+                        
+                        {/* Seleção de código se necessário */}
+                        {book.availableCodes && book.availableCodes.length > 1 && (
+                          <div className={styles.bookCodeSelection}>
+                            <label>Código:</label>
+                            <div className={styles.codeOptions}>
+                              {book.availableCodes.map(code => (
+                                <button
+                                  key={code}
+                                  className={`${styles.codeOption} ${selectedCodes[book.id] === code ? styles.codeOptionSelected : ''}`}
+                                  onClick={() => handleCodeSelect(book.id, code)}
+                                >
+                                  {code}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {book.availableCodes && book.availableCodes.length === 1 && (
+                          <div className={styles.autoSelectedCode}>
+                            Código: <strong>{book.availableCodes[0]}</strong>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -478,9 +540,10 @@ const StudentWithdrawals = () => {
             <button
               className={styles.fastWithdrawButton}
               onClick={handleFastWithdraw}
-              disabled={!selectedStudent || !selectedBook || processing || 
-                       (selectedBook.availableCodes && selectedBook.availableCodes.length > 1 && !selectedCode) ||
-                       (selectedBook.availableCodes && selectedBook.availableCodes.length === 0)}
+              disabled={!selectedStudent || selectedBooks.length === 0 || processing || 
+                       selectedBooks.some(book => 
+                         book.availableCodes && book.availableCodes.length > 1 && !selectedCodes[book.id]
+                       )}
             >
               {processing ? (
                 'Processando...'
@@ -489,7 +552,7 @@ const StudentWithdrawals = () => {
               ) : (
                 <>
                   <BookOpenIcon className={styles.buttonIcon} />
-                  Retirar
+                  Retirar {selectedBooks.length > 0 && `(${selectedBooks.length})`}
                 </>
               )}
             </button>

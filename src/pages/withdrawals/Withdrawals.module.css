@@ -1246,6 +1246,192 @@
   transform: none;
 }
 
+/* Estilos para múltiplos livros */
+.booksSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.booksSectionHeader h3 {
+  margin: 0;
+}
+
+.bookCountBadge {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border-radius: 20px;
+  font-weight: 500;
+  border: 1px solid var(--primary-color);
+}
+
+.selectedBooksList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px dashed var(--border-color);
+}
+
+.selectedBookCard {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border: 2px solid var(--primary-color);
+  border-radius: 12px;
+  padding: 1rem;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.1);
+}
+
+.selectedBookCard:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+}
+
+/* Design assimétrico - cada card com uma variação */
+.selectedBookCard[data-index="0"] {
+  border-left-width: 5px;
+}
+
+.selectedBookCard[data-index="1"] {
+  border-right-width: 5px;
+  margin-left: 1rem;
+}
+
+.selectedBookCard[data-index="2"] {
+  border-left-width: 5px;
+  margin-right: 1rem;
+}
+
+.selectedBookHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.selectedBookNumber {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(74, 144, 226, 0.3);
+}
+
+.removeBookButton {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: all 0.2s ease;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.removeBookButton:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  transform: rotate(90deg);
+}
+
+.selectedBookContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.selectedBookTitle {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.selectedBookAuthors {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.bookCodeSelection {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.bookCodeSelection label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.codeOptions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.codeOption {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.codeOption:hover {
+  border-color: var(--primary-color);
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.codeOptionSelected {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+}
+
+.autoSelectedCode {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: var(--bg-primary);
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-color);
+}
+
+.autoSelectedCode strong {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .fastCheckoutForms {
     gap: 1.5rem;
@@ -1264,5 +1450,22 @@
     width: 100%;
     padding: 0.875rem 1.5rem;
     font-size: 1rem;
+  }
+  
+  /* Ajustes para cards de livros em mobile */
+  .selectedBookCard[data-index="1"],
+  .selectedBookCard[data-index="2"] {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  .selectedBookCard:hover {
+    transform: translateY(-2px);
+  }
+  
+  .booksSectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 } 
