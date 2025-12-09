@@ -5,6 +5,7 @@ import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { FunnelIcon, XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
+import NewBadge from '../../components/NewBadge';
 
 import styles from './Loans.module.css';
 
@@ -463,7 +464,10 @@ const StudentLoans = () => {
             </div>
 
             <div className={styles.filterGroup}>
-              <label htmlFor="bookCode">Código do Livro</label>
+              <label htmlFor="bookCode">
+                Código do Livro
+                <NewBadge />
+              </label>
               <input
                 type="text"
                 id="bookCode"
