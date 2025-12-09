@@ -6,6 +6,7 @@ import {
   UserGroupIcon,
   BoltIcon
 } from '@heroicons/react/24/outline';
+import NewBadge from '../../../components/NewBadge';
 import styles from '../Settings.module.css';
 
 interface GeneralSettingsTabProps {
@@ -163,6 +164,7 @@ const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
                 </div>
               </div>
               Registro de retiradas ágeis (experimental)
+              <NewBadge />
             </label>
             <p className={styles.helpText}>
               Quando ativado, muda o processo de registro de retiradas para um processo mais ágil e
