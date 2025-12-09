@@ -28,6 +28,7 @@ interface Loan {
 interface Filters {
   studentName: string;
   bookTitle: string;
+  bookCode: string;
   studentClassroom: string;
   status: string;
 }
@@ -51,6 +52,7 @@ const StudentLoans = () => {
   const [filters, setFilters] = useState<Filters>({
     studentName: '',
     bookTitle: '',
+    bookCode: '',
     studentClassroom: '',
     status: 'all'
   });
@@ -256,6 +258,14 @@ const StudentLoans = () => {
         );
       }
       
+      // Filtrar por código do livro
+      const bookCodeFilter = filters.bookCode.toLowerCase().trim();
+      if (bookCodeFilter) {
+        filtered = filtered.filter(loan => 
+          loan.bookCode && loan.bookCode.toLowerCase().includes(bookCodeFilter)
+        );
+      }
+      
       // Filtrar por turma do aluno
       const classroomFilter = filters.studentClassroom.toLowerCase().trim();
       if (classroomFilter) {
@@ -290,9 +300,10 @@ const StudentLoans = () => {
       // Definir se filtros foram aplicados
       const hasNameFilter = studentNameFilter !== '';
       const hasBookFilter = bookTitleFilter !== '';
+      const hasBookCodeFilter = bookCodeFilter !== '';
       const hasClassroomFilter = classroomFilter !== '';
       const hasStatusFilter = filters.status !== 'active';
-      setFiltersApplied(hasNameFilter || hasBookFilter || hasClassroomFilter || hasStatusFilter);
+      setFiltersApplied(hasNameFilter || hasBookFilter || hasBookCodeFilter || hasClassroomFilter || hasStatusFilter);
     } catch (error) {
       console.error('Erro ao aplicar filtros:', error);
     } finally {
@@ -304,6 +315,7 @@ const StudentLoans = () => {
     setFilters({
       studentName: '',
       bookTitle: '',
+      bookCode: '',
       studentClassroom: '',
       status: 'active'
     });
@@ -447,6 +459,18 @@ const StudentLoans = () => {
                 onChange={(e) => handleFilterChange('bookTitle', e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Filtrar por livro..."
+              />
+            </div>
+
+            <div className={styles.filterGroup}>
+              <label htmlFor="bookCode">Código do Livro</label>
+              <input
+                type="text"
+                id="bookCode"
+                value={filters.bookCode}
+                onChange={(e) => handleFilterChange('bookCode', e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Filtrar por código..."
               />
             </div>
 
