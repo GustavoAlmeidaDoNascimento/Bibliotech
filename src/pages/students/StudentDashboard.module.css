@@ -167,6 +167,23 @@
   background-repeat: no-repeat;
 }
 
+.deleteButtonWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.badgePosition {
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  z-index: 10;
+}
+
+.badgePosition :global(span) {
+  margin-left: 0;
+}
+
 .deleteButton {
   background-color: #ffffff;
   color: #dc2626;

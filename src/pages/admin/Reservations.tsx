@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import { BookOpen } from 'lucide-react';
+import NewBadge from '../../components/NewBadge/NewBadge';
 import styles from './Reservations.module.css';
 
 interface DisplayReservation extends Reservation {
@@ -102,7 +103,7 @@ const Reservations: React.FC = () => {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1>Reservas de Livros</h1>
+          <h1>Reservas de Livros <NewBadge /></h1>
         </div>
         <div className={styles.loading}>
           <p>Carregando reservas...</p>
@@ -114,7 +115,7 @@ const Reservations: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>Reservas de Livros</h1>
+        <h1>Reservas de Livros <NewBadge /></h1>
         <p className={styles.subtitle}>
           {reservations.length === 0 
             ? 'Nenhuma reserva pendente - ótimo trabalho! 🎉' 

@@ -22,6 +22,7 @@ import BookRecommendations from '../../components/recommendations/BookRecommenda
 import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
 import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
 import { Lock, ArrowUpRight, Eye, Trash2 } from 'lucide-react';
+import NewBadge from '../../components/NewBadge/NewBadge';
 import styles from './StudentDashboard.module.css';
 import { studentIndexService } from '../../services/studentIndexService';
 import { reservationService } from '../../services/reservationService';
@@ -821,14 +822,19 @@ const StudentDashboard = () => {
             </button>
           )}
           
-          <button 
-            className={styles.deleteButton}
-            onClick={handleDeleteClick}
-            title="Deletar aluno"
-          >
-            <Trash2 size={18} />
-            Deletar
-          </button>
+          <div className={styles.deleteButtonWrapper}>
+            <span className={styles.badgePosition}>
+              <NewBadge />
+            </span>
+            <button 
+              className={styles.deleteButton}
+              onClick={handleDeleteClick}
+              title="Deletar aluno"
+            >
+              <Trash2 size={18} />
+              Deletar
+            </button>
+          </div>
         </div>
       </div>
 
