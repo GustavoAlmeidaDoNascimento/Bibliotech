@@ -485,7 +485,6 @@ const StudentWithdrawals = () => {
                   {selectedBooks.map((book, index) => (
                     <div key={book.id} className={styles.selectedBookCard} data-index={index}>
                       <div className={styles.selectedBookHeader}>
-                        <div className={styles.selectedBookNumber}>{index + 1}</div>
                         <button
                           className={styles.removeBookButton}
                           onClick={() => handleRemoveBook(book.id)}
