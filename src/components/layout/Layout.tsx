@@ -24,6 +24,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { ROUTES } from '../../constants';
 import styles from './Layout.module.css';
+import DummyContentGenerator from '../DummyContentGenerator/DummyContentGenerator';
 
 const Layout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,6 +32,7 @@ const Layout: React.FC = () => {
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [reservationsCount, setReservationsCount] = useState<number>(0);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [isDummyGeneratorOpen, setIsDummyGeneratorOpen] = useState(false);
   
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -44,6 +46,22 @@ const Layout: React.FC = () => {
       setOpenDropdownId(null);
     }
   }, [isNotificationsOpen]);
+
+  // Listener para atalho Ctrl+7 para abrir gerador de dummy content
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl+7 ou Ctrl+& (7 no teclado numérico)
+      if ((event.ctrlKey || event.metaKey) && event.key === '7') {
+        event.preventDefault();
+        setIsDummyGeneratorOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   // Buscar contador de reservas
   useEffect(() => {
@@ -730,6 +748,12 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
           </div>
         </div>
       )}
+
+      {/* Gerador de Dummy Content */}
+      <DummyContentGenerator 
+        isOpen={isDummyGeneratorOpen} 
+        onClose={() => setIsDummyGeneratorOpen(false)} 
+      />
     </div>
   );
 };
