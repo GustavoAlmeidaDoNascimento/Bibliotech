@@ -5,6 +5,7 @@ export interface CatalogCacheData {
   dashboardData: StudentDashboardData | null;
   recommendationSections: RecommendationSection[];
   allBooks: BookWithStats[];
+  showcaseBook?: BookWithStats | null;
 }
 
 interface CacheEntry {

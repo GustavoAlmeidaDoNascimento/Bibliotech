@@ -56,8 +56,16 @@ const StudentHome: React.FC = () => {
   );
 
   // Carregar showcase PRIMEIRO, antes de tudo (prioridade máxima)
+  // Mas só se não estiver no cache
   useEffect(() => {
     if (!studentId || showcaseLoaded) return;
+    
+    // Se já tem no cache, não precisa buscar
+    if (cachedData?.showcaseBook !== undefined) {
+      setShowcaseBook(cachedData.showcaseBook);
+      setShowcaseLoaded(true);
+      return;
+    }
 
     const loadShowcase = async () => {
       try {
@@ -80,7 +88,7 @@ const StudentHome: React.FC = () => {
     
     // Executar imediatamente, sem delay
     loadShowcase();
-  }, [studentId, showcaseLoaded]);
+  }, [studentId, showcaseLoaded, cachedData]);
 
   useEffect(() => {
     if (!studentId) {
@@ -94,6 +102,14 @@ const StudentHome: React.FC = () => {
       setAllBooks(cachedData.allBooks);
       setDashboardData(cachedData.dashboardData || null);
       setSubscriptionPlan(cachedData.dashboardData?.subscriptionPlan ?? null);
+      
+      // Carregar showcase do cache se disponível
+      if (cachedData.showcaseBook !== undefined) {
+        setShowcaseBook(cachedData.showcaseBook);
+        setShowcaseLoaded(true);
+        console.log('✅ Showcase carregado do cache:', cachedData.showcaseBook?.title || 'nenhum');
+      }
+      
       setLoading(false);
       console.log('✅ Usando dados do catálogo em cache');
       return;
@@ -172,11 +188,24 @@ const StudentHome: React.FC = () => {
         setRecommendationSections(recommendations);
         setAllBooks(booksData);
         
-        // Salvar no cache
+        // Carregar showcase se ainda não foi carregado
+        let showcaseToCache = showcaseBook;
+        if (!showcaseLoaded) {
+          const showcase = await catalogShowcaseService.getShowcaseBook(student.userId);
+          if (showcase) {
+            setShowcaseBook(showcase);
+            showcaseToCache = showcase;
+            console.log('✅ Showcase carregado junto com catálogo:', showcase.title);
+          }
+          setShowcaseLoaded(true);
+        }
+        
+        // Salvar no cache (incluindo showcase)
         setCachedData({
           dashboardData: dashboardDataResponse || null,
           recommendationSections: recommendations,
-          allBooks: booksData
+          allBooks: booksData,
+          showcaseBook: showcaseToCache || null
         });
 
       } catch (error) {
