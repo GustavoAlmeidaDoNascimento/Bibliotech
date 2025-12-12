@@ -553,10 +553,13 @@ const Classes: React.FC = () => {
                               <input
                                 type="checkbox"
                                 checked={selectedClasses.includes(classKey)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  toggleClassSelection(classInfo.name, classInfo.shift);
+                                }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                 }}
-                                readOnly
                               />
                             </div>
                           </td>
