@@ -16,6 +16,33 @@ const OnlineCatalog: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [savedMessage, setSavedMessage] = useState('');
+  const [previewBook, setPreviewBook] = useState<BookWithStats | null>(null);
+
+  // Selecionar livro aleatório para preview
+  const selectRandomBook = () => {
+    if (availableBooks.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * availableBooks.length);
+    setPreviewBook(availableBooks[randomIndex]);
+  };
+
+  // Carregar preview quando muda o modo ou livro selecionado
+  useEffect(() => {
+    if (showcaseMode === 'random' && availableBooks.length > 0) {
+      // Se não tem preview ainda, selecionar um aleatório
+      if (!previewBook) {
+        const randomIndex = Math.floor(Math.random() * availableBooks.length);
+        setPreviewBook(availableBooks[randomIndex]);
+      }
+    } else if (showcaseMode === 'specific' && selectedBookId) {
+      // Buscar o livro selecionado
+      const book = availableBooks.find(b => b.id === selectedBookId);
+      setPreviewBook(book || null);
+    } else if (showcaseMode === 'specific' && !selectedBookId) {
+      // Limpar preview se não tem livro selecionado
+      setPreviewBook(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showcaseMode, selectedBookId, availableBooks]);
 
   useEffect(() => {
     const loadData = async () => {
