@@ -12,6 +12,7 @@ import EmbeddedDateFilter from '../../components/ui/EmbeddedDateFilter';
 import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
 import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
 import { LockClosedIcon, ArrowUpRightIcon } from '@heroicons/react/24/outline';
+import { academicYearService } from '../../services/academicYearService';
 
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import {
@@ -188,6 +189,7 @@ const Dashboard = () => {
   // Estado para filtro de ano
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [isFirstYearLoad, setIsFirstYearLoad] = useState(true);
   
   // Estados para estatísticas principais
   const [activeLoansCount, setActiveLoansCount] = useState(cache.cachedData?.activeLoansCount || 0);
@@ -531,25 +533,41 @@ const Dashboard = () => {
     }
   }, [currentUser]);
 
-  // Função para extrair anos disponíveis dos empréstimos
-  const extractAvailableYears = useCallback((loans: Loan[]): number[] => {
-    const yearsSet = new Set<number>();
+  // Função para buscar anos letivos registrados
+  const fetchAvailableYears = useCallback(async (): Promise<number[]> => {
+    if (!currentUser) return [new Date().getFullYear()];
     
-    loans.forEach(loan => {
-      if (loan.borrowDate) {
-        yearsSet.add(loan.borrowDate.getFullYear());
+    try {
+      const academicYears = await academicYearService.getAllYears(currentUser.uid);
+      
+      if (academicYears.length === 0) {
+        // Se não houver anos letivos registrados, retorna o ano atual
+        return [new Date().getFullYear()];
       }
-      if (loan.returnDate) {
-        yearsSet.add(loan.returnDate.getFullYear());
-      }
-      if (loan.createdAt) {
-        yearsSet.add(loan.createdAt.getFullYear());
-      }
-    });
-    
-    const years = Array.from(yearsSet).sort((a, b) => b - a); // Ordena do mais recente para o mais antigo
-    return years.length > 0 ? years : [new Date().getFullYear()]; // Se não houver dados, retorna o ano atual
-  }, []);
+      
+      // Converte os anos (strings) para números
+      // O serviço já retorna ordenado por 'year' desc (mais recente primeiro)
+      // Mas vamos ordenar por createdAt para pegar o último ano letivo criado
+      const yearsWithDates = academicYears.map(ay => ({
+        year: parseInt(ay.year),
+        createdAt: ay.createdAt
+      }));
+      
+      // Ordena por data de criação (mais recente primeiro)
+      // Se as datas forem iguais, ordena por ano (mais recente primeiro)
+      const sortedYears = yearsWithDates.sort((a, b) => {
+        const dateDiff = b.createdAt.getTime() - a.createdAt.getTime();
+        return dateDiff !== 0 ? dateDiff : b.year - a.year;
+      });
+      
+      // Retorna apenas os números dos anos, do último criado para o mais antigo
+      return sortedYears.map(y => y.year);
+    } catch (error) {
+      console.error('Erro ao buscar anos letivos:', error);
+      // Em caso de erro, retorna o ano atual
+      return [new Date().getFullYear()];
+    }
+  }, [currentUser]);
 
   const fetchDashboardData = useCallback(async (options: { forceRefresh?: boolean; startDate?: Date; endDate?: Date } = {}) => {
     const { forceRefresh = false, startDate: filterStartDate, endDate: filterEndDate } = options;
@@ -673,13 +691,17 @@ const Dashboard = () => {
         setTotalReadersCount(students.length);
       }
       
-      // FASE 3: Extrair anos disponíveis e atualizar estado
-      const years = extractAvailableYears(allLoansForStats);
+      // FASE 3: Buscar anos letivos registrados e atualizar estado
+      const years = await fetchAvailableYears();
       setAvailableYears(years);
       
-      // Se o ano selecionado não está mais disponível, seleciona o mais recente
-      if (!years.includes(selectedYear) && years.length > 0) {
-        setSelectedYear(years[0]);
+      // Define o último ano letivo criado como padrão
+      if (years.length > 0) {
+        // Se é a primeira vez carregando ou o ano selecionado não está na lista, usa o último criado
+        if (isFirstYearLoad || !years.includes(selectedYear)) {
+          setSelectedYear(years[0]);
+          setIsFirstYearLoad(false);
+        }
       }
       
       // FASE 4: Processa estatísticas e gráficos
@@ -755,7 +777,7 @@ const Dashboard = () => {
     syncStudents,
     mergeData,
     selectedYear,
-    extractAvailableYears
+    fetchAvailableYears
   ]);
 
   // Cache invalidation quando dados importantes mudam
