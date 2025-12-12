@@ -324,6 +324,28 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
       );
     }
     
+    if (notification.type === 'reservation') {
+      return (
+        <>
+          <div className={styles.notificationTitle}>
+            <CalendarDaysIcon className={styles.notificationIcon} />
+            {notification.title}
+          </div>
+          <div className={styles.notificationMessage}>
+            {truncateText(notification.message)}
+          </div>
+          <div className={styles.notificationMeta}>
+            <span className={styles.notificationTime}>
+              {formatNotificationTime(notification.createdAt)}
+            </span>
+            <span className={`${styles.notificationBadgeType} ${styles.reservation}`}>
+              Reserva
+            </span>
+          </div>
+        </>
+      );
+    }
+    
     // Renderização para notificações de empréstimo
     return (
       <>
@@ -469,7 +491,7 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
               notifications.map(notification => (
                 <div 
                   key={notification.id} 
-                  className={`${styles.notificationItem} ${notification.read ? styles.read : ''} ${notification.type === 'update' ? styles.updateNotification : ''}`}
+                  className={`${styles.notificationItem} ${notification.read ? styles.read : ''} ${notification.type === 'update' ? styles.updateNotification : ''} ${notification.type === 'reservation' ? styles.reservationNotification : ''}`}
                   onClick={() => handleNotificationClick(notification)}
                 >
                   {!notification.read && (

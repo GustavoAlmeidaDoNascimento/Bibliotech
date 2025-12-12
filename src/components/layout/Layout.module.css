@@ -595,6 +595,11 @@
   color: #059669;
 }
 
+.notificationBadgeType.reservation {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
 .updateNotification {
   background: #ecfdf5 !important;
   color: #065f46 !important;
@@ -613,6 +618,26 @@
 
 .updateNotification.read:hover {
   background: #e5e7eb !important;
+}
+
+.reservationNotification {
+  background: #eff6ff !important;
+  color: #1e40af !important;
+  border-left-color: #3b82f6 !important;
+}
+
+.reservationNotification:hover {
+  background: #dbeafe !important;
+}
+
+.reservationNotification.read {
+  background: #f0f9ff !important;
+  color: #6b7280 !important;
+  border-left-color: #9ca3af !important;
+}
+
+.reservationNotification.read:hover {
+  background: #e0f2fe !important;
 }
 
 .notificationActions {

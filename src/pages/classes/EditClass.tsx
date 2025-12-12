@@ -10,6 +10,7 @@ import { Pie, Bar } from 'react-chartjs-2';
 import styles from './EditClass.module.css';
 import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
 import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
+import { academicYearService } from '../../services/academicYearService';
 
 // Registrar componentes do Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
@@ -77,6 +78,7 @@ const EditClass: React.FC = () => {
   // Estado para filtro de ano
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [isFirstYearLoad, setIsFirstYearLoad] = useState(true);
 
   const classDashboardFeature = useFeatureBlock(FEATURE_BLOCK_KEYS.BlockClassDashboard);
 
@@ -185,26 +187,50 @@ const EditClass: React.FC = () => {
       // Filtrar empréstimos dos alunos da turma
       const classLoans = allLoans.filter(loan => studentIds.includes(loan.studentId));
       
-      // Extrair anos disponíveis dos empréstimos
-      const yearsSet = new Set<number>();
-      classLoans.forEach(loan => {
-        const borrowDate = loan.borrowDate?.toDate ? loan.borrowDate.toDate() : new Date(loan.borrowDate);
-        if (borrowDate) {
-          yearsSet.add(borrowDate.getFullYear());
-        }
-        if (loan.returnDate) {
-          const returnDate = loan.returnDate?.toDate ? loan.returnDate.toDate() : new Date(loan.returnDate);
-          if (returnDate) {
-            yearsSet.add(returnDate.getFullYear());
+      // Buscar anos letivos registrados
+      try {
+        const academicYears = await academicYearService.getAllYears(currentUser.uid);
+        
+        if (academicYears.length === 0) {
+          // Se não houver anos letivos registrados, usa o ano atual
+          setAvailableYears([new Date().getFullYear()]);
+          if (isFirstYearLoad) {
+            setSelectedYear(new Date().getFullYear());
+            setIsFirstYearLoad(false);
+          }
+        } else {
+          // Converte os anos (strings) para números
+          // Ordena por data de criação (mais recente primeiro)
+          const yearsWithDates = academicYears.map(ay => ({
+            year: parseInt(ay.year),
+            createdAt: ay.createdAt
+          }));
+          
+          // Ordena por data de criação (mais recente primeiro)
+          // Se as datas forem iguais, ordena por ano (mais recente primeiro)
+          const sortedYears = yearsWithDates.sort((a, b) => {
+            const dateDiff = b.createdAt.getTime() - a.createdAt.getTime();
+            return dateDiff !== 0 ? dateDiff : b.year - a.year;
+          });
+          
+          // Retorna apenas os números dos anos, do último criado para o mais antigo
+          const years = sortedYears.map(y => y.year);
+          setAvailableYears(years);
+          
+          // Define o último ano letivo criado como padrão
+          if (isFirstYearLoad || !years.includes(selectedYear)) {
+            setSelectedYear(years[0]);
+            setIsFirstYearLoad(false);
           }
         }
-      });
-      const years = Array.from(yearsSet).sort((a, b) => b - a);
-      setAvailableYears(years.length > 0 ? years : [new Date().getFullYear()]);
-      
-      // Se o ano selecionado não está mais disponível, seleciona o mais recente
-      if (!years.includes(selectedYear) && years.length > 0) {
-        setSelectedYear(years[0]);
+      } catch (error) {
+        console.error('Erro ao buscar anos letivos:', error);
+        // Em caso de erro, usa o ano atual
+        setAvailableYears([new Date().getFullYear()]);
+        if (isFirstYearLoad) {
+          setSelectedYear(new Date().getFullYear());
+          setIsFirstYearLoad(false);
+        }
       }
       
       // Filtrar empréstimos pelo ano selecionado
