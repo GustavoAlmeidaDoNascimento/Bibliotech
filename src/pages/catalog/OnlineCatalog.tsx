@@ -215,6 +215,85 @@ const OnlineCatalog: React.FC = () => {
             )}
           </div>
 
+          {/* Preview da Vitrine */}
+          <div className={styles.previewSection}>
+            <div className={styles.previewHeader}>
+              <h2 className={styles.sectionTitle}>Prévia da Vitrine</h2>
+              {showcaseMode === 'random' && availableBooks.length > 0 && (
+                <button
+                  type="button"
+                  className={styles.rerollButton}
+                  onClick={selectRandomBook}
+                >
+                  🎲 Reescolher Livro
+                </button>
+              )}
+            </div>
+
+            <div className={styles.showcasePreview}>
+              <div className={styles.previewBackground}>
+                {previewBook?.coverUrl && (
+                  <img 
+                    src={previewBook.coverUrl} 
+                    alt="" 
+                    className={styles.previewBackgroundImage}
+                  />
+                )}
+                <div className={styles.previewGradient}></div>
+              </div>
+              
+              <div className={styles.previewContent}>
+                <div className={styles.previewCover}>
+                  {previewBook?.coverUrl ? (
+                    <img src={previewBook.coverUrl} alt={previewBook.title} />
+                  ) : (
+                    <div className={styles.previewCoverPlaceholder}>
+                      <BookOpenIcon width={40} height={40} />
+                    </div>
+                  )}
+                </div>
+
+                <div className={styles.previewInfo}>
+                  <div className={styles.previewBadge}>Em Destaque</div>
+                  
+                  <h3 className={styles.previewTitle}>
+                    {previewBook?.title || 'Título do Livro'}
+                  </h3>
+                  
+                  <div className={styles.previewMeta}>
+                    <span className={styles.previewAuthor}>
+                      {previewBook?.authors?.[0] || 'Autor'}
+                    </span>
+                    <span className={styles.previewDivider}>•</span>
+                    <span className={styles.previewGenre}>
+                      {previewBook?.genres?.[0] || 'Gênero'}
+                    </span>
+                    <span className={styles.previewDivider}>•</span>
+                    <span className={styles.previewLoans}>
+                      {previewBook?.loanCount ?? 0} empréstimos
+                    </span>
+                  </div>
+
+                  <p className={styles.previewSynopsis}>
+                    {previewBook?.synopsis || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.'}
+                  </p>
+
+                  {(previewBook?.available !== undefined ? previewBook.available : true) && (
+                    <div className={styles.previewAvailability}>
+                      <div className={styles.previewAvailableDot}></div>
+                      Disponível para empréstimo agora
+                    </div>
+                  )}
+
+                  <div className={styles.previewButton}>
+                    <BookOpenIcon width={18} height={18} />
+                    Ver Detalhes e Reservar
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {savedMessage && (
             <div className={styles.successMessage}>
               <CheckIcon width={20} height={20} />
