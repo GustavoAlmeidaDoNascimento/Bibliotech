@@ -31,13 +31,13 @@ const OnlineCatalog: React.FC = () => {
           setSelectedBookId(config.specificBookId || '');
         }
 
-        // Carregar livros que têm capa e sinopse
+        // Carregar livros que têm capa e sinopse (não descrição)
         const allBooks = await bookRecommendationService.getAllBooksWithStats(currentUser.uid);
         const eligibleBooks = allBooks.filter(book => 
           book.coverUrl && 
           book.coverUrl.trim() !== '' && 
-          book.description && 
-          book.description.trim() !== ''
+          book.synopsis && 
+          book.synopsis.trim() !== ''
         );
         setAvailableBooks(eligibleBooks);
       } catch (error) {

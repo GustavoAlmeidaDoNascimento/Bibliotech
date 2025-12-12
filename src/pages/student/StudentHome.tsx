@@ -655,9 +655,9 @@ const StudentHome: React.FC = () => {
                   </span>
                 </div>
 
-                {showcaseBook.description && (
-                  <p className={styles.showcaseDescription}>
-                    {showcaseBook.description}
+                {showcaseBook.synopsis && (
+                  <p className={styles.showcaseSynopsis}>
+                    {showcaseBook.synopsis}
                   </p>
                 )}
 

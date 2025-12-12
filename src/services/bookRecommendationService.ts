@@ -13,7 +13,8 @@ export interface BookWithStats {
   title: string;
   authors: string[];
   genres: string[];
-  description?: string;
+  description?: string; // Descrição interna para o gestor
+  synopsis?: string; // Sinopse pública para os alunos
   loanCount: number;
   available: boolean;
   lastLoanDate?: Date;
@@ -137,7 +138,8 @@ export const bookRecommendationService = {
           title: bookData.title || 'Título não informado',
           authors,
           genres,
-          description: bookData.description,
+          description: bookData.description, // Descrição interna para o gestor
+          synopsis: bookData.synopsis, // Sinopse pública para os alunos
           loanCount: stats.count,
           available: isAvailable,
           lastLoanDate: stats.lastDate,

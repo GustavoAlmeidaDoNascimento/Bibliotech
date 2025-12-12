@@ -90,12 +90,12 @@ export const catalogShowcaseService = {
    * Seleciona um livro aleatório que tenha capa e sinopse
    */
   getRandomShowcaseBook: (allBooks: BookWithStats[]): BookWithStats | null => {
-    // Filtrar livros que tenham capa E sinopse
+    // Filtrar livros que tenham capa E sinopse (não descrição)
     const eligibleBooks = allBooks.filter(book => 
       book.coverUrl && 
       book.coverUrl.trim() !== '' && 
-      book.description && 
-      book.description.trim() !== ''
+      book.synopsis && 
+      book.synopsis.trim() !== ''
     );
 
     if (eligibleBooks.length === 0) {
@@ -172,7 +172,8 @@ export const catalogShowcaseService = {
         title: bookData.title || 'Título não informado',
         authors,
         genres,
-        description: bookData.description,
+        description: bookData.description, // Descrição interna para gestor
+        synopsis: bookData.synopsis, // Sinopse pública para alunos
         loanCount,
         available: isAvailable,
         createdAt: bookData.createdAt?.toDate ? bookData.createdAt.toDate() : new Date(),
