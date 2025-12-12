@@ -185,6 +185,19 @@
   color: #92400e;
 }
 
+.unassignedCard .levelSelectorContainer {
+  border-top-color: #fcd34d;
+}
+
+.unassignedCard .levelSelector {
+  background: #fff;
+  border-color: #fbbf24;
+}
+
+.unassignedCard .levelSelector:hover:not(:disabled) {
+  border-color: #f59e0b;
+}
+
 .classStats {
   display: flex;
   gap: 16px;
@@ -202,6 +215,75 @@
   width: 16px;
   height: 16px;
   opacity: 0.7;
+}
+
+.errorMessage,
+.successMessage {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.errorMessage {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.successMessage {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.levelSelectorContainer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.levelSelectorLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.levelSelector {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--background-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.levelSelector:hover:not(:disabled) {
+  border-color: var(--primary-color);
+}
+
+.levelSelector:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.levelSelector:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.updatingText {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 @media (max-width: 768px) {

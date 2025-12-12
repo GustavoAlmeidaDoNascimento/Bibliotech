@@ -45,6 +45,7 @@ import BookDetails from '../pages/student/BookDetails';
 import MyBooks from '../pages/student/MyBooks';
 import ReserveBook from '../pages/student/ReserveBook';
 import Achievements from '../pages/student/Achievements';
+import YearTurnoverWizard from '../pages/yearTurnover/YearTurnoverWizard';
 import NotFound from '../pages/NotFound';
 import { ROUTES } from '../constants';
 
@@ -223,6 +224,10 @@ export const protectedRoutes = [
   {
     path: ROUTES.SETTINGS,
     element: <Settings />,
+  },
+  {
+    path: "/year-turnover",
+    element: <YearTurnoverWizard />,
   },
   {
     path: ROUTES.CATALOG,

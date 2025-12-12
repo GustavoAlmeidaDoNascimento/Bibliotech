@@ -1,0 +1,277 @@
+.stepContainer {
+  width: 100%;
+}
+
+.stepTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.stepDescription {
+  font-size: 1rem;
+  color: #6B7280;
+  margin: 0 0 2rem 0;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+}
+
+/* Info Card */
+.infoCard {
+  background: #F9FAFB;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 2px solid #E5E7EB;
+}
+
+.cardHeader {
+  margin-bottom: 1rem;
+}
+
+.cardHeader h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0;
+}
+
+/* Year Transition */
+.yearTransition {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.yearBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  border: 2px solid #3B82F6;
+}
+
+.yearLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6B7280;
+  margin-bottom: 0.5rem;
+}
+
+.yearValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #3B82F6;
+}
+
+.arrow {
+  font-size: 2rem;
+  color: #3B82F6;
+  font-weight: 700;
+}
+
+/* Checks */
+.checksContainer {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 1rem 0;
+}
+
+.checksList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.checkItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #E5E7EB;
+}
+
+.checkIcon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.successIcon {
+  color: #10B981;
+}
+
+.errorIcon {
+  color: #EF4444;
+}
+
+.warningIcon {
+  color: #F59E0B;
+}
+
+.checkContent {
+  flex: 1;
+}
+
+.checkTitle {
+  display: block;
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 0.25rem;
+}
+
+.checkDescription {
+  font-size: 0.875rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: white;
+  border: 3px solid;
+}
+
+.statBlue {
+  border-color: #3B82F6;
+}
+
+.statPurple {
+  border-color: #8B5CF6;
+}
+
+.statGreen {
+  border-color: #10B981;
+}
+
+.statValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.statBlue .statValue {
+  color: #3B82F6;
+}
+
+.statPurple .statValue {
+  color: #8B5CF6;
+}
+
+.statGreen .statValue {
+  color: #10B981;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6B7280;
+  text-align: center;
+}
+
+/* Warning Box */
+.warningBox {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #FEF3C7;
+  border: 2px solid #F59E0B;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.warningBox .warningIcon {
+  width: 24px;
+  height: 24px;
+  color: #F59E0B;
+  flex-shrink: 0;
+}
+
+.warningBox strong {
+  display: block;
+  color: #92400E;
+  margin-bottom: 0.5rem;
+}
+
+.warningBox p {
+  color: #78350F;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Step Actions */
+.stepActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.primaryButton {
+  padding: 0.875rem 2rem;
+  background: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: #2563EB;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+}
+
+.primaryButton:disabled {
+  background: #9CA3AF;
+  cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .yearTransition {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .arrow {
+    transform: rotate(90deg);
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
