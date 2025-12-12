@@ -122,7 +122,10 @@ const OnlineCatalog: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Vitrine do Catálogo</h1>
+      <h1 className={styles.title}>
+        Vitrine do Catálogo
+        <span className={styles.newBadge}>Novo!</span>
+      </h1>
 
       <p className={styles.description}>
         Configure o livro que aparecerá em destaque no catálogo dos alunos, 
