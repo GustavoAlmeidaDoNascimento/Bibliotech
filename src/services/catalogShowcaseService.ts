@@ -66,26 +66,33 @@ export const catalogShowcaseService = {
   },
 
   /**
-   * Busca o livro da vitrine baseado na configuração
+   * Busca o livro da vitrine diretamente pelo ID salvo (sem depender de lista)
    */
-  getShowcaseBook: async (userId: string, allBooks: BookWithStats[]): Promise<BookWithStats | null> => {
+  getShowcaseBook: async (userId: string): Promise<BookWithStats | null> => {
     try {
       const config = await catalogShowcaseService.getShowcaseConfig(userId);
       
       if (!config || !config.specificBookId) {
-        // Se não tem configuração ou não tem livro salvo, retorna aleatório
-        return catalogShowcaseService.getRandomShowcaseBook(allBooks);
+        // Se não tem configuração ou não tem livro salvo, retorna null
+        console.log('⚠️ Nenhum livro configurado na vitrine');
+        return null;
       }
 
-      // Buscar livro salvo (tanto para modo específico quanto aleatório)
-      const book = allBooks.find(b => b.id === config.specificBookId);
-      if (book) {
-        return book;
-      }
+      // Buscar livro diretamente pelo ID salvo
+      const book = await catalogShowcaseService.getBookById(userId, config.specificBookId);
       
-      // Se o livro salvo não for encontrado, retorna um aleatório
-      console.warn('Livro da vitrine não encontrado, selecionando aleatório');
-      return catalogShowcaseService.getRandomShowcaseBook(allBooks);
+      if (!book) {
+        console.warn('Livro da vitrine não encontrado:', config.specificBookId);
+        return null;
+      }
+
+      // Verificar se tem capa e sinopse
+      if (!book.coverUrl || !book.coverUrl.trim() || !book.synopsis || !book.synopsis.trim()) {
+        console.warn('Livro da vitrine não tem capa ou sinopse:', config.specificBookId);
+        return null;
+      }
+
+      return book;
     } catch (error) {
       console.error('Erro ao buscar livro da vitrine:', error);
       return null;
