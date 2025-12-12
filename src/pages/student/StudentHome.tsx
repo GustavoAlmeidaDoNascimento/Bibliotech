@@ -28,6 +28,7 @@ const StudentHome: React.FC = () => {
   const [loading, setLoading] = useState(!cachedData); // Iniciar como true se não houver cache
   const [catalogBlockResolved, setCatalogBlockResolved] = useState(false);
   const [showcaseBook, setShowcaseBook] = useState<BookWithStats | null>(null);
+  const [showcaseLoaded, setShowcaseLoaded] = useState(false);
   
   // Estados para o filtro
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -54,13 +55,10 @@ const StudentHome: React.FC = () => {
     [effectiveSubscriptionPlan]
   );
 
+  // Carregar showcase apenas uma vez quando a página carrega
   useEffect(() => {
-    if (!studentId) {
-      navigate('/student-id-input');
-      return;
-    }
+    if (!studentId || showcaseLoaded) return;
 
-    // Carregar showcase imediatamente (busca direta e rápida)
     const loadShowcase = async () => {
       try {
         const student = await studentService.findStudentById(studentId);
@@ -70,13 +68,22 @@ const StudentHome: React.FC = () => {
             setShowcaseBook(showcase);
             console.log('✅ Showcase carregado:', showcase.title);
           }
+          setShowcaseLoaded(true);
         }
       } catch (error) {
         console.error('Erro ao carregar showcase:', error);
+        setShowcaseLoaded(true); // Marcar como carregado mesmo em erro para evitar loop
       }
     };
     
     loadShowcase();
+  }, [studentId, showcaseLoaded]);
+
+  useEffect(() => {
+    if (!studentId) {
+      navigate('/student-id-input');
+      return;
+    }
 
     // Se já tem dados em cache e o catálogo não está bloqueado, usar eles
     if (cachedData && !isCatalogBlocked) {
