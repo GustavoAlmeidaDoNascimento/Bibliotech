@@ -60,31 +60,23 @@ const StudentHome: React.FC = () => {
       return;
     }
 
-    // Carregar showcase do cache imediatamente (se existir)
-    const loadShowcaseFromCache = async () => {
+    // Carregar showcase imediatamente (busca direta e rápida)
+    const loadShowcase = async () => {
       try {
         const student = await studentService.findStudentById(studentId);
         if (student) {
-          const cacheKey = `showcase_${student.userId}`;
-          const cached = localStorage.getItem(cacheKey);
-          if (cached) {
-            const { bookId, timestamp } = JSON.parse(cached);
-            // Cache válido por 1 hora
-            if (Date.now() - timestamp < 3600000) {
-              const cachedBook = await catalogShowcaseService.getBookById(student.userId, bookId);
-              if (cachedBook) {
-                setShowcaseBook(cachedBook);
-                console.log('✅ Showcase carregado do cache');
-              }
-            }
+          const showcase = await catalogShowcaseService.getShowcaseBook(student.userId);
+          if (showcase) {
+            setShowcaseBook(showcase);
+            console.log('✅ Showcase carregado:', showcase.title);
           }
         }
       } catch (error) {
-        console.error('Erro ao carregar showcase do cache:', error);
+        console.error('Erro ao carregar showcase:', error);
       }
     };
     
-    loadShowcaseFromCache();
+    loadShowcase();
 
     // Se já tem dados em cache e o catálogo não está bloqueado, usar eles
     if (cachedData && !isCatalogBlocked) {
@@ -146,10 +138,6 @@ const StudentHome: React.FC = () => {
         const dashboardDataResponse = await studentService.getStudentDashboardData(studentId);
         setDashboardData(dashboardDataResponse);
         
-        // Buscar livro da vitrine PRIMEIRO (mais rápido e direto)
-        const showcase = await catalogShowcaseService.getShowcaseBook(student.userId);
-        setShowcaseBook(showcase);
-        
         // Buscar todos os livros da escola e gerar recomendações
         const booksData = await bookRecommendationService.getAllBooksWithStats(student.userId);
         const recommendations = bookRecommendationService.generateRecommendations(booksData);
@@ -157,21 +145,13 @@ const StudentHome: React.FC = () => {
         // Atualizar estado
         setRecommendationSections(recommendations);
         setAllBooks(booksData);
-
-        // Salvar no cache (incluindo showcase)
+        
+        // Salvar no cache
         setCachedData({
           dashboardData: dashboardDataResponse || null,
           recommendationSections: recommendations,
           allBooks: booksData
         });
-        
-        // Cache do showcase separado para acesso rápido
-        if (showcase) {
-          localStorage.setItem(`showcase_${student.userId}`, JSON.stringify({
-            bookId: showcase.id,
-            timestamp: Date.now()
-          }));
-        }
 
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
