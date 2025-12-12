@@ -4,6 +4,7 @@ import { ArrowLeftIcon, CheckIcon, BookOpenIcon } from '@heroicons/react/24/outl
 import { useAuth } from '../../contexts/AuthContext';
 import { catalogShowcaseService, ShowcaseConfig } from '../../services/catalogShowcaseService';
 import { bookRecommendationService, BookWithStats } from '../../services/bookRecommendationService';
+import NewBadge from '../../components/NewBadge/NewBadge';
 import styles from './OnlineCatalog.module.css';
 
 const OnlineCatalog: React.FC = () => {
@@ -124,7 +125,7 @@ const OnlineCatalog: React.FC = () => {
     <div className={styles.container}>
       <h1 className={styles.title}>
         Vitrine do Catálogo
-        <span className={styles.newBadge}>Novo!</span>
+        <NewBadge text="novo!" variant="new" />
       </h1>
 
       <p className={styles.description}>
