@@ -80,16 +80,27 @@ const OnlineCatalog: React.FC = () => {
   const handleSave = async () => {
     if (!currentUser) return;
 
+    // Validar modo específico
     if (showcaseMode === 'specific' && !selectedBookId) {
       alert('Por favor, selecione um livro para a vitrine.');
       return;
     }
 
+    // Validar modo aleatório (precisa ter um livro na preview)
+    if (showcaseMode === 'random' && !previewBook) {
+      alert('Nenhum livro disponível para vitrine. Adicione livros com capa e sinopse primeiro.');
+      return;
+    }
+
     try {
       setSaving(true);
+      
+      // Em ambos os modos, salvar o ID do livro que está na preview
+      const bookIdToSave = showcaseMode === 'specific' ? selectedBookId : previewBook?.id;
+      
       const config: ShowcaseConfig = {
         mode: showcaseMode,
-        specificBookId: showcaseMode === 'specific' ? selectedBookId : undefined
+        specificBookId: bookIdToSave
       };
 
       await catalogShowcaseService.saveShowcaseConfig(currentUser.uid, config);

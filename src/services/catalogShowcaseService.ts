@@ -24,10 +24,19 @@ export const catalogShowcaseService = {
   saveShowcaseConfig: async (userId: string, config: ShowcaseConfig): Promise<void> => {
     try {
       const showcaseRef = doc(db, `users/${userId}/settings/catalogShowcase`);
-      await setDoc(showcaseRef, {
-        ...config,
+      
+      // Preparar dados para salvar (remover undefined)
+      const dataToSave: any = {
+        mode: config.mode,
         updatedAt: new Date()
-      }, { merge: true });
+      };
+      
+      // Só adicionar specificBookId se existir
+      if (config.specificBookId) {
+        dataToSave.specificBookId = config.specificBookId;
+      }
+      
+      await setDoc(showcaseRef, dataToSave, { merge: true });
       
       console.log('✅ Configuração da vitrine salva com sucesso');
     } catch (error) {
@@ -63,22 +72,19 @@ export const catalogShowcaseService = {
     try {
       const config = await catalogShowcaseService.getShowcaseConfig(userId);
       
-      if (!config) {
+      if (!config || !config.specificBookId) {
+        // Se não tem configuração ou não tem livro salvo, retorna aleatório
         return catalogShowcaseService.getRandomShowcaseBook(allBooks);
       }
 
-      if (config.mode === 'specific' && config.specificBookId) {
-        // Buscar livro específico
-        const book = allBooks.find(b => b.id === config.specificBookId);
-        if (book) {
-          return book;
-        }
-        // Se o livro específico não for encontrado, retorna um aleatório
-        console.warn('Livro específico da vitrine não encontrado, selecionando aleatório');
-        return catalogShowcaseService.getRandomShowcaseBook(allBooks);
+      // Buscar livro salvo (tanto para modo específico quanto aleatório)
+      const book = allBooks.find(b => b.id === config.specificBookId);
+      if (book) {
+        return book;
       }
       
-      // Modo aleatório
+      // Se o livro salvo não for encontrado, retorna um aleatório
+      console.warn('Livro da vitrine não encontrado, selecionando aleatório');
       return catalogShowcaseService.getRandomShowcaseBook(allBooks);
     } catch (error) {
       console.error('Erro ao buscar livro da vitrine:', error);
