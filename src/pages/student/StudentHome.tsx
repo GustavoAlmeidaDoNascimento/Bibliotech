@@ -419,8 +419,82 @@ const StudentHome: React.FC = () => {
           </div>
         </header>
 
-        {/* Main Content Skeleton */}
+        {/* Main Content */}
         <main className={styles.main}>
+          {/* Mostrar showcase PRIMEIRO se já estiver disponível */}
+          {showcaseBook && (
+            <section className={styles.showcaseSection}>
+              <div className={styles.showcaseBackground}>
+                {showcaseBook.coverUrl && (
+                  <img 
+                    src={showcaseBook.coverUrl} 
+                    alt="" 
+                    className={styles.showcaseBackgroundImage}
+                  />
+                )}
+                <div className={styles.showcaseGradient}></div>
+              </div>
+              
+              <div className={styles.showcaseContent}>
+                <div className={styles.showcaseCover}>
+                  {showcaseBook.coverUrl ? (
+                    <img src={showcaseBook.coverUrl} alt={showcaseBook.title} />
+                  ) : (
+                    <div className={styles.showcaseCoverPlaceholder}>
+                      <BookOpen size={60} />
+                    </div>
+                  )}
+                </div>
+
+                <div className={styles.showcaseInfo}>
+                  <div className={styles.showcaseBadge}>Em Destaque</div>
+                  <h2 className={styles.showcaseTitle}>{showcaseBook.title}</h2>
+                  
+                  <div className={styles.showcaseMeta}>
+                    {showcaseBook.authors.length > 0 && (
+                      <span className={styles.showcaseAuthor}>
+                        {showcaseBook.authors.join(', ')}
+                      </span>
+                    )}
+                    {showcaseBook.genres.length > 0 && (
+                      <>
+                        <span className={styles.showcaseDivider}>•</span>
+                        <span className={styles.showcaseGenre}>
+                          {showcaseBook.genres[0]}
+                        </span>
+                      </>
+                    )}
+                    <span className={styles.showcaseDivider}>•</span>
+                    <span className={styles.showcaseLoans}>
+                      {showcaseBook.loanCount} empréstimos
+                    </span>
+                  </div>
+
+                  {showcaseBook.synopsis && (
+                    <p className={styles.showcaseSynopsis}>
+                      {showcaseBook.synopsis}
+                    </p>
+                  )}
+
+                  {showcaseBook.available && (
+                    <div className={styles.showcaseAvailability}>
+                      <div className={styles.availableDot}></div>
+                      Disponível para empréstimo agora
+                    </div>
+                  )}
+
+                  <button 
+                    className={styles.showcaseButton}
+                    onClick={() => handleBookClick(showcaseBook.id)}
+                  >
+                    <BookOpen size={20} />
+                    Ver Detalhes e Reservar
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Simular 4 seções de carrosséis */}
           {[1, 2, 3, 4].map((sectionIndex) => (
             <section key={sectionIndex} className={styles.section}>
@@ -675,7 +749,7 @@ const StudentHome: React.FC = () => {
 
       {/* Conteúdo Principal */}
       <main className={styles.main}>
-        {/* Vitrine/Showcase - Livro em Destaque */}
+        {/* Vitrine/Showcase - Livro em Destaque (PRIMEIRO, sempre no topo) */}
         {!showSearchResults && showcaseBook && (
           <section className={styles.showcaseSection}>
             <div className={styles.showcaseBackground}>
