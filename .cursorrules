@@ -1,5 +1,7 @@
 # Regras Específicas do Projeto Bibliotech
 
+#aviso: apesar de colocar regras pra mensagem de commit, voce não deve dar commit, isso é só pra gerar a mensagem
+
 ## Sistema de Versionamento de Commits
 
 ### OBRIGATÓRIO: Incluir número da versão em TODOS os commits

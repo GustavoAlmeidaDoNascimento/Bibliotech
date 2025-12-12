@@ -55,18 +55,20 @@ const StudentHome: React.FC = () => {
     [effectiveSubscriptionPlan]
   );
 
-  // Carregar showcase apenas uma vez quando a página carrega
+  // Carregar showcase PRIMEIRO, antes de tudo (prioridade máxima)
   useEffect(() => {
     if (!studentId || showcaseLoaded) return;
 
     const loadShowcase = async () => {
       try {
+        // Buscar aluno para obter userId
         const student = await studentService.findStudentById(studentId);
         if (student) {
+          // Carregar showcase imediatamente (sem esperar nada)
           const showcase = await catalogShowcaseService.getShowcaseBook(student.userId);
           if (showcase) {
             setShowcaseBook(showcase);
-            console.log('✅ Showcase carregado:', showcase.title);
+            console.log('✅ Showcase carregado PRIMEIRO:', showcase.title);
           }
           setShowcaseLoaded(true);
         }
@@ -76,6 +78,7 @@ const StudentHome: React.FC = () => {
       }
     };
     
+    // Executar imediatamente, sem delay
     loadShowcase();
   }, [studentId, showcaseLoaded]);
 
@@ -125,6 +128,22 @@ const StudentHome: React.FC = () => {
           console.error('Aluno não encontrado');
           setLoading(false);
           return;
+        }
+
+        // Carregar showcase em paralelo (se ainda não foi carregado)
+        if (!showcaseLoaded) {
+          catalogShowcaseService.getShowcaseBook(student.userId)
+            .then(showcase => {
+              if (showcase) {
+                setShowcaseBook(showcase);
+                console.log('✅ Showcase carregado em paralelo:', showcase.title);
+              }
+              setShowcaseLoaded(true);
+            })
+            .catch(error => {
+              console.error('Erro ao carregar showcase em paralelo:', error);
+              setShowcaseLoaded(true);
+            });
         }
 
         // Buscar apenas o plano da escola
