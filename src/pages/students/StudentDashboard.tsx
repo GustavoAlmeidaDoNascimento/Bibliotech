@@ -18,7 +18,6 @@ import {
 } from 'chart.js';
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, subMonths, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import BookRecommendations from '../../components/recommendations/BookRecommendations';
 import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
 import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
 import { Lock, ArrowUpRight, Eye, Trash2 } from 'lucide-react';
@@ -1170,17 +1169,6 @@ const StudentDashboard = () => {
         </>
         );
       })()}
-
-      <div className={styles.recommendationsSection}>
-        <BookRecommendations
-          userId={currentUser?.uid || ''}
-          studentId={studentId || ''}
-          onBookClick={(bookId) => {
-            // Navegar para detalhes do livro
-            navigate(`/books/${bookId}`);
-          }}
-        />
-      </div>
 
       {/* Modal de confirmação de deleção */}
       {showDeleteModal && (
