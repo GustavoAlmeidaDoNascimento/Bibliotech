@@ -30,11 +30,11 @@ export const dummyContentPacks: DummyContentPack[] = [
     name: 'Filosofia',
     description: 'Grandes filósofos e suas obras clássicas',
     students: [
-      { name: 'Sócrates', classroom: '3º Ano A', shift: 'Manhã' },
-      { name: 'Platão', classroom: '3º Ano A', shift: 'Manhã' },
-      { name: 'Aristóteles', classroom: '3º Ano B', shift: 'Manhã' },
-      { name: 'Tales de Mileto', classroom: '2º Ano A', shift: 'Tarde' },
-      { name: 'Heráclito', classroom: '2º Ano B', shift: 'Tarde' }
+      { name: 'Sócrates', classroom: '301', shift: 'Manhã' },
+      { name: 'Platão', classroom: '301', shift: 'Manhã' },
+      { name: 'Aristóteles', classroom: '302', shift: 'Manhã' },
+      { name: 'Tales de Mileto', classroom: '204', shift: 'Tarde' },
+      { name: 'Heráclito', classroom: '205', shift: 'Tarde' }
     ],
     books: [
       { 
@@ -79,13 +79,13 @@ export const dummyContentPacks: DummyContentPack[] = [
     name: 'Física',
     description: 'Cientistas renomados e obras científicas fundamentais',
     students: [
-      { name: 'Albert Einstein', classroom: '3º Ano A', shift: 'Manhã' },
-      { name: 'Erwin Schrödinger', classroom: '3º Ano B', shift: 'Manhã' },
-      { name: 'Richard Feynman', classroom: '3º Ano A', shift: 'Tarde' },
-      { name: 'James Clerk Maxwell', classroom: '2º Ano A', shift: 'Manhã' },
-      { name: 'Robert Oppenheimer', classroom: '2º Ano B', shift: 'Tarde' },
-      { name: 'Isaac Newton', classroom: '3º Ano B', shift: 'Tarde' },
-      { name: 'Marie Curie', classroom: '2º Ano A', shift: 'Tarde' }
+      { name: 'Albert Einstein', classroom: '301', shift: 'Manhã' },
+      { name: 'Erwin Schrödinger', classroom: '302', shift: 'Manhã' },
+      { name: 'Richard Feynman', classroom: '303', shift: 'Tarde' },
+      { name: 'James Clerk Maxwell', classroom: '201', shift: 'Manhã' },
+      { name: 'Robert Oppenheimer', classroom: '204', shift: 'Tarde' },
+      { name: 'Isaac Newton', classroom: '304', shift: 'Tarde' },
+      { name: 'Marie Curie', classroom: '205', shift: 'Tarde' }
     ],
     books: [
       { 
@@ -144,11 +144,11 @@ export const dummyContentPacks: DummyContentPack[] = [
     name: 'Celebridades',
     description: 'Personalidades famosas e best-sellers populares',
     students: [
-      { name: 'Kanye West', classroom: '2º Ano A', shift: 'Manhã' },
-      { name: 'Jay-Z', classroom: '2º Ano B', shift: 'Manhã' },
-      { name: 'Kendrick Lamar', classroom: '3º Ano A', shift: 'Tarde' },
-      { name: 'Beyoncé', classroom: '3º Ano B', shift: 'Tarde' },
-      { name: 'Justin Bieber', classroom: '2º Ano A', shift: 'Tarde' }
+      { name: 'Kanye West', classroom: '201', shift: 'Manhã' },
+      { name: 'Jay-Z', classroom: '202', shift: 'Manhã' },
+      { name: 'Kendrick Lamar', classroom: '303', shift: 'Tarde' },
+      { name: 'Beyoncé', classroom: '304', shift: 'Tarde' },
+      { name: 'Justin Bieber', classroom: '204', shift: 'Tarde' }
     ],
     books: [
       { 
