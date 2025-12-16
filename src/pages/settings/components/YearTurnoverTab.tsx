@@ -302,6 +302,7 @@ const YearTurnoverTab: React.FC = () => {
             ℹ️ Informações Importantes
           </h4>
           <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#1E3A8A', fontSize: '0.875rem' }}>
+            <li><strong>Antes de iniciar:</strong> É crucial ter todas as informações atualizadas de todas as turmas e alunos da escola. Recomendamos consultar os relatórios do sistema para verificar que todos os dados estão completos e organizados, incluindo as informações sobre as turmas e alunos que farão parte do novo ano letivo</li>
             <li>A virada de ano é um processo guiado passo a passo</li>
             <li>Você terá controle total sobre o destino de cada aluno e turma</li>
             <li>Um snapshot completo do dashboard será criado para preservar os dados do ano anterior</li>
