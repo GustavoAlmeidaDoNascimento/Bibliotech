@@ -73,6 +73,47 @@ const YearTurnoverTab: React.FC = () => {
           Gerencie a transição de dados entre anos letivos de forma segura e organizada.
         </p>
         
+        {/* Tutorial em Vídeo */}
+        <div style={{
+          marginBottom: '2rem',
+          background: '#F9FAFB',
+          border: '2px solid #E5E7EB',
+          borderRadius: '12px',
+          padding: '1.5rem'
+        }}>
+          <h4 style={{ 
+            margin: '0 0 1rem 0', 
+            fontSize: '1.125rem', 
+            fontWeight: 600,
+            color: '#1F2937'
+          }}>
+            Aprenda a fazer o processo de virada da escola!
+          </h4>
+          <div style={{
+            position: 'relative',
+            paddingBottom: '56.25%', // 16:9 aspect ratio
+            height: 0,
+            overflow: 'hidden',
+            borderRadius: '8px',
+            background: '#000'
+          }}>
+            <iframe
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                border: 'none'
+              }}
+              src="https://www.youtube.com/embed/PFYED2sJ9us"
+              title="Tutorial de Virada de Ano Letivo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+        
         {/* Status do Ano Atual */}
         <div style={{
           background: '#F9FAFB',
