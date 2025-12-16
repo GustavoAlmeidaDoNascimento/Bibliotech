@@ -396,7 +396,7 @@ const Step2ClassMapping: React.FC = () => {
         padding: '1rem',
         marginBottom: '2rem'
       }}>
-        <strong>Resumo:</strong> {newClasses.length} turma{newClasses.length !== 1 ? 's' : ''} será{newClasses.length !== 1 ? 'ão' : ''} criada{newClasses.length !== 1 ? 's' : ''} para {config.toYear}
+        <strong>Resumo:</strong> {newClasses.length} turma{newClasses.length !== 1 ? 's' : ''} {newClasses.length !== 1 ? 'serão' : 'será'} criada{newClasses.length !== 1 ? 's' : ''} para {config.toYear}
       </div>
       
       {/* Botão de ação */}
