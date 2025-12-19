@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useYearTurnover } from '../../../contexts/YearTurnoverContext';
 import { useEducationalLevels } from '../../../contexts/EducationalLevelsContext';
 import { StudentAction } from '../../../types/yearTurnover';
-import { ExclamationTriangleIcon, UserIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, UserIcon, CheckCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import styles from './Steps.module.css';
 
 const Step3StudentManagement: React.FC = () => {
@@ -23,6 +23,12 @@ const Step3StudentManagement: React.FC = () => {
   const [showActionModal, setShowActionModal] = useState(false);
   const [modalAction, setModalAction] = useState<'promote' | 'retain' | 'transfer' | 'graduate'>('promote');
   const [selectedTargetClass, setSelectedTargetClass] = useState<string>('');
+  
+  // Novos estados para busca avançada
+  const [searchName, setSearchName] = useState<string>('');
+  const [selectedClassroom, setSelectedClassroom] = useState<string>('all');
+  const [selectedShift, setSelectedShift] = useState<string>('all');
+  const [showOnlyPending, setShowOnlyPending] = useState<boolean>(false);
   
   useEffect(() => {
     // Inicializar ações vazias (todas pendentes)
@@ -127,17 +133,45 @@ const Step3StudentManagement: React.FC = () => {
   };
   
   const getFilteredStudents = () => {
-    if (selectedLevel === 'all') {
-      return studentActions;
+    let filtered = studentActions;
+    
+    // Filtro por nível educacional
+    if (selectedLevel !== 'all') {
+      filtered = filtered.filter(s => {
+        const studentClass = allClasses.find(
+          c => c.className === s.fromClass && c.shift === s.fromShift
+        );
+        return studentClass?.levelId === selectedLevel;
+      });
     }
     
-    // Filtrar por nível educacional
-    return studentActions.filter(s => {
-      const studentClass = allClasses.find(
-        c => c.className === s.fromClass && c.shift === s.fromShift
+    // Filtro por turma
+    if (selectedClassroom !== 'all') {
+      const [className, shift] = selectedClassroom.split('|');
+      filtered = filtered.filter(s => 
+        s.fromClass === className && s.fromShift === shift
       );
-      return studentClass?.levelId === selectedLevel;
-    });
+    }
+    
+    // Filtro por turno
+    if (selectedShift !== 'all') {
+      filtered = filtered.filter(s => s.fromShift === selectedShift);
+    }
+    
+    // Filtro por nome
+    if (searchName.trim()) {
+      const searchLower = searchName.toLowerCase().trim();
+      filtered = filtered.filter(s => 
+        s.studentName.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Filtro por alunos pendentes (sem ação)
+    if (showOnlyPending) {
+      filtered = filtered.filter(s => !s.action);
+    }
+    
+    return filtered;
   };
   
   const handleProceed = () => {
@@ -201,6 +235,42 @@ const Step3StudentManagement: React.FC = () => {
       count: studentsInLevel.length
     };
   });
+  
+  // Turmas únicas para filtro
+  const uniqueClassrooms = Array.from(
+    new Set(
+      studentActions.map(s => `${s.fromClass}|${s.fromShift}`)
+    )
+  ).map(classKey => {
+    const [className, shift] = classKey.split('|');
+    const studentsInClass = studentActions.filter(s => 
+      s.fromClass === className && s.fromShift === shift
+    );
+    
+    return {
+      key: classKey,
+      className,
+      shift,
+      count: studentsInClass.length
+    };
+  }).sort((a, b) => {
+    // Ordenar por nome da turma e depois por turno
+    if (a.className !== b.className) {
+      return a.className.localeCompare(b.className);
+    }
+    return a.shift.localeCompare(b.shift);
+  });
+  
+  // Turnos únicos para filtro
+  const uniqueShifts = Array.from(
+    new Set(studentActions.map(s => s.fromShift))
+  ).map(shift => {
+    const studentsInShift = studentActions.filter(s => s.fromShift === shift);
+    return {
+      shift,
+      count: studentsInShift.length
+    };
+  }).sort((a, b) => a.shift.localeCompare(b.shift));
   
   return (
     <div className={styles.stepContainer}>
@@ -364,6 +434,207 @@ const Step3StudentManagement: React.FC = () => {
           >
             Graduar
           </button>
+        </div>
+      </div>
+      
+      {/* Sistema de Busca Avançada */}
+      <div style={{
+        background: '#F9FAFB',
+        border: '2px solid #E5E7EB',
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '2rem'
+      }}>
+        <h3 style={{
+          fontSize: '1rem',
+          fontWeight: 600,
+          color: '#1F2937',
+          marginBottom: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          <MagnifyingGlassIcon style={{ width: '20px', height: '20px' }} />
+          Busca de Alunos
+        </h3>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem',
+          marginBottom: '1rem'
+        }}>
+          {/* Busca por Nome */}
+          <div>
+            <label style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              color: '#374151',
+              marginBottom: '0.5rem'
+            }}>
+              Nome do Aluno
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                placeholder="Digite o nome..."
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  paddingLeft: '2.5rem',
+                  border: '2px solid #E5E7EB',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem'
+                }}
+              />
+              <MagnifyingGlassIcon style={{
+                position: 'absolute',
+                left: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '18px',
+                height: '18px',
+                color: '#9CA3AF'
+              }} />
+            </div>
+          </div>
+          
+          {/* Seletor de Turma */}
+          <div>
+            <label style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              color: '#374151',
+              marginBottom: '0.5rem'
+            }}>
+              Turma
+            </label>
+            <select
+              value={selectedClassroom}
+              onChange={(e) => setSelectedClassroom(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '2px solid #E5E7EB',
+                borderRadius: '8px',
+                fontSize: '0.875rem'
+              }}
+            >
+              <option value="all">Todas as Turmas</option>
+              {uniqueClassrooms.map(classroom => (
+                <option key={classroom.key} value={classroom.key}>
+                  {classroom.className} - {classroom.shift} ({classroom.count} alunos)
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          {/* Seletor de Turno */}
+          <div>
+            <label style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              color: '#374151',
+              marginBottom: '0.5rem'
+            }}>
+              Turno
+            </label>
+            <select
+              value={selectedShift}
+              onChange={(e) => setSelectedShift(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '2px solid #E5E7EB',
+                borderRadius: '8px',
+                fontSize: '0.875rem'
+              }}
+            >
+              <option value="all">Todos os Turnos</option>
+              {uniqueShifts.map(({ shift, count }) => (
+                <option key={shift} value={shift}>
+                  {shift} ({count} alunos)
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
+        {/* Checkbox para mostrar apenas pendentes */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.75rem',
+          background: showOnlyPending ? '#FEF3C7' : 'transparent',
+          borderRadius: '8px',
+          border: showOnlyPending ? '2px solid #F59E0B' : '2px solid transparent',
+          transition: 'all 0.2s'
+        }}>
+          <input
+            type="checkbox"
+            id="showOnlyPending"
+            checked={showOnlyPending}
+            onChange={(e) => setShowOnlyPending(e.target.checked)}
+            style={{
+              width: '18px',
+              height: '18px',
+              cursor: 'pointer'
+            }}
+          />
+          <label
+            htmlFor="showOnlyPending"
+            style={{
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              color: showOnlyPending ? '#92400E' : '#374151',
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+          >
+            Mostrar apenas alunos pendentes (sem ação definida)
+          </label>
+        </div>
+        
+        {/* Contador de resultados */}
+        <div style={{
+          marginTop: '1rem',
+          paddingTop: '1rem',
+          borderTop: '1px solid #E5E7EB',
+          fontSize: '0.875rem',
+          color: '#6B7280'
+        }}>
+          <strong style={{ color: '#1F2937' }}>
+            {filteredStudents.length} aluno{filteredStudents.length !== 1 ? 's' : ''} encontrado{filteredStudents.length !== 1 ? 's' : ''}
+          </strong>
+          {(searchName || selectedClassroom !== 'all' || selectedShift !== 'all' || showOnlyPending) && (
+            <button
+              onClick={() => {
+                setSearchName('');
+                setSelectedClassroom('all');
+                setSelectedShift('all');
+                setShowOnlyPending(false);
+              }}
+              style={{
+                marginLeft: '1rem',
+                padding: '0.25rem 0.75rem',
+                background: 'transparent',
+                color: '#3B82F6',
+                border: '1px solid #3B82F6',
+                borderRadius: '6px',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                fontWeight: 500
+              }}
+            >
+              Limpar filtros
+            </button>
+          )}
         </div>
       </div>
       
