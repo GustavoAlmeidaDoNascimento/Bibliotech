@@ -40,8 +40,12 @@
 }
 
 .emptyIcon {
-  font-size: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 1rem;
+  color: #64748b;
+  opacity: 0.6;
 }
 
 .emptyState h3 {

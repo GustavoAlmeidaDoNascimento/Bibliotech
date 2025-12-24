@@ -118,7 +118,7 @@ const Reservations: React.FC = () => {
         <h1>Reservas de Livros <NewBadge /></h1>
         <p className={styles.subtitle}>
           {reservations.length === 0 
-            ? 'Nenhuma reserva pendente - ótimo trabalho! 🎉' 
+            ? 'Nenhuma reserva pendente - ótimo trabalho!' 
             : `${reservations.length} reserva(s) pendente(s)`
           }
         </p>
@@ -126,7 +126,9 @@ const Reservations: React.FC = () => {
 
       {reservations.length === 0 ? (
         <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>📚</div>
+          <div className={styles.emptyIcon}>
+            <BookOpen size={64} />
+          </div>
           <h3>Todas as reservas foram atendidas!</h3>
           <p>Não há reservas pendentes no momento.</p>
         </div>
