@@ -11,7 +11,7 @@ import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import EmbeddedDateFilter from '../../components/ui/EmbeddedDateFilter';
 import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
 import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
-import { LockClosedIcon, ArrowUpRightIcon } from '@heroicons/react/24/outline';
+import { FeatureBlock } from '../../components/ui';
 import { academicYearService } from '../../services/academicYearService';
 
 import { Bar, Pie, Line } from 'react-chartjs-2';
@@ -1336,88 +1336,57 @@ const Dashboard = () => {
       })()}
       
       {dashboardChartsFeature.isBlocked ? (
-        <div className={styles.featureBlockContainer}>
-          <div className={styles.featureBlockBackdrop} aria-hidden="true">
-            <div className={styles.backdropPanel}>
-              <div className={styles.backdropHeader}>
-                <span className={styles.backdropBadge}></span>
-                <span className={styles.backdropTitle}></span>
-                <span className={styles.backdropSubtitle}></span>
-              </div>
-              <div className={styles.backdropScoreCard}>
-                <span className={styles.backdropScoreRing}></span>
-                <div className={styles.backdropScoreInfo}>
+        <FeatureBlock
+          planDisplayName={dashboardChartsFeature.planDisplayName}
+          featureName="Gráficos e análises disponíveis no plano Intermediário"
+          description="Faça o upgrade para o Bibliotech Intermediário e tenha acesso a gráficos completos, rankings detalhados e análises avançadas do seu dashboard."
+          highlights={[
+            'Acompanhe métricas e gráficos sobre suas turmas em tempo real',
+            'Visualize rankings completos e gráficos prontos para reuniões',
+            'Veja as categorias e livros mais lidos para investir em livros melhores',
+            'Veja a evolução mensal da biblioteca em geral, assim como de cada turma'
+          ]}
+          backdropContent={
+            <>
+              <div className={styles.backdropPanel}>
+                <div className={styles.backdropHeader}>
+                  <span className={styles.backdropBadge}></span>
+                  <span className={styles.backdropTitle}></span>
+                  <span className={styles.backdropSubtitle}></span>
+                </div>
+                <div className={styles.backdropScoreCard}>
+                  <span className={styles.backdropScoreRing}></span>
+                  <div className={styles.backdropScoreInfo}>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+                <div className={styles.backdropMetricList}>
+                  <span></span>
                   <span></span>
                   <span></span>
                 </div>
               </div>
-              <div className={styles.backdropMetricList}>
-                <span></span>
-                <span></span>
-                <span></span>
+              <div className={styles.backdropCharts}>
+                <div className={styles.backdropLineChart}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div className={styles.backdropBarChart}>
+                  <span data-height="sm"></span>
+                  <span data-height="md"></span>
+                  <span data-height="lg"></span>
+                  <span data-height="xl"></span>
+                  <span data-height="md"></span>
+                  <span data-height="sm"></span>
+                </div>
               </div>
-            </div>
-
-            <div className={styles.backdropCharts}>
-              <div className={styles.backdropLineChart}>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div className={styles.backdropBarChart}>
-                <span data-height="sm"></span>
-                <span data-height="md"></span>
-                <span data-height="lg"></span>
-                <span data-height="xl"></span>
-                <span data-height="md"></span>
-                <span data-height="sm"></span>
-              </div>
-            </div>
-          </div>
-          <div className={styles.featureBlockCard}>
-            <div className={styles.featureBlockHeader}>
-              <div className={styles.featureBlockIcon}>
-                <LockClosedIcon />
-              </div>
-              <div>
-                <span className={styles.featureBlockBadge}>
-                  Plano atual:{' '}
-                  {dashboardChartsFeature.planDisplayName.includes('Básico') ? (
-                    <>
-                      Plano <span className={styles.planNameHighlight}>Básico</span>
-                    </>
-                  ) : (
-                    dashboardChartsFeature.planDisplayName
-                  )}
-                </span>
-                <h4>Gráficos e análises disponíveis no plano Intermediário</h4>
-              </div>
-            </div>
-            <p className={styles.featureBlockDescription}>
-              Faça o upgrade para o Bibliotech Intermediário e tenha acesso a gráficos completos, rankings detalhados e análises avançadas do seu dashboard.
-            </p>
-            <ul className={styles.featureBlockHighlights}>
-              <li>Acompanhe métricas e gráficos sobre suas turmas em tempo real</li>
-              <li>Visualize rankings completos e gráficos prontos para reuniões</li>
-              <li>Veja as categorias e livros mais lidos para investir em livros melhores</li>
-              <li>Veja a evolução mensal da biblioteca em geral, assim como de cada turma</li>
-            </ul>
-            <a
-              className={styles.featureBlockButton}
-              href="https://bibliotech.tech/#planos"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Conhecer plano intermediário
-              <ArrowUpRightIcon />
-            </a>
-            <span className={styles.featureBlockFootnote}>
-              Disponível nos planos Bibliotech Intermediário e Avançado.
-            </span>
-          </div>
-        </div>
+            </>
+          }
+        />
       ) : (
       <div className={styles.charts}>
         {/* Gráfico de Empréstimos por Categoria */}

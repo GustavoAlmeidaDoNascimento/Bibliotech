@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, BookOpen, TrendingUp, Star, Sparkles, ChevronLeft, ChevronRight, Filter, X, Lock, ArrowUpRight } from 'lucide-react';
+import { Search, BookOpen, TrendingUp, Star, Sparkles, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
+import { FeatureBlock, BookCard } from '../../components/ui';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService, StudentDashboardData } from '../../services/studentService';
 import { bookRecommendationService, RecommendationSection, BookWithStats } from '../../services/bookRecommendationService';
@@ -541,8 +542,17 @@ const StudentHome: React.FC = () => {
         </header>
 
         <main className={styles.main}>
-          <div className={styles.featureBlockContainer}>
-            <div className={styles.featureBlockBackdrop} aria-hidden="true">
+          <FeatureBlock
+            planDisplayName={`Plano da escola: ${planDisplayName}`}
+            featureName="Catálogo de livros disponível no plano Intermediário"
+            description="Com o catálogo do Bibliotech você busca, filtra e descobre livros em segundos, sem depender do balcão da biblioteca."
+            highlights={[
+              'Busque por título, autor, categorias e muito mais',
+              'Veja rapidamente quais livros estão disponíveis para retirada',
+              'Receba recomendações personalizadas para o seu perfil de leitura',
+              'Explore as categorias mais lidas da escola para descobrir novos livros favoritos'
+            ]}
+            backdropContent={
               <div className={styles.catalogSkeleton}>
                 <div className={styles.catalogRow}>
                   <span className={styles.catalogCard}></span>
@@ -563,50 +573,8 @@ const StudentHome: React.FC = () => {
                   <span className={styles.catalogCard}></span>
                 </div>
               </div>
-            </div>
-
-            <div className={styles.featureBlockCard}>
-              <div className={styles.featureBlockHeader}>
-                <div className={styles.featureBlockIcon}>
-                  <Lock size={20} />
-                </div>
-                <div>
-                  <span className={styles.featureBlockBadge}>
-                    Plano da escola:{' '}
-                    {planDisplayName.includes('Básico') ? (
-                      <>
-                        Plano <span className={styles.planNameHighlight}>Básico</span>
-                      </>
-                    ) : (
-                      planDisplayName
-                    )}
-                  </span>
-                  <h4>Catálogo de livros disponível no plano Intermediário</h4>
-                </div>
-              </div>
-              <p className={styles.featureBlockDescription}>
-                Com o catálogo do Bibliotech você busca, filtra e descobre livros em segundos, sem depender do balcão da biblioteca.
-              </p>
-              <ul className={styles.featureBlockHighlights}>
-                <li>Busque por título, autor, categorias e muito mais</li>
-                <li>Veja rapidamente quais livros estão disponíveis para retirada</li>
-                <li>Receba recomendações personalizadas para o seu perfil de leitura</li>
-                <li>Explore as categorias mais lidas da escola para descobrir novos livros favoritos</li>
-              </ul>
-              <a
-                className={styles.featureBlockButton}
-                href="https://bibliotech.tech/#planos"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Conhecer plano intermediário
-                <ArrowUpRight size={16} />
-              </a>
-              <span className={styles.featureBlockFootnote}>
-                Disponível nos planos Bibliotech Intermediário e Avançado.
-              </span>
-            </div>
-          </div>
+            }
+          />
         </main>
 
         <BottomNavigation studentId={studentId || ''} activePage="home" />
@@ -863,44 +831,17 @@ const StudentHome: React.FC = () => {
             {searchResults.length > 0 ? (
               <div className={styles.booksGrid}>
                 {searchResults.map((book) => (
-                  <div
+                  <BookCard
                     key={book.id}
-                    className={styles.bookCard}
-                    onClick={() => handleBookClick(book.id)}
-                  >
-                    <div className={styles.bookCoverWrapper}>
-                      {book.coverUrl ? (
-                        <img src={book.coverUrl} alt={book.title} className={styles.bookCover} />
-                      ) : (
-                        <div className={styles.bookCoverPlaceholder}>
-                          <BookOpen size={40} />
-                        </div>
-                      )}
-                      {book.available && (
-                        <div className={styles.availableBadge}>À pronta-entrega</div>
-                      )}
-                    </div>
-                    <div className={styles.bookInfo}>
-                      <h3 className={styles.bookTitle}>{book.title}</h3>
-                      <p className={styles.bookAuthor}>
-                        {book.authors.length > 0 ? book.authors.join(', ') : 'Autor não informado'}
-                      </p>
-                      {book.genres.length > 0 && (
-                        <div className={styles.bookGenres}>
-                          {book.genres.slice(0, 2).map((genre: string) => (
-                            <span key={genre} className={styles.genreTag}>{genre}</span>
-                          ))}
-                          {book.genres.length > 2 && (
-                            <span className={styles.moreGenres}>+{book.genres.length - 2}</span>
-                          )}
-                        </div>
-                      )}
-                      <div className={styles.bookStats}>
-                        <BookOpen size={14} />
-                        <span>{book.loanCount} empréstimos</span>
-                      </div>
-                    </div>
-                  </div>
+                    id={book.id}
+                    title={book.title}
+                    authors={book.authors}
+                    genres={book.genres}
+                    coverUrl={book.coverUrl}
+                    loanCount={book.loanCount}
+                    available={book.available}
+                    onClick={handleBookClick}
+                  />
                 ))}
               </div>
             ) : (
@@ -933,44 +874,17 @@ const StudentHome: React.FC = () => {
                 data-carousel={index}
               >
                 {section.books.map((book) => (
-                  <div
+                  <BookCard
                     key={book.id}
-                    className={styles.bookCard}
-                    onClick={() => handleBookClick(book.id)}
-                  >
-                    <div className={styles.bookCoverWrapper}>
-                      {book.coverUrl ? (
-                        <img src={book.coverUrl} alt={book.title} className={styles.bookCover} />
-                      ) : (
-                        <div className={styles.bookCoverPlaceholder}>
-                          <BookOpen size={40} />
-                        </div>
-                      )}
-                      {book.available && (
-                        <div className={styles.availableBadge}>À pronta-entrega</div>
-                      )}
-                    </div>
-                    <div className={styles.bookInfo}>
-                      <h3 className={styles.bookTitle}>{book.title}</h3>
-                      <p className={styles.bookAuthor}>
-                        {book.authors.length > 0 ? book.authors.join(', ') : 'Autor não informado'}
-                      </p>
-                      {book.genres.length > 0 && (
-                        <div className={styles.bookGenres}>
-                          {book.genres.slice(0, 2).map((genre: string) => (
-                            <span key={genre} className={styles.genreTag}>{genre}</span>
-                          ))}
-                          {book.genres.length > 2 && (
-                            <span className={styles.moreGenres}>+{book.genres.length - 2}</span>
-                          )}
-                        </div>
-                      )}
-                      <div className={styles.bookStats}>
-                        <BookOpen size={14} />
-                        <span>{book.loanCount} empréstimos</span>
-                      </div>
-                    </div>
-                  </div>
+                    id={book.id}
+                    title={book.title}
+                    authors={book.authors}
+                    genres={book.genres}
+                    coverUrl={book.coverUrl}
+                    loanCount={book.loanCount}
+                    available={book.available}
+                    onClick={handleBookClick}
+                  />
                 ))}
               </div>
               <button
