@@ -23,13 +23,27 @@ const OnlineCatalog: React.FC = () => {
   const selectRandomBook = () => {
     if (availableBooks.length === 0) return;
     const randomIndex = Math.floor(Math.random() * availableBooks.length);
-    setPreviewBook(availableBooks[randomIndex]);
+    const newBook = availableBooks[randomIndex];
+    setPreviewBook(newBook);
+    // Atualizar selectedBookId para refletir o novo livro escolhido
+    setSelectedBookId(newBook.id);
   };
 
   // Carregar preview quando muda o modo ou livro selecionado
   useEffect(() => {
-    if (showcaseMode === 'random' && availableBooks.length > 0) {
-      // Se não tem preview ainda, selecionar um aleatório
+    if (availableBooks.length === 0) return;
+    
+    if (showcaseMode === 'random') {
+      // No modo aleatório, se temos um selectedBookId salvo, usar esse livro
+      // (selectedBookId contém o ID do livro que foi salvo anteriormente)
+      if (selectedBookId) {
+        const savedBook = availableBooks.find(b => b.id === selectedBookId);
+        if (savedBook) {
+          setPreviewBook(savedBook);
+          return;
+        }
+      }
+      // Se não tem livro salvo ou não encontrou, e não tem preview, selecionar aleatório
       if (!previewBook) {
         const randomIndex = Math.floor(Math.random() * availableBooks.length);
         setPreviewBook(availableBooks[randomIndex]);
