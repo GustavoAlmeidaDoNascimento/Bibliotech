@@ -214,7 +214,6 @@ const StudentProfile: React.FC = () => {
             <div className={styles.avatarSkeleton}></div>
             <div className={styles.userInfo}>
               <div className={styles.userNameSkeleton}></div>
-              <div className={styles.userIdSkeleton}></div>
               <div className={styles.subscriptionSkeleton}></div>
             </div>
           </div>
@@ -262,11 +261,6 @@ const StudentProfile: React.FC = () => {
               <h2>{student.name}</h2>
             ) : (
               <div className={styles.userNameSkeleton}></div>
-            )}
-            {student?.id ? (
-              <p>ID: {student.id}</p>
-            ) : (
-              <div className={styles.userIdSkeleton}></div>
             )}
             {schoolName && (
               <p className={styles.schoolName}>{schoolName}</p>
