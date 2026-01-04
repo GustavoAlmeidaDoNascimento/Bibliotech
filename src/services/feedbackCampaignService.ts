@@ -27,11 +27,15 @@ export const feedbackCampaignService = {
   /**
    * Verifica se deve mostrar o popup de feedback para o aluno
    */
-  async shouldAskFeedback(studentId: string): Promise<boolean> {
+  async shouldAskFeedback(schoolId: string, studentId: string): Promise<boolean> {
     try {
       console.log('🔍 Verificando se deve pedir feedback para:', studentId);
       
-      const studentRef = doc(db, 'students', studentId);
+      // Extrair apenas o ID real do aluno (formato: schoolId@realStudentId)
+      const realStudentId = studentId.includes('@') ? studentId.split('@')[1] : studentId;
+      console.log('🔑 Student ID real:', realStudentId);
+      
+      const studentRef = doc(db, `users/${schoolId}/students`, realStudentId);
       const studentSnap = await getDoc(studentRef);
       
       if (!studentSnap.exists()) {
@@ -66,6 +70,7 @@ export const feedbackCampaignService = {
       return true;
     } catch (error) {
       console.error('❌ Erro ao verificar status de feedback:', error);
+      console.error('Detalhes do erro:', error);
       return false;
     }
   },
@@ -73,11 +78,14 @@ export const feedbackCampaignService = {
   /**
    * Marca que o popup foi exibido (sem resposta)
    */
-  async markFeedbackAsked(studentId: string): Promise<void> {
+  async markFeedbackAsked(schoolId: string, studentId: string): Promise<void> {
     try {
       console.log('📝 Marcando feedback como perguntado:', studentId);
       
-      const studentRef = doc(db, 'students', studentId);
+      // Extrair apenas o ID real do aluno (formato: schoolId@realStudentId)
+      const realStudentId = studentId.includes('@') ? studentId.split('@')[1] : studentId;
+      
+      const studentRef = doc(db, `users/${schoolId}/students`, realStudentId);
       await updateDoc(studentRef, {
         lastFeedbackAsked: serverTimestamp(),
       });
@@ -85,6 +93,7 @@ export const feedbackCampaignService = {
       console.log('✅ Feedback marcado como perguntado');
     } catch (error) {
       console.error('❌ Erro ao marcar feedback como perguntado:', error);
+      console.error('Detalhes do erro:', error);
       throw error;
     }
   },
@@ -92,11 +101,14 @@ export const feedbackCampaignService = {
   /**
    * Marca que o aluno respondeu o feedback
    */
-  async markFeedbackGiven(studentId: string): Promise<void> {
+  async markFeedbackGiven(schoolId: string, studentId: string): Promise<void> {
     try {
       console.log('✅ Marcando feedback como respondido:', studentId);
       
-      const studentRef = doc(db, 'students', studentId);
+      // Extrair apenas o ID real do aluno (formato: schoolId@realStudentId)
+      const realStudentId = studentId.includes('@') ? studentId.split('@')[1] : studentId;
+      
+      const studentRef = doc(db, `users/${schoolId}/students`, realStudentId);
       await updateDoc(studentRef, {
         askFeedback: false,
         lastFeedbackGiven: serverTimestamp(),
@@ -106,6 +118,7 @@ export const feedbackCampaignService = {
       console.log('✅ Feedback marcado como respondido');
     } catch (error) {
       console.error('❌ Erro ao marcar feedback como respondido:', error);
+      console.error('Detalhes do erro:', error);
       throw error;
     }
   },
@@ -113,11 +126,14 @@ export const feedbackCampaignService = {
   /**
    * Reseta o status de feedback de um aluno (para nova campanha)
    */
-  async resetFeedbackStatus(studentId: string): Promise<void> {
+  async resetFeedbackStatus(schoolId: string, studentId: string): Promise<void> {
     try {
       console.log('🔄 Resetando status de feedback:', studentId);
       
-      const studentRef = doc(db, 'students', studentId);
+      // Extrair apenas o ID real do aluno (formato: schoolId@realStudentId)
+      const realStudentId = studentId.includes('@') ? studentId.split('@')[1] : studentId;
+      
+      const studentRef = doc(db, `users/${schoolId}/students`, realStudentId);
       await updateDoc(studentRef, {
         askFeedback: true,
       });

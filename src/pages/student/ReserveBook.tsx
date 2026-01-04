@@ -167,7 +167,7 @@ const ReserveBook: React.FC = () => {
       setShowConfirmation(false);
 
       // Verificar se deve mostrar popup de feedback
-      const shouldAsk = await feedbackCampaignService.shouldAskFeedback(studentId!);
+      const shouldAsk = await feedbackCampaignService.shouldAskFeedback(student.userId, studentId!);
       
       if (shouldAsk) {
         // Mostrar popup de feedback após 1 segundo
@@ -241,8 +241,12 @@ const ReserveBook: React.FC = () => {
       console.log('✅ Feedback enviado com sucesso');
       
       // Marcar que o aluno deu feedback
-      await feedbackCampaignService.markFeedbackGiven(studentId!);
-      console.log('✅ Status de feedback atualizado');
+      try {
+        await feedbackCampaignService.markFeedbackGiven(student.userId, studentId!);
+        console.log('✅ Status de feedback atualizado');
+      } catch (feedbackError) {
+        console.error('⚠️ Erro ao atualizar status de feedback (mas o feedback foi salvo):', feedbackError);
+      }
     } catch (error) {
       console.error('Erro ao enviar feedback:', error);
     } finally {
@@ -255,7 +259,7 @@ const ReserveBook: React.FC = () => {
   const handleFeedbackSkip = async () => {
     try {
       // Marcar que o popup foi mostrado mas não respondeu
-      await feedbackCampaignService.markFeedbackAsked(studentId!);
+      await feedbackCampaignService.markFeedbackAsked(student.userId, studentId!);
       console.log('📝 Feedback marcado como perguntado (não respondido)');
     } catch (error) {
       console.error('Erro ao marcar feedback como perguntado:', error);
