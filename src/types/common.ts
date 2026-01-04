@@ -19,6 +19,10 @@ export interface Student extends BaseEntity {
   username?: string;
   hasCredentials?: boolean;
   tempPassword?: string;
+  // Controle de feedback
+  askFeedback?: boolean;
+  lastFeedbackAsked?: any; // Timestamp
+  lastFeedbackGiven?: any; // Timestamp
 }
 
 export interface Staff extends BaseEntity {

@@ -46,6 +46,7 @@ import MyBooks from '../pages/student/MyBooks';
 import ReserveBook from '../pages/student/ReserveBook';
 import Achievements from '../pages/student/Achievements';
 import YearTurnoverWizard from '../pages/yearTurnover/YearTurnoverWizard';
+import DevDashboard from '../pages/developer/DevDashboard';
 import NotFound from '../pages/NotFound';
 import { ROUTES } from '../constants';
 
@@ -112,6 +113,10 @@ export const publicRoutes = [
   {
     path: "/student-dashboard/:studentId/achievements",
     element: <Achievements />,
+  },
+  {
+    path: "/dev",
+    element: <DevDashboard />,
   },
   {
     path: "*",

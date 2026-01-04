@@ -6,6 +6,7 @@ import { SettingsProvider } from '../contexts/SettingsContext';
 import { ThemeProvider } from '../styles/ThemeProvider';
 import { NotificationsProvider } from '../contexts/NotificationsContext';
 import { EducationalLevelsProvider } from '../contexts/EducationalLevelsContext';
+import { DeveloperProvider } from '../contexts/DeveloperContext';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -15,19 +16,21 @@ interface AppProvidersProps {
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
     <AuthProvider>
-      <SettingsProvider>
-        <NotificationsProvider>
-          <TagsProvider>
-            <EducationalLevelsProvider>
-              <AuthorsProvider>
-                <ThemeProvider>
-                  {children}
-                </ThemeProvider>
-              </AuthorsProvider>
-            </EducationalLevelsProvider>
-          </TagsProvider>
-        </NotificationsProvider>
-      </SettingsProvider>
+      <DeveloperProvider>
+        <SettingsProvider>
+          <NotificationsProvider>
+            <TagsProvider>
+              <EducationalLevelsProvider>
+                <AuthorsProvider>
+                  <ThemeProvider>
+                    {children}
+                  </ThemeProvider>
+                </AuthorsProvider>
+              </EducationalLevelsProvider>
+            </TagsProvider>
+          </NotificationsProvider>
+        </SettingsProvider>
+      </DeveloperProvider>
     </AuthProvider>
   );
 };

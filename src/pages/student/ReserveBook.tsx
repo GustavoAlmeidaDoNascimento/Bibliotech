@@ -4,6 +4,11 @@ import { ArrowLeft, Heart, BookOpen, Calendar, Check, X, Loader } from 'lucide-r
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { reservationService } from '../../services/reservationService';
 import { studentService } from '../../services/studentService';
+import { feedbackService } from '../../services/feedbackService';
+import { feedbackCampaignService } from '../../services/feedbackCampaignService';
+import FeedbackPopup from '../../components/feedback/FeedbackPopup';
+import { db } from '../../config/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import styles from './ReserveBook.module.css';
 
 interface BookData {
@@ -29,6 +34,7 @@ const ReserveBook: React.FC = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [success, setSuccess] = useState(false);
   const [allCopiesReserved, setAllCopiesReserved] = useState(false);
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -160,10 +166,20 @@ const ReserveBook: React.FC = () => {
       setSuccess(true);
       setShowConfirmation(false);
 
-      // Redirecionar após 2 segundos
-      setTimeout(() => {
-        navigate(`/student-dashboard/${studentId}/home`);
-      }, 2000);
+      // Verificar se deve mostrar popup de feedback
+      const shouldAsk = await feedbackCampaignService.shouldAskFeedback(studentId!);
+      
+      if (shouldAsk) {
+        // Mostrar popup de feedback após 1 segundo
+        setTimeout(() => {
+          setShowFeedbackPopup(true);
+        }, 1000);
+      } else {
+        // Redirecionar direto se não deve perguntar
+        setTimeout(() => {
+          navigate(`/student-dashboard/${studentId}/home`);
+        }, 2000);
+      }
     } catch (error: any) {
       console.error('Erro ao criar reserva:', error);
       setError(error.message || 'Erro ao criar reserva. Tente novamente.');
@@ -177,6 +193,76 @@ const ReserveBook: React.FC = () => {
 
   const handleBack = () => {
     navigate(`/student-dashboard/${studentId}/book/${bookId}`);
+  };
+
+  const handleFeedbackSubmit = async (rating: 1 | 2 | 3 | 4 | 5, comment: string) => {
+    if (!student || !book) return;
+
+    try {
+      // Buscar informações da escola
+      let schoolName = 'Escola não identificada';
+      let schoolPlan: string | null = null;
+
+      try {
+        // Buscar configurações da escola para pegar o nome (caminho correto: settings/library)
+        const settingsRef = doc(db, `users/${student.userId}/settings/library`);
+        const settingsSnap = await getDoc(settingsRef);
+        
+        if (settingsSnap.exists()) {
+          const settingsData = settingsSnap.data();
+          schoolName = settingsData.schoolName || 'Biblioteca';
+          console.log('✅ Nome da escola encontrado:', schoolName);
+        } else {
+          console.warn('⚠️ Configurações da escola não encontradas');
+        }
+
+        // Buscar plano da escola
+        schoolPlan = await studentService.getSchoolSubscriptionPlan(student.userId);
+        console.log('📋 Plano da escola:', schoolPlan);
+      } catch (error) {
+        console.error('❌ Erro ao buscar dados da escola:', error);
+      }
+
+      await feedbackService.createFeedback(
+        'reservation',
+        rating,
+        comment,
+        studentId!,
+        student.name,
+        student.userId,
+        schoolName,
+        schoolPlan || undefined,
+        {
+          bookId: book.id,
+          bookTitle: book.title,
+        }
+      );
+
+      console.log('✅ Feedback enviado com sucesso');
+      
+      // Marcar que o aluno deu feedback
+      await feedbackCampaignService.markFeedbackGiven(studentId!);
+      console.log('✅ Status de feedback atualizado');
+    } catch (error) {
+      console.error('Erro ao enviar feedback:', error);
+    } finally {
+      // Redirecionar após envio ou erro
+      setShowFeedbackPopup(false);
+      navigate(`/student-dashboard/${studentId}/home`);
+    }
+  };
+
+  const handleFeedbackSkip = async () => {
+    try {
+      // Marcar que o popup foi mostrado mas não respondeu
+      await feedbackCampaignService.markFeedbackAsked(studentId!);
+      console.log('📝 Feedback marcado como perguntado (não respondido)');
+    } catch (error) {
+      console.error('Erro ao marcar feedback como perguntado:', error);
+    }
+    
+    setShowFeedbackPopup(false);
+    navigate(`/student-dashboard/${studentId}/home`);
   };
 
   if (loading) {
@@ -254,12 +340,22 @@ const ReserveBook: React.FC = () => {
                 </>
               )}
             </p>
-            <p className={styles.redirectMessage}>
-              Redirecionando para o início...
-            </p>
+            {!showFeedbackPopup && (
+              <p className={styles.redirectMessage}>
+                Aguarde...
+              </p>
+            )}
           </div>
         </main>
         <BottomNavigation studentId={studentId || ''} activePage="home" />
+
+        {/* Feedback Popup */}
+        {showFeedbackPopup && (
+          <FeedbackPopup
+            onSubmit={handleFeedbackSubmit}
+            onSkip={handleFeedbackSkip}
+          />
+        )}
       </div>
     );
   }

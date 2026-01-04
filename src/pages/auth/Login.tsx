@@ -34,7 +34,12 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (currentUser) {
-      navigate(ROUTES.DASHBOARD);
+      // Verificar se é conta de desenvolvedor
+      if (currentUser.email === 'dev@bibliotech.tech') {
+        navigate('/dev');
+      } else {
+        navigate(ROUTES.DASHBOARD);
+      }
     }
   }, [currentUser, navigate]);
 
@@ -65,7 +70,12 @@ const Login: React.FC = () => {
     
     try {
       await executeLogin(() => login(formData.email, formData.password));
-      navigate(ROUTES.DASHBOARD);
+      // Verificar se é conta de desenvolvedor
+      if (formData.email === 'dev@bibliotech.tech') {
+        navigate('/dev');
+      } else {
+        navigate(ROUTES.DASHBOARD);
+      }
     } catch (error) {
       // Erro é gerenciado pelo hook useAsync
       console.error('Failed to log in:', error);
