@@ -183,6 +183,7 @@ const StudentProfile: React.FC = () => {
 
   const student = dashboardData?.student;
   const subscriptionPlan = dashboardData?.subscriptionPlan;
+  const schoolName = dashboardData?.schoolName;
   const showSubscriptionSkeleton = dashboardData !== null && typeof subscriptionPlan === 'undefined';
   const planDisplayData = getPlanDisplayData(subscriptionPlan);
   const planVariantClasses = planDisplayData ? subscriptionVariantClasses[planDisplayData.variant] : null;
@@ -266,6 +267,9 @@ const StudentProfile: React.FC = () => {
               <p>ID: {student.id}</p>
             ) : (
               <div className={styles.userIdSkeleton}></div>
+            )}
+            {schoolName && (
+              <p className={styles.schoolName}>{schoolName}</p>
             )}
             {showSubscriptionSkeleton ? (
               <div className={styles.subscriptionSkeleton}></div>

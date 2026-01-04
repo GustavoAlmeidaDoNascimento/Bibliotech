@@ -115,6 +115,7 @@ export interface StudentDashboardData {
   loans: StudentLoan[];
   books: StudentBook[];
   subscriptionPlan?: string | null;
+  schoolName?: string | null;
 }
 
 export const studentService = {
@@ -441,18 +442,38 @@ export const studentService = {
       console.log(`📖 Encontrados ${books.length} livros`);
 
       const subscriptionPlan = await studentService.getSchoolSubscriptionPlan(schoolId);
+
+      // Buscar nome da escola
+      let schoolName: string | null = null;
+      try {
+        const settingsRef = doc(db, `users/${schoolId}/settings/library`);
+        const settingsSnap = await getDoc(settingsRef);
+        
+        if (settingsSnap.exists()) {
+          const settingsData = settingsSnap.data();
+          schoolName = settingsData.schoolName || null;
+          console.log('🏫 Nome da escola encontrado:', schoolName);
+        } else {
+          console.warn('⚠️ Configurações da escola não encontradas');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao buscar nome da escola:', error);
+      }
+
       console.log(`✅ Dados consolidados do dashboard para aluno ${studentId}`, {
         schoolId,
         loans: loans.length,
         books: books.length,
-        subscriptionPlan
+        subscriptionPlan,
+        schoolName
       });
 
       return {
         student,
         loans,
         books,
-        subscriptionPlan
+        subscriptionPlan,
+        schoolName
       };
     } catch (error) {
       console.error('Erro ao buscar dados do dashboard:', error);

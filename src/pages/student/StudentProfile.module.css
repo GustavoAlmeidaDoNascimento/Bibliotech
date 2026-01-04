@@ -208,6 +208,13 @@
   margin: 0;
 }
 
+.schoolName {
+  font-size: 0.9rem;
+  color: #60A5FA;
+  margin-top: 0.5rem !important;
+  font-weight: 500;
+}
+
 .subscriptionInfo {
   margin-top: 0.85rem;
   display: flex;
