@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Heart, BookOpen, Calendar, Check, X, Loader } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
@@ -7,6 +7,8 @@ import { studentService } from '../../services/studentService';
 import { feedbackService } from '../../services/feedbackService';
 import { feedbackCampaignService } from '../../services/feedbackCampaignService';
 import FeedbackPopup from '../../components/feedback/FeedbackPopup';
+import { inferTierFromPlanValue, formatPlanDisplayName } from '../../services/subscriptionService';
+import FeatureBlock from '../../components/ui/FeatureBlock';
 import { db } from '../../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import styles from './ReserveBook.module.css';
@@ -35,6 +37,7 @@ const ReserveBook: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [allCopiesReserved, setAllCopiesReserved] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -53,6 +56,10 @@ const ReserveBook: React.FC = () => {
         return;
       }
       setStudent(studentData);
+
+      // Buscar plano da escola
+      const plan = await studentService.getSchoolSubscriptionPlan(studentData.userId);
+      setSubscriptionPlan(plan);
 
       // Buscar dados do livro
       const bookData = await studentService.getBookById(bookId, studentData.userId);
@@ -145,8 +152,23 @@ const ReserveBook: React.FC = () => {
     }
   };
 
+  const planTier = useMemo(
+    () => inferTierFromPlanValue(subscriptionPlan ?? null),
+    [subscriptionPlan]
+  );
+
+  const isReservationsBlocked = useMemo(
+    () => planTier === 'basic' || planTier === 'intermediate' || planTier === 'unknown',
+    [planTier]
+  );
+
+  const planDisplayName = useMemo(
+    () => formatPlanDisplayName(subscriptionPlan ?? null),
+    [subscriptionPlan]
+  );
+
   const handleConfirmReservation = async () => {
-    if (!book || !student || allCopiesReserved) return;
+    if (!book || !student || allCopiesReserved || isReservationsBlocked) return;
 
     try {
       setCreating(true);
@@ -376,7 +398,39 @@ const ReserveBook: React.FC = () => {
       </header>
 
       <main className={styles.main}>
-        {allCopiesReserved && book && (
+        {isReservationsBlocked && book ? (
+          <div className={styles.featureBlockContainer}>
+            <FeatureBlock
+              planDisplayName={planDisplayName}
+              featureName="Reservas de livros disponíveis no plano Avançado"
+              description="Reserve livros direto do seu celular e garanta seu lugar na fila dos livros mais disputados da biblioteca."
+              highlights={[
+                'Reserve livros de qualquer lugar, a qualquer momento',
+                'Receba notificações quando sua reserva estiver pronta',
+                'Garanta prioridade nos livros mais populares',
+                'Organize suas leituras com antecedência'
+              ]}
+              upgradeUrl="https://bibliotech.tech/#planos"
+              buttonText="Converse com sua escola sobre o plano Avançado"
+              footnoteText="Solicite à sua escola a atualização para o plano Bibliotech Avançado e aproveite esta e outras funcionalidades."
+              backdropContent={
+                <div className={styles.backdropPreview}>
+                  {book.coverUrl ? (
+                    <img src={book.coverUrl} alt={book.title} className={styles.backdropCover} />
+                  ) : (
+                    <div className={styles.backdropCoverPlaceholder}>
+                      <BookOpen size={48} />
+                    </div>
+                  )}
+                  <div className={styles.backdropInfo}>
+                    <h3>{book.title}</h3>
+                    <p>{book.author || 'Autor não informado'}</p>
+                  </div>
+                </div>
+              }
+            />
+          </div>
+        ) : allCopiesReserved && book && (
           <div className={styles.confirmationContainer}>
             {/* Book Preview */}
             <div className={styles.bookPreview}>

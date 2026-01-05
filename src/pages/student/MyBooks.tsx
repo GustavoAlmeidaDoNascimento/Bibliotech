@@ -50,8 +50,8 @@ const MyBooks: React.FC = () => {
 
       const tier = inferTierFromPlanValue(plan ?? null);
 
-      // Se plano básico/indefinido, não buscar reservas
-      if (tier === 'basic' || tier === 'unknown') {
+      // Se plano básico/intermediário/indefinido, não buscar reservas
+      if (tier === 'basic' || tier === 'intermediate' || tier === 'unknown') {
         console.log('⛔ Reservas bloqueadas para este plano, nenhuma consulta será feita.');
         setReservations([]);
         setLoading(false);
@@ -125,7 +125,7 @@ const MyBooks: React.FC = () => {
   );
 
   const isReservationsBlocked = useMemo(
-    () => planTier === 'basic' || planTier === 'unknown',
+    () => planTier === 'basic' || planTier === 'intermediate' || planTier === 'unknown',
     [planTier]
   );
 
@@ -300,13 +300,13 @@ const MyBooks: React.FC = () => {
                 </div>
               </div>
               <p className={styles.featureBlockDescription}>
-                Com o sistema de reservas do Bibliotech você garante seu lugar nos livros mais disputados sem precisar enfrentar fila na biblioteca.
+                Reserve livros direto do seu celular e garanta seu lugar na fila dos livros mais disputados da biblioteca.
               </p>
               <ul className={styles.featureBlockHighlights}>
-                <li>Reserve livros direto do celular, de qualquer lugar</li>
-                <li>Veja quando sua reserva estará pronta para retirada</li>
-                <li>Garanta prioridade em livros muito disputados da escola</li>
-                <li>Evite filas e organize suas leituras com antecedência</li>
+                <li>Reserve livros de qualquer lugar, a qualquer momento</li>
+                <li>Receba notificações quando sua reserva estiver pronta</li>
+                <li>Garanta prioridade nos livros mais populares</li>
+                <li>Organize suas leituras com antecedência</li>
               </ul>
               <a
                 className={`${styles.featureBlockButton} ${styles.featureBlockButtonAdvanced}`}
@@ -314,11 +314,11 @@ const MyBooks: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Conhecer plano avançado
+                Converse com sua escola sobre o plano Avançado
                 <ArrowUpRight size={16} />
               </a>
               <span className={styles.featureBlockFootnote}>
-                Disponível apenas no plano Bibliotech Avançado.
+                Solicite à sua escola a atualização para o plano Bibliotech Avançado e aproveite esta e outras funcionalidades.
               </span>
             </div>
           </div>

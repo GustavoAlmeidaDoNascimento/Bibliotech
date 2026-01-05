@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, BookOpen, User, Tag, Clock, Heart, CheckCircle, X } from 'lucide-react';
 import BottomNavigation from '../../components/student/BottomNavigation';
 import { studentService } from '../../services/studentService';
 import { reservationService, Reservation } from '../../services/reservationService';
+import { inferTierFromPlanValue, formatPlanDisplayName } from '../../services/subscriptionService';
+import FeatureBlock from '../../components/ui/FeatureBlock';
 import styles from './BookDetails.module.css';
 
 interface BookWithGenres {
@@ -34,6 +36,8 @@ const BookDetails: React.FC = () => {
   const [isAlreadyReserved, setIsAlreadyReserved] = useState(false);
   const [reservationStatus, setReservationStatus] = useState<'pending' | 'ready' | 'completed' | 'cancelled' | 'expired' | null>(null);
   const [allCopiesReserved, setAllCopiesReserved] = useState(false);
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
+  const [showFeatureBlock, setShowFeatureBlock] = useState(false);
 
   useEffect(() => {
     if (!studentId || !bookId) {
@@ -51,6 +55,10 @@ const BookDetails: React.FC = () => {
           setLoading(false);
           return;
         }
+
+        // Buscar plano da escola
+        const plan = await studentService.getSchoolSubscriptionPlan(student.userId);
+        setSubscriptionPlan(plan);
 
         // Buscar detalhes do livro
         const bookData = await studentService.getBookById(bookId, student.userId);
@@ -148,9 +156,41 @@ const BookDetails: React.FC = () => {
     navigate(`/student-dashboard/${studentId}/home`);
   };
 
+  const planTier = useMemo(
+    () => inferTierFromPlanValue(subscriptionPlan ?? null),
+    [subscriptionPlan]
+  );
+
+  const isReservationsBlocked = useMemo(
+    () => planTier === 'basic' || planTier === 'intermediate' || planTier === 'unknown',
+    [planTier]
+  );
+
+  const planDisplayName = useMemo(
+    () => formatPlanDisplayName(subscriptionPlan ?? null),
+    [subscriptionPlan]
+  );
+
   const handleReserve = () => {
     if (isAlreadyReserved) {
       console.log('⚠️ Tentativa de reservar livro já reservado bloqueada');
+      return;
+    }
+    if (allCopiesReserved) {
+      console.log('⚠️ Todas as cópias já foram reservadas');
+      return;
+    }
+    // Se o plano não permite reservas, mostrar o feature blocker
+    if (isReservationsBlocked) {
+      console.log('⚠️ Tentativa de reservar livro bloqueada pelo plano');
+      setShowFeatureBlock(true);
+      // Scroll suave para o feature blocker
+      setTimeout(() => {
+        const featureBlock = document.querySelector(`.${styles.featureBlockWrapper}`);
+        if (featureBlock) {
+          featureBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
       return;
     }
     navigate(`/student-dashboard/${studentId}/reserve/${bookId}`);
@@ -414,6 +454,26 @@ const BookDetails: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Feature Block - aparece quando o usuário clica no botão e o plano não permite */}
+            {showFeatureBlock && (
+              <div className={styles.featureBlockWrapper}>
+                <FeatureBlock
+                  planDisplayName={planDisplayName}
+                  featureName="Reservas de livros disponíveis no plano Avançado"
+                  description="Reserve livros direto do seu celular e garanta seu lugar na fila dos livros mais disputados da biblioteca."
+                  highlights={[
+                    'Reserve livros de qualquer lugar, a qualquer momento',
+                    'Receba notificações quando sua reserva estiver pronta',
+                    'Garanta prioridade nos livros mais populares',
+                    'Organize suas leituras com antecedência'
+                  ]}
+                  upgradeUrl="https://bibliotech.tech/#planos"
+                  buttonText="Converse com sua escola sobre o plano Avançado"
+                  footnoteText="Solicite à sua escola a atualização para o plano Bibliotech Avançado e aproveite esta e outras funcionalidades."
+                />
+              </div>
+            )}
           </div>
         </div>
       </main>

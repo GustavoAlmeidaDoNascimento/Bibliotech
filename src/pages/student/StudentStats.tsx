@@ -952,11 +952,11 @@ const StudentStats: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Conhecer plano avançado
+                  Converse com sua escola sobre o plano Avançado
                   <ArrowUpRight size={16} />
                 </a>
                 <span className={styles.featureBlockFootnote}>
-                  Disponível apenas no plano Bibliotech Avançado.
+                  Solicite à sua escola a atualização para o plano Bibliotech Avançado e aproveite esta e outras funcionalidades.
                 </span>
               </div>
             </div>

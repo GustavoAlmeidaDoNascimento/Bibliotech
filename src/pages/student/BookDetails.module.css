@@ -567,6 +567,23 @@
   box-shadow: 0 10px 25px rgba(0, 120, 212, 0.3);
 }
 
+/* Feature Block Wrapper */
+.featureBlockWrapper {
+  margin-top: 2rem;
+  animation: slideInUp 0.4s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {

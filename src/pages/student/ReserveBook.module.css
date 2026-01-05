@@ -448,6 +448,55 @@
   margin-bottom: 2rem;
 }
 
+/* Feature Block Container */
+.featureBlockContainer {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-bottom: 100px; /* Espaço para a navegação inferior */
+}
+
+/* Backdrop Preview for Feature Block */
+.backdropPreview {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  opacity: 0.3;
+}
+
+.backdropCover {
+  width: 80px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.backdropCoverPlaceholder {
+  width: 80px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+}
+
+.backdropInfo h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #E2E8F0;
+}
+
+.backdropInfo p {
+  font-size: 0.95rem;
+  color: #94A3B8;
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .headerContent {
