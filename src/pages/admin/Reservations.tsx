@@ -8,6 +8,9 @@ import { ptBR } from 'date-fns/locale';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import { BookOpen } from 'lucide-react';
 import NewBadge from '../../components/NewBadge/NewBadge';
+import { useFeatureBlock } from '../../hooks/useFeatureBlocks';
+import { FEATURE_BLOCK_KEYS } from '../../config/planFeatures';
+import { FeatureBlock } from '../../components/ui';
 import styles from './Reservations.module.css';
 
 interface DisplayReservation extends Reservation {
@@ -19,6 +22,7 @@ const Reservations: React.FC = () => {
   const { currentUser } = useAuth();
   const [reservations, setReservations] = useState<DisplayReservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const reservationsFeature = useFeatureBlock(FEATURE_BLOCK_KEYS.BlockReservations);
 
   useEffect(() => {
     loadReservations();
@@ -99,7 +103,7 @@ const Reservations: React.FC = () => {
     navigate(`/reservation-detail/${reservation.id}`);
   };
 
-  if (loading) {
+  if (loading || reservationsFeature.loading) {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
@@ -108,6 +112,71 @@ const Reservations: React.FC = () => {
         <div className={styles.loading}>
           <p>Carregando reservas...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (reservationsFeature.isBlocked) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1>Reservas de Livros <NewBadge /></h1>
+        </div>
+        <FeatureBlock
+          planDisplayName={reservationsFeature.planDisplayName}
+          featureName="Sistema de Reservas disponível no plano Avançado"
+          description="Gerencie todas as reservas de livros da sua biblioteca de forma centralizada e eficiente. Visualize, organize e atenda as reservas dos alunos com facilidade."
+          highlights={[
+            'Visualize todas as reservas pendentes em um único lugar',
+            'Veja o status de cada reserva (pronta entrega ou aguardando devolução)',
+            'Acompanhe informações detalhadas de cada reserva',
+            'Gerencie o atendimento das reservas de forma organizada'
+          ]}
+          buttonText="Conhecer plano avançado"
+          footnoteText="Disponível apenas no plano Bibliotech Avançado."
+          backdropContent={
+            <>
+              <div className={styles.backdropReservationList}>
+                <div className={styles.backdropReservationItem}>
+                  <div className={styles.backdropBookCover}></div>
+                  <div className={styles.backdropBookInfo}>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div className={styles.backdropStudentInfo}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+                <div className={styles.backdropReservationItem}>
+                  <div className={styles.backdropBookCover}></div>
+                  <div className={styles.backdropBookInfo}>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div className={styles.backdropStudentInfo}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+                <div className={styles.backdropReservationItem}>
+                  <div className={styles.backdropBookCover}></div>
+                  <div className={styles.backdropBookInfo}>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div className={styles.backdropStudentInfo}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              </div>
+            </>
+          }
+        />
       </div>
     );
   }

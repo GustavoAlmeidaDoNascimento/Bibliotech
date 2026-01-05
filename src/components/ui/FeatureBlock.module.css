@@ -58,7 +58,18 @@
   margin-bottom: 0.5rem;
 }
 
-.planNameHighlight {
+/* Cores dos nomes dos planos */
+.planNameBasic {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.planNameIntermediate {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.planNameAdvanced {
   color: #facc15;
   font-weight: 600;
 }
