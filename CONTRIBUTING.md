@@ -191,14 +191,13 @@ git checkout -b feature/minha-feature
 # Testes unitários
 npm run test
 
-# Testes com coverage
-npm run test:coverage
+# Build para verificar erros de TypeScript
+npm run build
+```
 
-# Lint
-npm run lint
-
-# Type check
-npm run type-check
+**Nota**: Este projeto usa Create React App, que inclui TypeScript checking durante o build. Para verificar tipos sem fazer build completo, você pode usar:
+```bash
+npx tsc --noEmit
 ```
 
 ---
@@ -207,10 +206,10 @@ npm run type-check
 
 ### **Antes de Submeter**
 - [ ] Testes passando (`npm run test`)
-- [ ] Lint sem erros (`npm run lint`)
-- [ ] TypeScript sem erros (`npm run type-check`)
+- [ ] TypeScript sem erros (verificado durante `npm run build`)
 - [ ] Build funcionando (`npm run build`)
 - [ ] Documentação atualizada se necessário
+- [ ] Código segue os padrões do projeto
 
 ### **Template de PR**
 
@@ -299,9 +298,9 @@ Qualquer outra informação ou screenshots sobre a feature request.
 
 Após contribuir:
 
-1. **Junte-se à comunidade**
-   - [Discord](https://discord.gg/bibliotech)
-   - [Discussions](https://github.com/seu-usuario/bibliotech/discussions)
+1. **Entre em contato**
+   - Email: proton.hello.world@gmail.com
+   - Website: [protonsoftware.tech](https://protonsoftware.tech)
 
 2. **Ajude outros**
    - Revise PRs de outros contribuidores
@@ -317,9 +316,10 @@ Após contribuir:
 
 ## 📞 **Contato**
 
-- **Maintainer**: [Nome do Maintainer](mailto:maintainer@bibliotech.com.br)
-- **Discord**: [Bibliotech Community](https://discord.gg/bibliotech)
-- **Email**: [contribuicoes@bibliotech.com.br](mailto:contribuicoes@bibliotech.com.br)
+- **Desenvolvedor Principal**: Gustavo Almeida
+- **Empresa**: Proton Software
+- **Email**: proton.hello.world@gmail.com
+- **Website**: [protonsoftware.tech](https://protonsoftware.tech)
 
 ---
 

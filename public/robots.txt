@@ -1,9 +1,15 @@
 # Bibliotech - Sistema para Biblioteca Escolar
 # Desenvolvido por Gustavo Almeida, Amanda Pinheiro e Luana Furtado
 # Criado na Escola Olivia Lahm Hirt
+# © 2025 Proton Software - Todos os direitos reservados
 
 User-agent: *
 Allow: /
+
+# Bloquear áreas privadas
+Disallow: /login
+Disallow: /dashboard
+Disallow: /admin
 
 # Sitemap
 Sitemap: https://bibliotech.tech/sitemap.xml
@@ -12,7 +18,7 @@ Sitemap: https://bibliotech.tech/sitemap.xml
 # Sistema completo para gestão de biblioteca escolar
 # Software de gerenciamento de livros, empréstimos e devoluções
 # Ideal para escolas, bibliotecários e gestores educacionais
-# Palavras-chave: sistema biblioteca escolar, software biblioteca, gestão bibliotecária
+# Palavras-chave: sistema biblioteca escolar, software biblioteca, gestão bibliotecária, biblioteca digital escolar
 
 # Crawl-delay para ser respeitoso com os servidores
 Crawl-delay: 1

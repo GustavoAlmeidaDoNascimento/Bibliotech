@@ -10,6 +10,16 @@ Este documento descreve todas as variáveis de ambiente utilizadas no projeto.
 
 ```bash
 # Exemplo de .env.local
+
+# Firebase (se não estiver usando firebase.config.ts)
+# REACT_APP_FIREBASE_API_KEY=sua_api_key
+# REACT_APP_FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
+# REACT_APP_FIREBASE_PROJECT_ID=seu_projeto_id
+# REACT_APP_FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
+# REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
+# REACT_APP_FIREBASE_APP_ID=sua_app_id
+
+# Login de Convidado (Opcional)
 REACT_APP_GUEST_LOGIN_ENABLED=true
 REACT_APP_GUEST_EMAIL=bibliotech.convidado@gmail.com
 REACT_APP_GUEST_PASSWORD=convidado123
@@ -24,7 +34,27 @@ REACT_APP_GUEST_PASSWORD=convidado123
 
 ## 📝 Variáveis Disponíveis
 
-### Login de Convidado (Opcional)
+### 🔐 Configuração do Firebase (Obrigatório)
+
+> ⚠️ **Importante**: As credenciais do Firebase podem ser configuradas de duas formas:
+> 1. **Via arquivo de configuração** (`src/config/firebase.config.ts`) - Recomendado
+> 2. **Via variáveis de ambiente** (método alternativo)
+
+Se você optar por usar variáveis de ambiente para o Firebase:
+
+| Variável | Descrição | Tipo | Obrigatória | Padrão |
+|----------|-----------|------|-------------|--------|
+| `REACT_APP_FIREBASE_API_KEY` | Chave da API do Firebase | `string` | Sim* | - |
+| `REACT_APP_FIREBASE_AUTH_DOMAIN` | Domínio de autenticação | `string` | Sim* | - |
+| `REACT_APP_FIREBASE_PROJECT_ID` | ID do projeto Firebase | `string` | Sim* | - |
+| `REACT_APP_FIREBASE_STORAGE_BUCKET` | Bucket de armazenamento | `string` | Sim* | - |
+| `REACT_APP_FIREBASE_MESSAGING_SENDER_ID` | ID do remetente de mensagens | `string` | Sim* | - |
+| `REACT_APP_FIREBASE_APP_ID` | ID da aplicação | `string` | Sim* | - |
+| `REACT_APP_FIREBASE_MEASUREMENT_ID` | ID de medição (Analytics) | `string` | Não | - |
+
+\* Obrigatórias apenas se não estiver usando `firebase.config.ts`. Consulte [Firebase Setup Guide](./src/config/FIREBASE_SETUP.md) para mais informações.
+
+### 👤 Login de Convidado (Opcional)
 
 | Variável | Descrição | Tipo | Obrigatória | Padrão |
 |----------|-----------|------|-------------|--------|

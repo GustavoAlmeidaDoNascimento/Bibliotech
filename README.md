@@ -31,20 +31,16 @@ Bibliotecas escolares tradicionalmente enfrentam desafios como:
 
 ## 🖼️ Interface do Sistema
 
-### Página Inicial
-A landing page apresenta o sistema e suas funcionalidades de forma clara e atrativa:
+> 💡 **Nota**: As imagens abaixo são referências. Para visualizar a interface completa, acesse a aplicação em produção ou execute localmente.
 
-![Página Inicial](docs/screenshots/home-page.png)
+### Página Inicial
+A landing page apresenta o sistema e suas funcionalidades de forma clara e atrativa, com design moderno e responsivo.
 
 ### Seleção de Tipo de Usuário
 Sistema com dois tipos de acesso: alunos (via ID estudantil) e gestores (via login):
 
-![Seleção de Usuário](docs/screenshots/select-user-type.png)
-
 ### Dashboard Administrativo
 Dashboard completo com métricas em tempo real, gráficos interativos e análises de desempenho:
-
-![Dashboard](docs/screenshots/dashboard.png)
 
 **Métricas disponíveis:**
 - Total de livros emprestados atualmente
@@ -61,8 +57,6 @@ Dashboard completo com métricas em tempo real, gráficos interativos e análise
 ### Catálogo de Livros
 Gestão completa do acervo com busca avançada, filtros e visualização detalhada:
 
-![Catálogo de Livros](docs/screenshots/books-catalog.png)
-
 **Funcionalidades do catálogo:**
 - Busca por título, autor, ISBN ou categoria
 - Filtros por disponibilidade, categoria e nível educacional
@@ -75,8 +69,6 @@ Gestão completa do acervo com busca avançada, filtros e visualização detalha
 ### Gestão de Alunos
 Controle completo dos estudantes cadastrados no sistema:
 
-![Lista de Alunos](docs/screenshots/students-list.png)
-
 **Informações gerenciadas:**
 - Nome completo do aluno
 - Turma e turno
@@ -86,8 +78,6 @@ Controle completo dos estudantes cadastrados no sistema:
 
 ### Sistema de Empréstimos
 Gestão eficiente de todas as locações ativas e devolvidas:
-
-![Empréstimos de Alunos](docs/screenshots/student-loans.png)
 
 **Controle de empréstimos:**
 - Visualização de todas as locações ativas
@@ -100,8 +90,6 @@ Gestão eficiente de todas as locações ativas e devolvidas:
 
 ### Área do Aluno
 Interface moderna e intuitiva para os estudantes explorarem o acervo:
-
-![Dashboard do Aluno](docs/screenshots/student-dashboard.png)
 
 **Funcionalidades para alunos:**
 - Recomendações personalizadas de livros
@@ -235,9 +223,11 @@ Conta Firebase (plano gratuito disponível)
 
 1. **Clone o repositório**
 ```bash
-git clone https://github.com/seu-usuario/bibliotech.git
+git clone <URL_DO_REPOSITORIO>
 cd bibliotech
 ```
+
+> 💡 **Nota**: Substitua `<URL_DO_REPOSITORIO>` pela URL real do seu repositório Git.
 
 2. **Instale as dependências**
 ```bash
@@ -257,9 +247,20 @@ yarn install
 
 4. **Configure as variáveis de ambiente**
 
+**Opção 1: Usando arquivo de configuração (Recomendado)**
+
+Copie o arquivo de exemplo e configure suas credenciais:
+```bash
+cp src/config/firebase.config.example.ts src/config/firebase.config.ts
+# Edite o arquivo firebase.config.ts com suas credenciais
+```
+
+**Opção 2: Usando variáveis de ambiente**
+
 Crie um arquivo `.env.local` na raiz do projeto:
 
 ```env
+# Firebase (obrigatório se não usar firebase.config.ts)
 REACT_APP_FIREBASE_API_KEY=sua_api_key
 REACT_APP_FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
 REACT_APP_FIREBASE_PROJECT_ID=seu_projeto_id
@@ -273,7 +274,7 @@ REACT_APP_GUEST_EMAIL=bibliotech.convidado@gmail.com
 REACT_APP_GUEST_PASSWORD=convidado123
 ```
 
-> 💡 **Nota**: Para mais informações sobre variáveis de ambiente, consulte [ENV_VARIABLES.md](./ENV_VARIABLES.md)
+> 💡 **Nota**: Para mais informações sobre variáveis de ambiente, consulte [ENV_VARIABLES.md](./ENV_VARIABLES.md) e [Firebase Setup Guide](./src/config/FIREBASE_SETUP.md)
 
 5. **Execute o projeto em desenvolvimento**
 ```bash
@@ -415,16 +416,22 @@ Contribuições são bem-vindas! Siga estes passos:
 
 1. Faça um fork do projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças seguindo os [padrões de commit](.github/CONTRIBUTING.md)
+3. Commit suas mudanças seguindo os [padrões de commit](./CONTRIBUTING.md)
 4. Push para a branch (`git push origin feature/MinhaFeature`)
 5. Abra um Pull Request
+
+Para mais detalhes sobre como contribuir, consulte o [Guia de Contribuição](./CONTRIBUTING.md).
 
 ### Padrões de Código
 
 - Use **TypeScript** para todos os novos arquivos
-- Siga o **ESLint** configurado
+- Siga o **ESLint** configurado (via Create React App)
 - Componentes devem ter **CSS Modules** isolados
-- Mantenha **commits semânticos** com versionamento
+- Mantenha **commits semânticos** com versionamento (formato: `NUMERO_VERSAO - tipo: descrição`)
+- Priorize **soluções simples** e **código limpo**
+- Foque na **responsividade** em todas as mudanças
+
+> 📖 Para mais detalhes sobre padrões de commit, consulte o arquivo [.cursorrules](./.cursorrules)
 
 ---
 
@@ -448,7 +455,17 @@ Contribuições são bem-vindas! Siga estes passos:
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está sob a licença MIT. Consulte o arquivo LICENSE no repositório para mais detalhes.
+
+---
+
+## 🔍 Informações do Projeto
+
+- **Versão Atual**: 0.1.0
+- **Última Atualização**: Janeiro 2025
+- **Status**: Em desenvolvimento ativo
+- **Idioma Principal**: Português (Brasil)
+- **Plataforma**: Web (PWA compatível)
 
 ---
 
@@ -479,7 +496,7 @@ Agradecimentos especiais às escolas que validaram o sistema e forneceram feedba
 
 <div align="center">
 
-**Desenvolvido com dedicação por [Gustavo Almeida](https://github.com/seu-usuario)**
+**Desenvolvido com dedicação por Gustavo Almeida**
 
 **© 2025 Proton Software - Todos os direitos reservados**
 
