@@ -1,7 +1,7 @@
 {
   "short_name": "Bibliotech",
   "name": "Bibliotech - Sistema para Biblioteca Escolar",
-  "description": "Sistema completo para gestão de biblioteca escolar. Software profissional para controle de empréstimos, catalogação de livros e métricas de leitura. Desenvolvido por Gustavo Almeida, Amanda Pinheiro e Luana Furtado na Escola Olivia Lahm Hirt.",
+  "description": "Bibliotech - Produto da Proton Software. Sistema completo para gestão de biblioteca escolar. Software profissional para controle de empréstimos, catalogação de livros e métricas de leitura. Desenvolvido por Gustavo Almeida, Amanda Pinheiro e Luana Furtado na Escola Olivia Lahm Hirt.",
   "keywords": "sistema biblioteca escolar, software biblioteca, gestão bibliotecária, empréstimos livros, biblioteca digital escolar, controle acervo escolar",
   "categories": ["education", "productivity", "libraries"],
   "icons": [

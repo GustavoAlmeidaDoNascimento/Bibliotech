@@ -1897,7 +1897,7 @@ Aguardo retorno. Obrigado!`;
           
           <FooterBottom>
             <Copyright>
-              © {new Date().getFullYear()} Bibliotech. Todos os direitos reservados.
+              © {new Date().getFullYear()} Proton Software. Todos os direitos reservados. Bibliotech é um produto da Proton Software.
             </Copyright>
             <ProtonCredit>
               Desenvolvido pela <a href="https://protonsoftware.tech" target="_blank" rel="noopener noreferrer">protonsoftware.tech</a>

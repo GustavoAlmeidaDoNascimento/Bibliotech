@@ -1,4 +1,5 @@
 # Bibliotech - Sistema para Biblioteca Escolar
+# Produto da Proton Software (protonsoftware.tech)
 # Desenvolvido por Gustavo Almeida, Amanda Pinheiro e Luana Furtado
 # Criado na Escola Olivia Lahm Hirt
 # © 2025 Proton Software - Todos os direitos reservados
