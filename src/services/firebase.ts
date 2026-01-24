@@ -4,27 +4,23 @@ import {
   signInWithEmailAndPassword, 
   signOut, 
   sendPasswordResetEmail,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   User
 } from 'firebase/auth';
 import { 
   getFirestore, 
   doc,
-  getDoc
+  getDoc,
+  setDoc,
+  serverTimestamp
 } from 'firebase/firestore';
 import { getAuthErrorMessage } from '../utils/authErrorMessages';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBaukjjy1nr7HognROeHmdQADjfbvSmu64",
-  authDomain: "shoollibsystem.firebaseapp.com",
-  projectId: "shoollibsystem",
-  storageBucket: "shoollibsystem.firebasestorage.app",
-  messagingSenderId: "540876175554",
-  appId: "1:540876175554:web:bada4caa3945d1a667a35b",
-  measurementId: "G-CQ0JZFYRKC"
-};
+import { getFirebaseConfig } from '../config/firebaseConfig';
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(getFirebaseConfig());
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
@@ -57,6 +53,54 @@ export const authService = {
       throw new Error(friendlyMessage);
     }
   },
+
+  signup: async (email: string, password: string): Promise<User> => {
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      // Criar documento inicial do usuário
+      await createUserDocument(result.user.uid);
+      return result.user;
+    } catch (error) {
+      const friendlyMessage = getAuthErrorMessage(error);
+      throw new Error(friendlyMessage);
+    }
+  },
+
+  signInWithGoogle: async (): Promise<User> => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      // Verificar se é um novo usuário e criar documento se necessário
+      const userDoc = await getDoc(doc(db, `users/${result.user.uid}/account/subscription`));
+      if (!userDoc.exists()) {
+        await createUserDocument(result.user.uid);
+      }
+      return result.user;
+    } catch (error) {
+      const friendlyMessage = getAuthErrorMessage(error);
+      throw new Error(friendlyMessage);
+    }
+  },
+};
+
+// Criar documento inicial do usuário no Firestore
+export const createUserDocument = async (userId: string): Promise<void> => {
+  try {
+    const subscriptionRef = doc(db, `users/${userId}/account/subscription`);
+    const subscriptionDoc = await getDoc(subscriptionRef);
+    
+    // Só cria se não existir
+    if (!subscriptionDoc.exists()) {
+      await setDoc(subscriptionRef, {
+        plan: null,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao criar documento do usuário:', error);
+    throw error;
+  }
 };
 
 

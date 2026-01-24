@@ -1,0 +1,242 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a1628 0%, #0f2847 100%);
+  padding: 60px 20px;
+  position: relative;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.logoutButton {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.logoutButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.logoutButton:active {
+  transform: translateY(0);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 60px;
+  color: white;
+}
+
+.header h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.header p {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: #94a3b8;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.planCard {
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 40px 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.planCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+}
+
+.planCard.highlighted {
+  border-color: #0078d4;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 248, 255, 0.98) 100%);
+}
+
+.badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #0078d4, #106ebe);
+  color: white;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.4);
+}
+
+.planHeader {
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.planName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0078d4;
+}
+
+.period {
+  font-size: 1rem;
+  color: #6c7686;
+}
+
+.planFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+  flex-grow: 1;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: #2c3e50;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.checkIcon {
+  width: 20px;
+  height: 20px;
+  color: #00b894;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.selectButton {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #0369a1, #0284c7);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(3, 105, 161, 0.4);
+}
+
+.selectButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(3, 105, 161, 0.5);
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+}
+
+.selectButton:active {
+  transform: translateY(0);
+}
+
+.selectButton.highlightedButton {
+  background: linear-gradient(135deg, #0078d4, #106ebe);
+  box-shadow: 0 4px 15px rgba(0, 120, 212, 0.4);
+}
+
+.selectButton.highlightedButton:hover {
+  background: linear-gradient(135deg, #106ebe, #0078d4);
+  box-shadow: 0 8px 25px rgba(0, 120, 212, 0.5);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: 40px 16px;
+  }
+
+  .logoutButton {
+    top: 16px;
+    right: 16px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .header {
+    margin-bottom: 40px;
+  }
+
+  .plansGrid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .planCard {
+    padding: 32px 24px;
+  }
+
+  .price {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 30px 12px;
+  }
+
+  .planCard {
+    padding: 24px 20px;
+  }
+
+  .planName {
+    font-size: 1.25rem;
+  }
+
+  .price {
+    font-size: 1.75rem;
+  }
+}

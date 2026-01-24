@@ -1288,13 +1288,17 @@ Aguardo retorno. Obrigado!`;
     }
   };
 
-  const handlePlanWhatsApp = (plan: PricingPlan) => {
-    const displayPrice = getDisplayPrice(plan);
-    const message = `Olá! Tenho interesse no plano ${plan.name} (${displayPrice.price} ${displayPrice.period}). Podemos conversar?`;
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-
-    window.open(whatsappUrl, '_blank');
+  const handlePlanClick = (plan: PricingPlan) => {
+    // Mapear nome do plano para ID numérico
+    let planId = 1; // Padrão: Básico
+    if (plan.name.includes('Intermediário')) {
+      planId = 2;
+    } else if (plan.name.includes('Avançado')) {
+      planId = 3;
+    }
+    
+    // Redirecionar para signup com plano pré-selecionado
+    navigate(`/signup?plan=${planId}`);
   };
 
   const openImageModal = (imageSrc: string) => {
@@ -1729,7 +1733,7 @@ Aguardo retorno. Obrigado!`;
                   </PricingFeatures>
 
                   <PricingButton
-                    onClick={() => handlePlanWhatsApp(plan)}
+                    onClick={() => handlePlanClick(plan)}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     $highlighted={plan.highlighted}

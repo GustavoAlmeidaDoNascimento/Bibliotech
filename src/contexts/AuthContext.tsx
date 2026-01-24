@@ -8,6 +8,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   authState: AsyncState<User>;
 }
 
@@ -63,6 +65,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signup = async (email: string, password: string) => {
+    setAuthState(prev => ({ ...prev, status: 'loading', error: null }));
+    
+    try {
+      await authService.signup(email, password);
+      setAuthState(prev => ({ ...prev, status: 'success' }));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar conta';
+      setAuthState(prev => ({ ...prev, status: 'error', error: errorMessage }));
+      throw error;
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    setAuthState(prev => ({ ...prev, status: 'loading', error: null }));
+    
+    try {
+      await authService.signInWithGoogle();
+      setAuthState(prev => ({ ...prev, status: 'success' }));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login com Google';
+      setAuthState(prev => ({ ...prev, status: 'error', error: errorMessage }));
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -81,6 +109,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     logout,
     resetPassword,
+    signup,
+    signInWithGoogle,
     authState,
   };
 

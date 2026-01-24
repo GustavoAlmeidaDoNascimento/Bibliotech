@@ -1,0 +1,286 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a1628 0%, #0f2847 100%);
+  padding: 60px 20px;
+  position: relative;
+}
+
+.backButtonTop {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.backButtonTop:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.backIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.checkoutCard {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.header p {
+  color: #6c7686;
+  font-size: 1rem;
+}
+
+.error {
+  background-color: #ffebee;
+  color: #d32f2f;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+}
+
+.processing {
+  text-align: center;
+  color: white;
+  padding: 60px 20px;
+}
+
+.processing h2 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+.processing p {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 24px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.planSummary {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.planHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.planHeader h2 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0078d4;
+}
+
+.period {
+  font-size: 1rem;
+  color: #6c7686;
+}
+
+.planFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #2c3e50;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.checkIcon {
+  width: 20px;
+  height: 20px;
+  color: #00b894;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.paymentInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #e3f2fd;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.paymentIcon {
+  width: 40px;
+  height: 40px;
+  color: #1976d2;
+  flex-shrink: 0;
+}
+
+.paymentIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.paymentText {
+  color: #1565c0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.checkoutButton {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #0078d4, #106ebe);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 120, 212, 0.4);
+  margin-bottom: 16px;
+}
+
+.checkoutButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 120, 212, 0.5);
+  background: linear-gradient(135deg, #106ebe, #0078d4);
+}
+
+.checkoutButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.securityNote {
+  text-align: center;
+  color: #6c7686;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.backButton {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #0369a1, #0284c7);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 20px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: 40px 16px;
+  }
+
+  .checkoutCard {
+    padding: 32px 24px;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .planHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .price {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 30px 12px;
+  }
+
+  .checkoutCard {
+    padding: 24px 20px;
+  }
+
+  .planSummary {
+    padding: 20px;
+  }
+}

@@ -5,7 +5,10 @@ import { useAuth } from '../contexts/AuthContext';
 // lazy loading dos componentes para melhor performance
 import UserTypeSelection from '../pages/auth/UserTypeSelection';
 import Login from '../pages/auth/Login';
+import Signup from '../pages/auth/Signup';
 import ForgotPassword from '../pages/auth/ForgotPassword';
+import Plans from '../pages/plans/Plans';
+import Checkout from '../pages/checkout/Checkout';
 import Dashboard from '../pages/dashboard/Dashboard';
 import OnlineCatalog from '../pages/catalog/OnlineCatalog';
 import Students from '../pages/students/Students';
@@ -73,6 +76,18 @@ export const publicRoutes = [
   {
     path: ROUTES.LOGIN,
     element: <Login />,
+  },
+  {
+    path: ROUTES.SIGNUP,
+    element: <Signup />,
+  },
+  {
+    path: ROUTES.PLANS,
+    element: <Plans />,
+  },
+  {
+    path: `${ROUTES.CHECKOUT}/:planId`,
+    element: <Checkout />,
   },
   {
     path: "/forgot-password",

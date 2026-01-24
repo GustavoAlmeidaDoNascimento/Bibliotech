@@ -1,12 +1,13 @@
 import { FirebaseOptions } from 'firebase/app';
 
 /**
- * Carrega e valida as configurações do Firebase a partir de variáveis de ambiente
+ * Carrega e valida as configurações do Firebase
+ * Tenta carregar de variáveis de ambiente primeiro, depois de firebase.config.ts como fallback
  * @throws {Error} Se alguma configuração obrigatória estiver faltando
  */
 export const getFirebaseConfig = (): FirebaseOptions => {
-  // Usar variáveis de ambiente (compatível com Vercel e outras plataformas)
-  const firebaseConfig: FirebaseOptions = {
+  // Tentar carregar de variáveis de ambiente primeiro
+  let firebaseConfig: FirebaseOptions = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY || '',
     authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || '',
     projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || '',
@@ -18,6 +19,26 @@ export const getFirebaseConfig = (): FirebaseOptions => {
   // Adicionar measurementId se estiver definido (opcional)
   if (process.env.REACT_APP_FIREBASE_MEASUREMENT_ID) {
     firebaseConfig.measurementId = process.env.REACT_APP_FIREBASE_MEASUREMENT_ID;
+  }
+
+  // Se não encontrou nas variáveis de ambiente, tentar carregar de firebase.config.ts
+  const hasAllEnvVars = firebaseConfig.apiKey && 
+    firebaseConfig.authDomain && 
+    firebaseConfig.projectId && 
+    firebaseConfig.storageBucket && 
+    firebaseConfig.messagingSenderId && 
+    firebaseConfig.appId;
+
+  if (!hasAllEnvVars) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const localConfig = require('./firebase.config');
+      if (localConfig && localConfig.firebaseConfig) {
+        firebaseConfig = localConfig.firebaseConfig;
+      }
+    } catch (error) {
+      // Arquivo firebase.config.ts não existe, continuar com validação
+    }
   }
 
   // Validar configuração obrigatória
@@ -35,7 +56,8 @@ export const getFirebaseConfig = (): FirebaseOptions => {
   if (missingFields.length > 0) {
     throw new Error(
       `Configuração do Firebase incompleta. Campos faltando: ${missingFields.join(', ')}. ` +
-      'Configure as variáveis de ambiente REACT_APP_FIREBASE_* na Vercel ou no arquivo .env.local.'
+      'Configure as variáveis de ambiente REACT_APP_FIREBASE_* na Vercel ou crie o arquivo ' +
+      'src/config/firebase.config.ts (copie de firebase.config.example.ts).'
     );
   }
 
