@@ -49,6 +49,8 @@ const Checkout: React.FC = () => {
   const { planId } = useParams<{ planId: string }>();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
+  const period = searchParams.get('period') || 'monthly';
+  const isAnnual = period === 'annual';
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   
@@ -58,6 +60,59 @@ const Checkout: React.FC = () => {
 
   const planIdNum = planId ? parseInt(planId, 10) : null;
   const plan = planIdNum ? PRICING_PLANS[planIdNum] : null;
+
+  // Funções para calcular preços anuais
+  const formatPrice = (value: number): string => {
+    const formattedValue = value.toFixed(2).replace('.', ',');
+    const parts = formattedValue.split(',');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `R$ ${parts.join(',')}`;
+  };
+
+  const parsePrice = (price: string): number => {
+    const cleanPrice = price.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+    return parseFloat(cleanPrice);
+  };
+
+  const calculateAnnualPrice = (monthlyPrice: string, discount: number = 0): string => {
+    const monthlyValue = parsePrice(monthlyPrice);
+    const annualValue = monthlyValue * 12;
+    const discountedValue = annualValue * (1 - discount / 100);
+    return formatPrice(discountedValue);
+  };
+
+  const getDiscount = (planId: number): number => {
+    if (!isAnnual) return 0;
+    
+    switch (planId) {
+      case 1: // Bibliotech Básico
+        return 15;
+      case 2: // Bibliotech Intermediário
+        return 15;
+      case 3: // Bibliotech Avançado
+        return 20;
+      default:
+        return 0;
+    }
+  };
+
+  const getDisplayPrice = (): { price: string; period: string } => {
+    if (!plan || !planIdNum) {
+      return { price: '', period: '' };
+    }
+
+    if (isAnnual) {
+      const discount = getDiscount(planIdNum);
+      return {
+        price: calculateAnnualPrice(plan.price, discount),
+        period: '/ano'
+      };
+    }
+    return {
+      price: plan.price,
+      period: '/mês'
+    };
+  };
 
   useEffect(() => {
     // Se não estiver logado, redirecionar para login
@@ -108,7 +163,7 @@ const Checkout: React.FC = () => {
     setError(null);
 
     try {
-      const { url } = await createCheckoutSession(planIdNum, currentUser.uid);
+      const { url } = await createCheckoutSession(planIdNum, currentUser.uid, isAnnual);
       
       // Redirecionar para Stripe Checkout
       window.location.href = url;
@@ -170,9 +225,14 @@ const Checkout: React.FC = () => {
           <div className={styles.planHeader}>
             <h2>{plan.name}</h2>
             <div className={styles.planPrice}>
-              <span className={styles.price}>{plan.price}</span>
-              <span className={styles.period}>/mês</span>
+              <span className={styles.price}>{getDisplayPrice().price}</span>
+              <span className={styles.period}>{getDisplayPrice().period}</span>
             </div>
+            {isAnnual && getDiscount(planIdNum!) > 0 && (
+              <div className={styles.savingsNote}>
+                Economize {getDiscount(planIdNum!)}% com o plano anual
+              </div>
+            )}
           </div>
 
           <ul className={styles.planFeatures}>

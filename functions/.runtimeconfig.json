@@ -1,0 +1,19 @@
+i  This command retrieves your Runtime Config values (accessed via functions.config()) and exports them as a Secret Manager secret.
+
+i  Fetching your existing functions.config() from shoollibsystem...
+✔  Fetched your existing functions.config().
+
+i  Configuration to be exported:
+{
+  "stripe": {
+    "secret_key": "******",
+    "basic_price_id": "******",
+    "basic_annual_price_id": "******",
+    "webhook_secret": "******"
+  }
+}
+
+[34m?[39m [1mWhat would you like to name the new secret for your configuration?[22m
+[2m(FUNCTIONS_CONFIG_EXPORT)[22m[1A[96G[1B
+[?25h
+Error: An unexpected error has occurred.

@@ -536,7 +536,8 @@ const Plans: React.FC = () => {
   }, [currentUser, navigate]);
 
   const handleSelectPlan = (planId: number) => {
-    navigate(`/checkout/${planId}`);
+    const period = isAnnual ? 'annual' : 'monthly';
+    navigate(`/checkout/${planId}?period=${period}`);
   };
 
   const handleLogout = async () => {

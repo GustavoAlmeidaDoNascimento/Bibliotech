@@ -45,7 +45,8 @@ const getCloudFunctionUrl = (functionName: string): string => {
  */
 export const createCheckoutSession = async (
   planId: number,
-  userId: string
+  userId: string,
+  isAnnual: boolean = false
 ): Promise<{ sessionId: string; url: string }> => {
   try {
     const url = getCloudFunctionUrl('createCheckoutSession');
@@ -59,6 +60,7 @@ export const createCheckoutSession = async (
       body: JSON.stringify({
         planId,
         userId,
+        isAnnual,
       }),
     });
 

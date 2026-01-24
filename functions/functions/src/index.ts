@@ -9,7 +9,11 @@ admin.initializeApp();
 const functionsConfig = defineJsonSecret("FUNCTIONS_CONFIG_EXPORT");
 const stripeBasicPriceId = defineString("STRIPE_BASIC_PRICE_ID", {
   default: "",
-  description: "Stripe basic plan price ID",
+  description: "Stripe basic plan price ID (mensal)",
+});
+const stripeBasicAnnualPriceId = defineString("STRIPE_BASIC_ANNUAL_PRICE_ID", {
+  default: "",
+  description: "Stripe basic plan price ID (anual)",
 });
 // Webhook secret será opcional inicialmente
 // (será configurado após criar webhook no Stripe)
@@ -42,15 +46,28 @@ const getStripe = (): Stripe => {
 };
 
 // Mapeamento de planos
-const getPlanPriceId = (planId: number): string => {
+const getPlanPriceId = (planId: number, isAnnual = false): string => {
   if (planId === 1) {
-    // Tentar obter do novo sistema primeiro
-    let priceId = stripeBasicPriceId.value();
+    let priceId = "";
 
-    // Se não encontrou, ler do secret exportado
-    if (!priceId || priceId === "") {
-      const config = functionsConfig.value();
-      priceId = config?.stripe?.basic_price_id || "";
+    if (isAnnual) {
+      // Tentar obter do novo sistema primeiro
+      priceId = stripeBasicAnnualPriceId.value();
+
+      // Se não encontrou, ler do secret exportado
+      if (!priceId || priceId === "") {
+        const config = functionsConfig.value();
+        priceId = config?.stripe?.basic_annual_price_id || "";
+      }
+    } else {
+      // Tentar obter do novo sistema primeiro
+      priceId = stripeBasicPriceId.value();
+
+      // Se não encontrou, ler do secret exportado
+      if (!priceId || priceId === "") {
+        const config = functionsConfig.value();
+        priceId = config?.stripe?.basic_price_id || "";
+      }
     }
 
     // Garantir que o price ID tenha o prefixo "price_"
@@ -90,14 +107,14 @@ export const createCheckoutSession = functions.https.onRequest(
     }
 
     try {
-      const {planId, userId} = req.body;
+      const {planId, userId, isAnnual} = req.body;
 
       if (!planId || !userId) {
         res.status(400).json({error: "planId e userId são obrigatórios"});
         return;
       }
 
-      const priceId = getPlanPriceId(planId);
+      const priceId = getPlanPriceId(planId, isAnnual === true);
       if (!priceId) {
         res.status(400).json({error: "Plano inválido"});
         return;
@@ -265,9 +282,33 @@ export const stripeWebhook = functions.https.onRequest(
           .doc(`users/${userId}/account/subscription`);
         const now = admin.firestore.Timestamp.now();
 
-        // Calcular próxima data de pagamento (30 dias)
+        // Determinar se é anual baseado no subscription do Stripe
+        // Buscar subscription para verificar o intervalo
+        let isAnnual = false;
+        if (subscriptionId) {
+          try {
+            const stripeInstance = getStripe();
+            const subscription =
+              await stripeInstance.subscriptions.retrieve(subscriptionId);
+            // Se o interval for 'year', é anual
+            const interval =
+              subscription.items.data[0]?.price?.recurring?.interval;
+            if (interval === "year") {
+              isAnnual = true;
+            }
+          } catch (err) {
+            console.error("Erro ao buscar subscription:", err);
+          }
+        }
+
+        // Calcular próxima data de pagamento
+        // (365 dias para anual, 30 para mensal)
         const nextPaymentDate = new Date();
-        nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
+        if (isAnnual) {
+          nextPaymentDate.setDate(nextPaymentDate.getDate() + 365);
+        } else {
+          nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
+        }
 
         await subscriptionRef.set(
           {
