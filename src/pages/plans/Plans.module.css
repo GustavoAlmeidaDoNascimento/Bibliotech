@@ -55,6 +55,50 @@
 .header p {
   font-size: clamp(1rem, 2vw, 1.25rem);
   color: #94a3b8;
+  margin-bottom: 30px;
+}
+
+.toggleContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.toggleWrapper {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.toggleOption {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggleOption:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toggleOption.toggleActive {
+  background: #0078d4;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.3);
+}
+
+.toggleOption.toggleActive:hover {
+  background: #106ebe;
 }
 
 .plansGrid {
@@ -120,6 +164,28 @@
   align-items: baseline;
   justify-content: center;
   gap: 8px;
+  margin-top: 8px;
+}
+
+.savingsBadge {
+  background: linear-gradient(135deg, #00b894, #00a085);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.originalPrice {
+  margin-top: 8px;
+}
+
+.originalPriceText {
+  font-size: 0.9rem;
+  color: #6c7686;
+  text-decoration: line-through;
 }
 
 .price {
