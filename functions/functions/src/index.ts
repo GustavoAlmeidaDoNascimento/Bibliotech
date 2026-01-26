@@ -15,6 +15,17 @@ const stripeBasicAnnualPriceId = defineString("STRIPE_BASIC_ANNUAL_PRICE_ID", {
   default: "",
   description: "Stripe basic plan price ID (anual)",
 });
+const stripeIntermediatePriceId = defineString("STRIPE_INTERMEDIATE_PRICE_ID", {
+  default: "",
+  description: "Stripe intermediate plan price ID (mensal)",
+});
+const stripeIntermediateAnnualPriceId = defineString(
+  "STRIPE_INTERMEDIATE_ANNUAL_PRICE_ID",
+  {
+    default: "",
+    description: "Stripe intermediate plan price ID (anual)",
+  }
+);
 // Webhook secret será opcional inicialmente
 // (será configurado após criar webhook no Stripe)
 const stripeWebhookSecret = defineString("STRIPE_WEBHOOK_SECRET", {
@@ -77,7 +88,34 @@ const getPlanPriceId = (planId: number, isAnnual = false): string => {
 
     return priceId;
   }
-  // Futuro: 2: intermediate_price_id, 3: advanced_price_id
+
+  if (planId === 2) {
+    let priceId = "";
+
+    if (isAnnual) {
+      priceId = stripeIntermediateAnnualPriceId.value();
+
+      if (!priceId || priceId === "") {
+        const config = functionsConfig.value();
+        priceId = config?.stripe?.intermediate_annual_price_id || "";
+      }
+    } else {
+      priceId = stripeIntermediatePriceId.value();
+
+      if (!priceId || priceId === "") {
+        const config = functionsConfig.value();
+        priceId = config?.stripe?.intermediate_price_id || "";
+      }
+    }
+
+    if (priceId && !priceId.startsWith("price_")) {
+      priceId = `price_${priceId}`;
+    }
+
+    return priceId;
+  }
+
+  // Futuro: 3: advanced_price_id
   return "";
 };
 
