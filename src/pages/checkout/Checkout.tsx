@@ -224,15 +224,17 @@ const Checkout: React.FC = () => {
         <div className={styles.planSummary}>
           <div className={styles.planHeader}>
             <h2>{plan.name}</h2>
-            <div className={styles.planPrice}>
-              <span className={styles.price}>{getDisplayPrice().price}</span>
-              <span className={styles.period}>{getDisplayPrice().period}</span>
-            </div>
-            {isAnnual && getDiscount(planIdNum!) > 0 && (
-              <div className={styles.savingsNote}>
-                Economize {getDiscount(planIdNum!)}% com o plano anual
+            <div>
+              <div className={styles.planPrice}>
+                <span className={styles.price}>{getDisplayPrice().price}</span>
+                <span className={styles.period}>{getDisplayPrice().period}</span>
               </div>
-            )}
+              {isAnnual && getDiscount(planIdNum!) > 0 && (
+                <div className={styles.savingsNote}>
+                  Economize {getDiscount(planIdNum!)}% com o plano anual
+                </div>
+              )}
+            </div>
           </div>
 
           <ul className={styles.planFeatures}>
