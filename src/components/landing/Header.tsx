@@ -1,7 +1,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User } from "lucide-react";
+import { User } from "lucide-react";
 import logoIcon from "../../assets/landing/logo-icon.png";
+
+const HamburgerIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <line x1="4" y1="6" x2="20" y2="6" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="18" x2="20" y2="18" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
 
 const navItems = [
   { label: "Produto", href: "#sobre" },
@@ -49,10 +64,11 @@ const Header = () => {
         <button
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden flex items-center justify-center min-w-[44px] min-h-[44px] p-2.5 -mr-2 rounded-lg text-foreground hover:bg-secondary/50 active:bg-secondary/70 transition-colors touch-manipulation"
+          className="md:hidden flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 p-2 -mr-1 rounded-lg text-foreground hover:bg-white/10 active:bg-white/15 transition-colors touch-manipulation"
           aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={mobileOpen}
         >
-          {mobileOpen ? <X className="w-6 h-6 shrink-0" strokeWidth={2} /> : <Menu className="w-6 h-6 shrink-0" strokeWidth={2} />}
+          {mobileOpen ? <CloseIcon /> : <HamburgerIcon />}
         </button>
       </div>
 

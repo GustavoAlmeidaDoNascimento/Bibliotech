@@ -4,30 +4,6 @@ import { ArrowRight, Rocket } from "lucide-react";
 const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
-      {/* Background light points */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute floating"
-          style={{
-            top: '-5%',
-            left: '15%',
-            width: '700px',
-            height: '700px',
-            background: 'radial-gradient(circle at center, hsl(210 100% 50% / 0.18) 0%, hsl(210 100% 50% / 0.06) 40%, transparent 70%)',
-          }}
-        />
-        <div
-          className="absolute floating-delayed"
-          style={{
-            bottom: '-10%',
-            right: '10%',
-            width: '600px',
-            height: '600px',
-            background: 'radial-gradient(circle at center, hsl(250 80% 60% / 0.14) 0%, hsl(250 80% 60% / 0.05) 40%, transparent 70%)',
-          }}
-        />
-      </div>
-
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
