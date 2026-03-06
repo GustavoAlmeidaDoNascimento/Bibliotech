@@ -229,7 +229,8 @@ const RegisterBook = () => {
       }
     } catch (err) {
       console.error('Erro na busca do Google Books:', err);
-      setGoogleSearchError('Erro ao buscar livros. Tente novamente.');
+      const message = err instanceof Error ? err.message : 'Erro ao buscar livros. Tente novamente.';
+      setGoogleSearchError(message);
     } finally {
       setGoogleSearchLoading(false);
     }
@@ -387,6 +388,78 @@ const RegisterBook = () => {
         >
           Cancelar
         </button>
+      </div>
+
+      {/* Registro Rápido - Google Books */}
+      <div className={styles.quickSearchSection}>
+        <label className={styles.quickSearchLabel}>Registro Rápido</label>
+        <form onSubmit={handleGoogleSearch} className={styles.googleSearchForm}>
+          <div className={styles.googleSearchWrapper}>
+            <input
+              type="text"
+              value={googleSearchQuery}
+              onChange={(e) => setGoogleSearchQuery(e.target.value)}
+              placeholder="Pesquise o título ou ISBN do livro para preencher os campos automaticamente"
+              className={styles.googleSearchInput}
+            />
+            <button
+              type="submit"
+              className={styles.googleSearchButton}
+              disabled={googleSearchLoading}
+            >
+              {googleSearchLoading ? 'Buscando...' : 'Buscar'}
+            </button>
+            {googleSearchQuery && (
+              <button
+                type="button"
+                onClick={handleClearGoogleSearch}
+                className={styles.clearSearchButton}
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+        </form>
+
+        {googleSearchError && (
+          <div className={styles.googleSearchError}>
+            {googleSearchError}
+          </div>
+        )}
+
+        {showGoogleResults && googleSearchResults.length > 0 && (
+          <div className={styles.resultsDropdown}>
+            <p className={styles.resultsCount}>
+              {googleSearchResults.length} resultado(s) — clique para preencher os campos automaticamente
+            </p>
+            {googleSearchResults.map((book) => (
+              <div
+                key={book.id}
+                className={styles.bookResult}
+                onClick={() => handleSelectGoogleBook(book)}
+              >
+                <div className={styles.bookResultThumbnail}>
+                  {book.thumbnail ? (
+                    <img src={book.thumbnail} alt={book.title} />
+                  ) : (
+                    <div className={styles.noThumbnail}>📚</div>
+                  )}
+                </div>
+                <div className={styles.bookResultInfo}>
+                  <h4>{book.title}</h4>
+                  {book.authors.length > 0 && (
+                    <p className={styles.bookResultAuthors}>
+                      {book.authors.join(', ')}
+                    </p>
+                  )}
+                  <p className={styles.bookResultDescription}>
+                    {book.synopsis}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
@@ -605,85 +678,14 @@ const RegisterBook = () => {
         </div>
       </form>
 
-      {/* Seção de Catálogo de Reservas - Google Books API */}
+      {/* Seção de Catálogo de Reservas - Capa e Sinopse */}
       <div className={styles.catalogSection}>
         <h3>Catálogo de Reservas</h3>
         <p className={styles.catalogDescription}>
-          Adicione uma capa e sinopse ao livro para que os alunos possam visualizá-los no catálogo.
-          Busque o livro na base do Google Books para preencher automaticamente.
+          Adicione uma capa e sinopse para que os alunos possam visualizá-los no catálogo.
+          Use o "Registro Rápido" acima para preencher automaticamente via Google Books.
         </p>
-        
-        {/* Busca do Google Books */}
-        <form onSubmit={handleGoogleSearch} className={styles.googleSearchForm}>
-          <div className={styles.googleSearchWrapper}>
-            <input
-              type="text"
-              value={googleSearchQuery}
-              onChange={(e) => setGoogleSearchQuery(e.target.value)}
-              placeholder="Digite o título do livro para buscar..."
-              className={styles.googleSearchInput}
-            />
-            <button
-              type="submit"
-              className={styles.googleSearchButton}
-              disabled={googleSearchLoading}
-            >
-              {googleSearchLoading ? 'Buscando...' : 'Buscar no Google Books'}
-            </button>
-            {googleSearchQuery && (
-              <button
-                type="button"
-                onClick={handleClearGoogleSearch}
-                className={styles.clearSearchButton}
-              >
-                Limpar
-              </button>
-            )}
-          </div>
-        </form>
-        
-        {/* Mensagem de erro */}
-        {googleSearchError && (
-          <div className={styles.googleSearchError}>
-            {googleSearchError}
-          </div>
-        )}
-        
-        {/* Dropdown de Resultados */}
-        {showGoogleResults && googleSearchResults.length > 0 && (
-          <div className={styles.resultsDropdown}>
-            <p className={styles.resultsCount}>
-              {googleSearchResults.length} resultado(s) encontrado(s)
-            </p>
-            {googleSearchResults.map((book) => (
-              <div
-                key={book.id}
-                className={styles.bookResult}
-                onClick={() => handleSelectGoogleBook(book)}
-              >
-                <div className={styles.bookResultThumbnail}>
-                  {book.thumbnail ? (
-                    <img src={book.thumbnail} alt={book.title} />
-                  ) : (
-                    <div className={styles.noThumbnail}>📚</div>
-                  )}
-                </div>
-                <div className={styles.bookResultInfo}>
-                  <h4>{book.title}</h4>
-                  {book.authors.length > 0 && (
-                    <p className={styles.bookResultAuthors}>
-                      {book.authors.join(', ')}
-                    </p>
-                  )}
-                  <p className={styles.bookResultDescription}>
-                    {book.synopsis}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        
+
         {/* Preview da Capa e Sinopse Selecionadas */}
         <div className={styles.catalogPreviewSection}>
           <div className={styles.catalogPreviewGrid}>

@@ -39,34 +39,47 @@ export interface FormattedBookResult {
  * @param query - Termo de busca (título do livro)
  * @returns Promise com array de resultados formatados
  */
+const isISBN = (query: string): boolean => {
+  const cleaned = query.replace(/-/g, '');
+  return /^\d{10}$/.test(cleaned) || /^\d{13}$/.test(cleaned);
+};
+
 export const searchGoogleBooks = async (query: string): Promise<FormattedBookResult[]> => {
   if (!query.trim()) {
     throw new Error('O termo de busca não pode estar vazio');
   }
 
   try {
-    // Codificar o termo de busca para URL
-    const encodedQuery = encodeURIComponent(query.trim());
-    
-    // URL da API do Google Books com limite de 10 resultados
-    const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=10&langRestrict=pt`;
-    
+    const cleanQuery = query.trim();
+    const isbn = isISBN(cleanQuery);
+    const searchQuery = isbn ? `isbn:${cleanQuery.replace(/-/g, '')}` : cleanQuery;
+    const encodedQuery = encodeURIComponent(searchQuery);
+
+    const apiKey = process.env.REACT_APP_GOOGLE_BOOKS_API_KEY;
+    const keyParam = apiKey ? `&key=${apiKey}` : '';
+
+    const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=10${keyParam}`;
+
     const response = await fetch(apiUrl);
-    
+
     if (!response.ok) {
-      throw new Error(`Erro na API do Google Books: ${response.status}`);
+      const errorBody = await response.text().catch(() => '');
+      throw new Error(`Erro ${response.status} na API do Google Books${errorBody ? ': ' + errorBody : ''}`);
     }
-    
+
     const data: GoogleBooksResponse = await response.json();
-    
+
     if (!data.items || data.items.length === 0) {
       return [];
     }
-    
+
     // Formatar os resultados
     return data.items.map(formatBookResult).filter((book): book is FormattedBookResult => book !== null);
   } catch (error) {
     console.error('Erro ao buscar livros no Google Books:', error);
+    if (error instanceof Error) {
+      throw error;
+    }
     throw new Error('Não foi possível buscar livros. Verifique sua conexão e tente novamente.');
   }
 };
