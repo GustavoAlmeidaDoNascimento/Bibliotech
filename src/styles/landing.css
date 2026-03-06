@@ -89,6 +89,11 @@
   outline: none;
 }
 
+/* Botão do menu mobile: fundo transparente para não herdar branco do browser/global */
+.landing-page-root header button.md\:hidden {
+  background-color: transparent;
+}
+
 /* Garante que classes border-* do Tailwind renderizem corretamente sem @tailwind base */
 .landing-page-root .border,
 .landing-page-root .border-t,

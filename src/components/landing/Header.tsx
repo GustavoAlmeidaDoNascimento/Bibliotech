@@ -64,7 +64,7 @@ const Header = () => {
         <button
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 p-2 -mr-1 rounded-lg text-foreground hover:bg-white/10 active:bg-white/15 transition-colors touch-manipulation"
+          className="md:hidden flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 p-2 -mr-1 rounded-lg bg-transparent text-foreground hover:bg-white/10 active:bg-white/15 transition-colors touch-manipulation"
           aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
           aria-expanded={mobileOpen}
         >
