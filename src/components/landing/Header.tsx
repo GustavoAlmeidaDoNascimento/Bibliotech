@@ -38,7 +38,7 @@ const Header = () => {
             </a>
           ))}
           <a
-            href="https://app.bibliotech.tech"
+            href="/select-user-type"
             className="flex items-center gap-2 text-sm border border-border rounded-lg px-4 py-2 hover:border-primary/50 hover:text-primary transition-all duration-200"
           >
             <User className="w-4 h-4" />
@@ -75,7 +75,7 @@ const Header = () => {
                 </a>
               ))}
               <a
-                href="https://app.bibliotech.tech"
+                href="/select-user-type"
                 className="flex items-center gap-2 text-sm border border-border rounded-lg px-4 py-2.5 w-fit hover:border-primary/50"
               >
                 <User className="w-4 h-4" />
