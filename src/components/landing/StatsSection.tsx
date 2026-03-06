@@ -32,18 +32,18 @@ const AnimatedNumber = ({ target, suffix }: { target: number; suffix: string }) 
   }, [inView, target]);
 
   return (
-    <span ref={ref} className="text-gradient font-display text-4xl sm:text-5xl font-bold tabular-nums">
+    <span ref={ref} className="text-gradient-glow font-display text-3xl sm:text-4xl md:text-5xl font-bold tabular-nums">
       {count.toLocaleString("pt-BR")}
-      {suffix}
+      <span className="opacity-90">{suffix}</span>
     </span>
   );
 };
 
 const StatsSection = () => {
   return (
-    <section className="py-8 relative z-10 -mt-20">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+    <section className="py-8 relative z-10 -mt-20" aria-label="Estatísticas do sistema">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto">
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -51,11 +51,11 @@ const StatsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="glow-border rounded-2xl bg-gradient-card p-8 text-center transition-all duration-300"
+              className="glow-border rounded-2xl bg-gradient-card p-4 sm:p-6 md:p-8 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[140px] sm:min-h-[180px]"
             >
-              <stat.icon className="w-6 h-6 text-primary mx-auto mb-4" />
+              <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary mx-auto mb-2 sm:mb-4 shrink-0" aria-hidden />
               <AnimatedNumber target={stat.value} suffix={stat.suffix} />
-              <p className="text-muted-foreground text-sm mt-2">{stat.label}</p>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-1 sm:mt-2 leading-tight">{stat.label}</p>
             </motion.div>
           ))}
         </div>

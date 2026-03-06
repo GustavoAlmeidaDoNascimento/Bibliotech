@@ -47,10 +47,12 @@ const Header = () => {
         </nav>
 
         <button
+          type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden text-foreground"
+          className="md:hidden flex items-center justify-center min-w-[44px] min-h-[44px] p-2.5 -mr-2 rounded-lg text-foreground hover:bg-secondary/50 active:bg-secondary/70 transition-colors touch-manipulation"
+          aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
         >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {mobileOpen ? <X className="w-6 h-6 shrink-0" strokeWidth={2} /> : <Menu className="w-6 h-6 shrink-0" strokeWidth={2} />}
         </button>
       </div>
 
