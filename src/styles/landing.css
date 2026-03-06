@@ -52,7 +52,9 @@
   box-sizing: border-box;
 }
 
-.landing-page-root *, .landing-page-root *::before, .landing-page-root *::after {
+.landing-page-root *,
+.landing-page-root *::before,
+.landing-page-root *::after {
   box-sizing: border-box;
 }
 
@@ -68,6 +70,34 @@
 
 .landing-page-root p {
   margin: 0;
+}
+
+/* Reset de estilos globais que vazam do app para a landing */
+.landing-page-root a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.landing-page-root a:hover {
+  color: inherit;
+}
+
+.landing-page-root button:focus,
+.landing-page-root input:focus,
+.landing-page-root textarea:focus,
+.landing-page-root select:focus {
+  outline: none;
+}
+
+/* Garante que classes border-* do Tailwind renderizem corretamente sem @tailwind base */
+.landing-page-root .border,
+.landing-page-root .border-t,
+.landing-page-root .border-b,
+.landing-page-root .border-l,
+.landing-page-root .border-r,
+.landing-page-root .border-x,
+.landing-page-root .border-y {
+  border-style: solid;
 }
 
 /* Utilities customizadas */

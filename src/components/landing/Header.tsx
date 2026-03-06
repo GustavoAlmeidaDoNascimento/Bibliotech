@@ -39,7 +39,7 @@ const Header = () => {
           ))}
           <a
             href="https://app.bibliotech.tech"
-            className="flex items-center gap-2 text-sm border border-border rounded-lg px-4 py-2 hover:border-primary/50 hover:text-primary transition-all duration-200"
+            className="flex items-center gap-2 text-sm border border-solid border-border rounded-lg px-4 py-2 hover:border-primary/50 hover:text-primary transition-all duration-200"
           >
             <User className="w-4 h-4" />
             Acessar
@@ -76,7 +76,7 @@ const Header = () => {
               ))}
               <a
                 href="https://app.bibliotech.tech"
-                className="flex items-center gap-2 text-sm border border-border rounded-lg px-4 py-2.5 w-fit hover:border-primary/50"
+                className="flex items-center gap-2 text-sm border border-solid border-border rounded-lg px-4 py-2.5 w-fit hover:border-primary/50"
               >
                 <User className="w-4 h-4" />
                 Acessar

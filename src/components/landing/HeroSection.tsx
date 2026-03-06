@@ -4,10 +4,28 @@ import { ArrowRight, Rocket } from "lucide-react";
 const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
-      {/* Background orbs */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px] floating" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-primary/8 blur-[100px] floating-delayed" />
+      {/* Background light points */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute floating"
+          style={{
+            top: '-5%',
+            left: '15%',
+            width: '700px',
+            height: '700px',
+            background: 'radial-gradient(circle at center, hsl(210 100% 50% / 0.18) 0%, hsl(210 100% 50% / 0.06) 40%, transparent 70%)',
+          }}
+        />
+        <div
+          className="absolute floating-delayed"
+          style={{
+            bottom: '-10%',
+            right: '10%',
+            width: '600px',
+            height: '600px',
+            background: 'radial-gradient(circle at center, hsl(250 80% 60% / 0.14) 0%, hsl(250 80% 60% / 0.05) 40%, transparent 70%)',
+          }}
+        />
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
@@ -51,7 +69,7 @@ const HeroSection = () => {
           >
             <a
               href="#sobre"
-              className="group flex items-center gap-2 border border-border rounded-xl px-7 py-3.5 text-sm font-medium hover:border-primary/50 hover:bg-secondary/50 transition-all duration-300"
+              className="group flex items-center gap-2 border border-solid border-border rounded-xl px-7 py-3.5 text-sm font-medium hover:border-primary/50 hover:bg-secondary/50 transition-all duration-300"
             >
               Conhecer o Sistema
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
