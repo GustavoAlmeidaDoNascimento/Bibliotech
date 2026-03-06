@@ -69,7 +69,7 @@ const HeroSection = () => {
           >
             <a
               href="#sobre"
-              className="group flex items-center gap-2 border border-solid border-border rounded-xl px-7 py-3.5 text-sm font-medium hover:border-primary/50 hover:bg-secondary/50 transition-all duration-300"
+              className="group flex items-center gap-2 border border-border rounded-xl px-7 py-3.5 text-sm font-medium hover:border-primary/50 hover:bg-secondary/50 transition-all duration-300"
             >
               Conhecer o Sistema
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
