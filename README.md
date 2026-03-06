@@ -15,7 +15,7 @@
 
 ## 🎯 Sobre o Projeto
 
-**Bibliotech** é um sistema completo de gestão para bibliotecas escolares, desenvolvido com foco em criar uma experiência moderna e engajante tanto para gestores quanto para alunos. A plataforma oferece controle total sobre o acervo, gerenciamento de empréstimos, análises detalhadas e uma interface intuitiva para os estudantes descobrirem novos livros.
+**Bibliotech** é um produto da **Proton Software** - um sistema completo de gestão para bibliotecas escolares, desenvolvido com foco em criar uma experiência moderna e engajante tanto para gestores quanto para alunos. A plataforma oferece controle total sobre o acervo, gerenciamento de empréstimos, análises detalhadas e uma interface intuitiva para os estudantes descobrirem novos livros.
 
 ### 💡 O Problema que Resolvemos
 
@@ -25,7 +25,7 @@ Bibliotecas escolares tradicionalmente enfrentam desafios como:
 - Falta de engajamento dos estudantes com o acervo
 - Processos burocráticos e demorados
 
-**Bibliotech** digitaliza e automatiza todos esses processos, criando uma experiência fluida e moderna.
+**Bibliotech**, produto da Proton Software, digitaliza e automatiza todos esses processos, criando uma experiência fluida e moderna.
 
 ---
 
@@ -475,7 +475,7 @@ Este projeto está sob a licença MIT. Consulte o arquivo LICENSE no repositóri
 **Gustavo Almeida** - Desenvolvedor Full Stack
 
 ### Empresa
-**Proton Software**
+**Proton Software** - Desenvolvedora do Bibliotech
 - 📧 Email: proton.hello.world@gmail.com
 - 📞 WhatsApp: (51) 99646-8758
 - 🌐 Website: [protonsoftware.tech](https://protonsoftware.tech)
