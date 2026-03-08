@@ -946,13 +946,15 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
                   <span className={`${styles.planBadge} ${styles[`planBadge${planLevel ?? 0}`]}`}>{getPlanLabel(planLevel)}</span>
                 </div>
               )}
-              <span className={styles.profileCardChevron} aria-hidden>
-                {isProfileMenuOpen ? (
-                  <ChevronDownIcon className={styles.profileCardChevronIcon} />
-                ) : (
-                  <ChevronUpIcon className={styles.profileCardChevronIcon} />
-                )}
-              </span>
+              {isSidebarExpanded && (
+                <span className={styles.profileCardChevron} aria-hidden>
+                  {isProfileMenuOpen ? (
+                    <ChevronDownIcon className={styles.profileCardChevronIcon} />
+                  ) : (
+                    <ChevronUpIcon className={styles.profileCardChevronIcon} />
+                  )}
+                </span>
+              )}
             </button>
           </div>
         </aside>
