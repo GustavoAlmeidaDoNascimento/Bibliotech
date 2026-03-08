@@ -49,6 +49,7 @@ import MyBooks from '../pages/student/MyBooks';
 import ReserveBook from '../pages/student/ReserveBook';
 import Achievements from '../pages/student/Achievements';
 import YearTurnoverWizard from '../pages/yearTurnover/YearTurnoverWizard';
+import PlanAccount from '../pages/account/PlanAccount';
 import DevDashboard from '../pages/developer/DevDashboard';
 import NotFound from '../pages/NotFound';
 import { ROUTES } from '../constants';
@@ -252,6 +253,10 @@ export const protectedRoutes = [
   {
     path: ROUTES.CATALOG,
     element: <OnlineCatalog />,
+  },
+  {
+    path: ROUTES.PLAN_ACCOUNT,
+    element: <PlanAccount />,
   },
         {
           path: "/reservations",

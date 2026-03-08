@@ -66,6 +66,7 @@ export const ROUTES = {
   WITHDRAWALS: '/withdrawals',
   SETTINGS: '/settings',
   CATALOG: '/catalog',
+  PLAN_ACCOUNT: '/account/plan',
 } as const;
 
 // Perguntas de verificação para controle de leitura (quando progresso > 50%)
