@@ -331,7 +331,6 @@ const Books = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2>Acervo da Biblioteca</h2>
         <div
           className={`${styles.selectionIndicator} ${selectedBooks.length > 0 ? styles.selectionIndicatorVisible : ''}`}
           aria-live="polite"

@@ -396,7 +396,6 @@ const StudentLoans = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2>Locações de Alunos</h2>
         <div className={styles.headerActions}>
           <button
             className={styles.filterButton}

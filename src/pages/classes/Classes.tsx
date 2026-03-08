@@ -320,7 +320,6 @@ const Classes: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2>Turmas</h2>
         <div className={styles.headerActions}>
           {selectedClasses.length > 0 && (
             <>

@@ -1287,7 +1287,6 @@ const Dashboard = () => {
       )}
       
       <div className={styles.dashboardHeader}>
-        <h2>Dashboard</h2>
         <div className={styles.yearSelectorContainer}>
           <label htmlFor="year-selector" className={styles.yearSelectorLabel}>Ano:</label>
           <select

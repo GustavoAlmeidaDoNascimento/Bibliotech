@@ -105,10 +105,29 @@ const Layout: React.FC = () => {
     setIsMenuOpen(false);
   };
 
+  const getPageTitle = (pathname: string): string => {
+    if (pathname === '/dashboard') return 'Dashboard';
+    if (pathname === '/books') return 'Acervo';
+    if (pathname.startsWith('/books/')) return 'Detalhes do Livro';
+    if (pathname === '/student-loans') return 'Locações de Alunos';
+    if (pathname === '/staff-loans') return 'Locações de Professores';
+    if (pathname === '/students') return 'Alunos';
+    if (pathname.startsWith('/students/')) return 'Perfil do Aluno';
+    if (pathname === '/staff') return 'Professores e Funcionários';
+    if (pathname.startsWith('/staff/')) return 'Perfil do Funcionário';
+    if (pathname === '/classes') return 'Turmas';
+    if (pathname === '/student-withdrawals') return 'Retirada — Alunos';
+    if (pathname === '/staff-withdrawals') return 'Retirada — Professores';
+    if (pathname === '/reservations') return 'Reservas';
+    if (pathname === ROUTES.SETTINGS) return 'Configurações da Biblioteca';
+    if (pathname === ROUTES.CATALOG) return 'Catálogo Online';
+    return '';
+  };
+
   const getSectionFromRoute = (pathname: string): string => {
     if (['/student-loans', '/staff-loans'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'locacoes';
     if (['/students', '/staff'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'cadastros';
-    if (['/student-withdrawals', '/staff-withdrawals', '/reservations'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'retirar';
+    if (['/student-withdrawals', '/staff-withdrawals'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'retirar';
     if ([ROUTES.SETTINGS, ROUTES.CATALOG].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'configuracoes';
     return '';
   };
@@ -480,6 +499,9 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
           <Link to="/dashboard" className={styles.logoLink}>
             <h1>{settings.schoolName}</h1>
           </Link>
+          {getPageTitle(location.pathname) && (
+            <span className={styles.headerTitle}>{getPageTitle(location.pathname)}</span>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button
               className={styles.notificationButton}
@@ -754,13 +776,6 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
                     <UserGroupIcon className={styles.linkIcon} />
                     <span>Professores e Funcionários</span>
                   </Link>
-                  <Link to="/reservations" className={`${styles.sidebarLink} ${isActiveLink('/reservations') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
-                    <CalendarDaysIcon className={styles.linkIcon} />
-                    <span style={{ flex: 1 }}>Reservas</span>
-                    {reservationsCount > 0 && (
-                      <span className={styles.reservationBadge}>{reservationsCount}</span>
-                    )}
-                  </Link>
                 </div>
               )}
             </div>
@@ -778,6 +793,28 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
                 </svg>
                 {isSidebarExpanded && (
                   <span className={styles.sectionLabel}>Turmas</span>
+                )}
+              </Link>
+            </div>
+
+            {/* Reservas — link direto */}
+            <div className={styles.sidebarSection}>
+              <Link
+                to="/reservations"
+                className={`${styles.sectionBtn} ${styles.sectionBtnAsLink} ${isActiveLink('/reservations') ? styles.sectionBtnActive : ''}`}
+                onClick={handleLinkClick}
+                title={!isSidebarExpanded ? 'Reservas' : undefined}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.sectionIcon}>
+                  <path d="m8,12h-2c-1.103,0-2,.897-2,2v2c0,1.103.897,2,2,2h2c1.103,0,2-.897,2-2v-2c0-1.103-.897-2-2-2Zm-2,4v-2h2v2s-2,0-2,0ZM19,2h-1v-1c0-.552-.447-1-1-1s-1,.448-1,1v1h-8v-1c0-.552-.447-1-1-1s-1,.448-1,1v1h-1C2.243,2,0,4.243,0,7v12c0,2.757,2.243,5,5,5h14c2.757,0,5-2.243,5-5V7c0-2.757-2.243-5-5-5Zm-14,2h14c1.654,0,3,1.346,3,3v1H2v-1c0-1.654,1.346-3,3-3Zm14,18H5c-1.654,0-3-1.346-3-3v-9h20v9c0,1.654-1.346,3-3,3Z"/>
+                </svg>
+                {isSidebarExpanded && (
+                  <span className={styles.sectionLabel}>
+                    Reservas
+                    {reservationsCount > 0 && (
+                      <span className={styles.reservationBadge} style={{ marginLeft: 'auto' }}>{reservationsCount}</span>
+                    )}
+                  </span>
                 )}
               </Link>
             </div>

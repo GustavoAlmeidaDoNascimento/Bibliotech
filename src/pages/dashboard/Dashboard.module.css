@@ -6,17 +6,11 @@
 
 .dashboardHeader {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 1.5rem;
   gap: 1rem;
   flex-wrap: wrap;
-}
-
-.dashboard h2 {
-  margin: 0;
-  color: #333;
-  font-size: 1.5rem;
 }
 
 .yearSelectorContainer {
