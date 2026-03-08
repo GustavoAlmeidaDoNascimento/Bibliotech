@@ -415,10 +415,12 @@
 .reservationBadge {
   background: white;
   color: var(--primary-color, #4a90e2);
-  border-radius: 10px;
-  min-width: 20px;
-  height: 18px;
-  padding: 0 5px;
+  border-radius: 50%;
+  min-width: 22px;
+  min-height: 22px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
   font-size: 0.65rem;
   font-weight: 700;
   display: flex;
