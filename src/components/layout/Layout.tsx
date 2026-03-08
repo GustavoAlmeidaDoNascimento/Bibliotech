@@ -107,9 +107,9 @@ const Layout: React.FC = () => {
 
   const getSectionFromRoute = (pathname: string): string => {
     if (['/student-loans', '/staff-loans'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'locacoes';
-    if (['/students', '/staff', '/classes'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'cadastros';
+    if (['/students', '/staff'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'cadastros';
     if (['/student-withdrawals', '/staff-withdrawals', '/reservations'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'retirar';
-    if (['/dashboard', ROUTES.SETTINGS, ROUTES.CATALOG].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'configuracoes';
+    if ([ROUTES.SETTINGS, ROUTES.CATALOG].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'configuracoes';
     return '';
   };
 
@@ -630,6 +630,23 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
         {/* Sidebar */}
         <aside className={`${styles.sidebar} ${isSidebarExpanded ? styles.sidebarExpanded : styles.sidebarCollapsed} ${isMenuOpen ? styles.sidebarMobileOpen : ''}`}>
           <nav className={styles.sidebarNav}>
+            {/* Dashboard — link direto */}
+            <div className={styles.sidebarSection}>
+              <Link
+                to="/dashboard"
+                className={`${styles.sectionBtn} ${styles.sectionBtnAsLink} ${isActiveLink('/dashboard') ? styles.sectionBtnActive : ''}`}
+                onClick={handleLinkClick}
+                title={!isSidebarExpanded ? 'Dashboard' : undefined}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.sectionIcon}>
+                  <path d="M12,24c-1.65,0-3-1.35-3-3V3c0-1.65,1.35-3,3-3s3,1.35,3,3V21c0,1.65-1.35,3-3,3Zm9,0c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3s3,1.35,3,3v12c0,1.65-1.35,3-3,3Zm-18,0c-1.65,0-3-1.35-3-3v-6c0-1.65,1.35-3,3-3s3,1.35,3,3v6c0,1.65-1.35,3-3,3Z"/>
+                </svg>
+                {isSidebarExpanded && (
+                  <span className={styles.sectionLabel}>Dashboard</span>
+                )}
+              </Link>
+            </div>
+
             {/* Livros — link direto para o Acervo */}
             <div className={styles.sidebarSection}>
               <Link
@@ -705,10 +722,6 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
                     <UserGroupIcon className={styles.linkIcon} />
                     <span>Professores e Funcionários</span>
                   </Link>
-                  <Link to="/classes" className={`${styles.sidebarLink} ${isActiveLink('/classes') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
-                    <AcademicCapIcon className={styles.linkIcon} />
-                    <span>Turmas</span>
-                  </Link>
                 </div>
               )}
             </div>
@@ -752,6 +765,23 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
               )}
             </div>
 
+            {/* Turmas — link direto */}
+            <div className={styles.sidebarSection}>
+              <Link
+                to="/classes"
+                className={`${styles.sectionBtn} ${styles.sectionBtnAsLink} ${isActiveLink('/classes') ? styles.sectionBtnActive : ''}`}
+                onClick={handleLinkClick}
+                title={!isSidebarExpanded ? 'Turmas' : undefined}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.sectionIcon}>
+                  <path d="m22.004,4.498c.001-.865-.525-1.61-1.34-1.898L14.199.319c-1.386-.491-2.915-.492-4.302-.007L3.353,2.602c-.818.287-1.346,1.031-1.346,1.898,0,.866.529,1.61,1.347,1.896l2.646.923v1.681c0,3.309,2.691,6,6,6s6-2.691,6-6v-1.682l2-.698v4.379c0,.553.448,1,1,1s1-.447,1-1c0,0,.004-6.493.004-6.502Zm-6.004,4.502c0,2.206-1.794,4-4,4s-4-1.794-4-4v-.984l1.862.65c.689.24,1.413.36,2.137.36s1.448-.12,2.138-.36l1.863-.65v.984Zm-2.522-2.223c-.954.332-2.004.332-2.958,0l-6.507-2.287,6.544-2.289c.962-.337,2.019-.334,2.976.004l6.464,2.298-6.52,2.274Zm6.847,16.021c.111.541-.236,1.07-.777,1.182-.068.014-.136.021-.203.021-.464,0-.881-.325-.979-.798-.356-1.726-1.426-3.256-2.936-4.196l-2.662,3.154c-.38.455-1.156.455-1.536,0l-2.631-3.156c-1.541.942-2.611,2.472-2.967,4.198-.111.541-.641.885-1.182.777-.541-.112-.889-.641-.777-1.182.467-2.261,1.866-4.261,3.837-5.488.856-.534,1.984-.355,2.625.413l1.863,2.235,1.862-2.235c.64-.769,1.769-.948,2.624-.415,1.974,1.229,3.372,3.23,3.839,5.49Z"/>
+                </svg>
+                {isSidebarExpanded && (
+                  <span className={styles.sectionLabel}>Turmas</span>
+                )}
+              </Link>
+            </div>
+
             {/* Configurações */}
             <div className={styles.sidebarSection}>
               <button
@@ -772,12 +802,6 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
               </button>
               {isSidebarExpanded && openSection === 'configuracoes' && (
                 <div className={styles.sectionLinks}>
-                  <Link to="/dashboard" className={`${styles.sidebarLink} ${isActiveLink('/dashboard') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.linkIcon}>
-                      <path d="M12,24c-1.65,0-3-1.35-3-3V3c0-1.65,1.35-3,3-3s3,1.35,3,3V21c0,1.65-1.35,3-3,3Zm9,0c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3s3,1.35,3,3v12c0,1.65-1.35,3-3,3Zm-18,0c-1.65,0-3-1.35-3-3v-6c0-1.65,1.35-3,3-3s3,1.35,3,3v6c0,1.65-1.35,3-3,3Z"/>
-                    </svg>
-                    <span>Dashboard</span>
-                  </Link>
                   <Link to={ROUTES.SETTINGS} className={`${styles.sidebarLink} ${isActiveLink(ROUTES.SETTINGS) ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
                     <Cog6ToothIcon className={styles.linkIcon} />
                     <span>Configurações da Biblioteca</span>
