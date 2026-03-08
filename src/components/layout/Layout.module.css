@@ -1025,6 +1025,25 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
+.profileCardChevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.15s ease;
+}
+
+.profileCard:hover .profileCardChevron {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.profileCardChevronIcon {
+  width: 18px;
+  height: 18px;
+}
+
 .schoolIcon {
   width: 28px;
   height: 28px;
