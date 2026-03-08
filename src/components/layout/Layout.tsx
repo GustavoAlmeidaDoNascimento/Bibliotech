@@ -20,7 +20,8 @@ import {
   CalendarDaysIcon,
   GlobeAltIcon,
   EllipsisVerticalIcon,
-  MegaphoneIcon
+  MegaphoneIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import { ROUTES } from '../../constants';
 import styles from './Layout.module.css';
@@ -33,6 +34,11 @@ const Layout: React.FC = () => {
   const [reservationsCount, setReservationsCount] = useState<number>(0);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [isDummyGeneratorOpen, setIsDummyGeneratorOpen] = useState(false);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(() => {
+    const stored = localStorage.getItem('sidebarExpanded');
+    return stored !== null ? stored === 'true' : true;
+  });
+  const [openSection, setOpenSection] = useState<string>('');
   
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -97,6 +103,34 @@ const Layout: React.FC = () => {
   // fecha menu ao navegar (mobile)
   const handleLinkClick = () => {
     setIsMenuOpen(false);
+  };
+
+  const getSectionFromRoute = (pathname: string): string => {
+    if (['/student-loans', '/staff-loans'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'locacoes';
+    if (['/students', '/staff', '/classes'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'cadastros';
+    if (['/student-withdrawals', '/staff-withdrawals', '/reservations'].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'retirar';
+    if (['/dashboard', ROUTES.SETTINGS, ROUTES.CATALOG].some(p => pathname === p || pathname.startsWith(p + '/'))) return 'configuracoes';
+    return '';
+  };
+
+  useEffect(() => {
+    setOpenSection(getSectionFromRoute(location.pathname));
+  }, [location.pathname]);
+
+  const toggleSidebar = () => {
+    const newValue = !isSidebarExpanded;
+    setIsSidebarExpanded(newValue);
+    localStorage.setItem('sidebarExpanded', String(newValue));
+  };
+
+  const toggleSection = (sectionId: string) => {
+    if (!isSidebarExpanded) {
+      setIsSidebarExpanded(true);
+      localStorage.setItem('sidebarExpanded', 'true');
+      setOpenSection(sectionId);
+    } else {
+      setOpenSection(prev => prev === sectionId ? '' : sectionId);
+    }
   };
 
   const formatNotificationTime = (date: Date) => {
@@ -425,7 +459,24 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
   return (
     <div className={styles.layout}>
       <header className={styles.header}>
-        <div className={styles.headerContent}>
+        {/* Seção alinhada com o sidebar */}
+        <div className={styles.headerSidebar}>
+          <button
+            className={styles.sidebarToggleBtn}
+            onClick={toggleSidebar}
+            title={isSidebarExpanded ? 'Recolher menu' : 'Expandir menu'}
+            aria-label="Toggle sidebar"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1.5" y="1.5" width="15" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.5"/>
+              <rect x="1.5" y="1.5" width="5.5" height="15" rx="2.5" fill="currentColor"/>
+              <line x1="7" y1="1.5" x2="7" y2="16.5" stroke="currentColor" strokeWidth="1.5"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Conteúdo principal do header */}
+        <div className={styles.headerMain}>
           <Link to="/dashboard" className={styles.logoLink}>
             <h1>{settings.schoolName}</h1>
           </Link>
@@ -570,140 +621,181 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
         </div>
       )}
 
-      <nav className={`${styles.nav} ${isMenuOpen ? styles.open : ''}`}>
-        <div className={styles.navContent}>
-          <div className={styles.navSection}>
-            <h2>
-              <BookOpenIcon className={styles.navIcon} />
-              Livros
-            </h2>
-            <Link 
-              to="/books" 
-              className={isActiveLink('/books') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <ClipboardDocumentListIcon className={styles.linkIcon} />
-              Acervo
-            </Link>
-            <Link 
-              to="/student-loans" 
-              className={isActiveLink('/student-loans') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <ArrowPathIcon className={styles.linkIcon} />
-              Locações Alunos
-            </Link>
-            <Link 
-              to="/staff-loans" 
-              className={isActiveLink('/staff-loans') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <ArrowPathIcon className={styles.linkIcon} />
-              Locações Professores
-            </Link>
-          </div>
+      {/* Backdrop mobile para fechar sidebar */}
+      {isMenuOpen && (
+        <div className={styles.mobileBackdrop} onClick={() => setIsMenuOpen(false)} />
+      )}
 
-          <div className={styles.navSection}>
-            <h2>
-              <UserGroupIcon className={styles.navIcon} />
-              Cadastros
-            </h2>
-            <Link 
-              to="/students" 
-              className={isActiveLink('/students') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <AcademicCapIcon className={styles.linkIcon} />
-              Alunos
-            </Link>
-            <Link 
-              to="/staff" 
-              className={isActiveLink('/staff') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <UserGroupIcon className={styles.linkIcon} />
-              Professores e Funcionários
-            </Link>
-            <Link 
-              to="/classes" 
-              className={isActiveLink('/classes') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <AcademicCapIcon className={styles.linkIcon} />
-              Turmas
-            </Link>
-          </div>
+      <div className={styles.body}>
+        {/* Sidebar */}
+        <aside className={`${styles.sidebar} ${isSidebarExpanded ? styles.sidebarExpanded : styles.sidebarCollapsed} ${isMenuOpen ? styles.sidebarMobileOpen : ''}`}>
+          <nav className={styles.sidebarNav}>
+            {/* Livros — link direto para o Acervo */}
+            <div className={styles.sidebarSection}>
+              <Link
+                to="/books"
+                className={`${styles.sectionBtn} ${styles.sectionBtnAsLink} ${isActiveLink('/books') ? styles.sectionBtnActive : ''}`}
+                onClick={handleLinkClick}
+                title={!isSidebarExpanded ? 'Livros' : undefined}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.sectionIcon}>
+                  <path d="M17,0H7C4.243,0,2,2.243,2,5v15c0,2.206,1.794,4,4,4h11c2.757,0,5-2.243,5-5V5c0-2.757-2.243-5-5-5Zm3,5v11H8V2h4V10.347c0,.623,.791,.89,1.169,.395l1.331-1.743,1.331,1.743c.378,.495,1.169,.228,1.169-.395V2c1.654,0,3,1.346,3,3ZM6,2.184v13.816c-.732,0-1.409,.212-2,.556V5c0-1.302,.839-2.402,2-2.816Zm11,19.816H6c-2.629-.047-2.627-3.954,0-4h14v1c0,1.654-1.346,3-3,3Z"/>
+                </svg>
+                {isSidebarExpanded && (
+                  <span className={styles.sectionLabel}>Livros</span>
+                )}
+              </Link>
+            </div>
 
-          <div className={styles.navSection}>
-            <h2>
-              <ArrowPathIcon className={styles.navIcon} />
-              Retirar
-            </h2>
-            <Link 
-              to="/student-withdrawals" 
-              className={isActiveLink('/student-withdrawals') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <AcademicCapIcon className={styles.linkIcon} />
-              Alunos
-            </Link>
-            <Link 
-              to="/staff-withdrawals" 
-              className={isActiveLink('/staff-withdrawals') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <UserGroupIcon className={styles.linkIcon} />
-              Professores e Funcionários
-            </Link>
-            <Link 
-              to="/reservations" 
-              className={isActiveLink('/reservations') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <CalendarDaysIcon className={styles.linkIcon} />
-              <span style={{ flex: 1 }}>Reservas</span>
-              {reservationsCount > 0 && (
-                <span className={styles.reservationBadge}>{reservationsCount}</span>
+            {/* Locações — toggle com sub-itens */}
+            <div className={styles.sidebarSection}>
+              <button
+                className={`${styles.sectionBtn} ${openSection === 'locacoes' ? styles.sectionBtnActive : ''}`}
+                onClick={() => toggleSection('locacoes')}
+                title={!isSidebarExpanded ? 'Locações' : undefined}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.sectionIcon}>
+                  <path d="M22.922,9.689c-.684-.571-1.577-.807-2.458-.648l-6.18,1.124c-.913,.166-1.707,.634-2.284,1.289-.578-.655-1.371-1.123-2.285-1.289l-6.179-1.124c-.879-.16-1.774,.077-2.459,.648s-1.078,1.411-1.078,2.303v9.834l12,2.182,12-2.182V11.992c0-.892-.393-1.731-1.078-2.303Zm-11.922,12.104l-9-1.636V11.992c0-.407,.225-.656,.359-.768,.134-.112,.417-.289,.82-.216l6.179,1.124c.952,.173,1.642,1,1.642,1.968v7.694Zm11-1.636l-9,1.636v-7.694c0-.967,.69-1.795,1.642-1.968l6.18-1.124c.407-.07,.686,.104,.819,.216s.359,.36,.359,.768v8.165ZM12,9c2.481,0,4.5-2.019,4.5-4.5S14.481,0,12,0,7.5,2.019,7.5,4.5s2.019,4.5,4.5,4.5Zm0-7c1.379,0,2.5,1.122,2.5,2.5s-1.121,2.5-2.5,2.5-2.5-1.122-2.5-2.5,1.122-2.5,2.5-2.5Z"/>
+                </svg>
+                {isSidebarExpanded && (
+                  <>
+                    <span className={styles.sectionLabel}>Locações</span>
+                    <ChevronDownIcon className={`${styles.sectionChevron} ${openSection === 'locacoes' ? styles.chevronOpen : ''}`} />
+                  </>
+                )}
+              </button>
+              {isSidebarExpanded && openSection === 'locacoes' && (
+                <div className={styles.sectionLinks}>
+                  <Link to="/student-loans" className={`${styles.sidebarLink} ${isActiveLink('/student-loans') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <AcademicCapIcon className={styles.linkIcon} />
+                    <span>Alunos</span>
+                  </Link>
+                  <Link to="/staff-loans" className={`${styles.sidebarLink} ${isActiveLink('/staff-loans') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <UserGroupIcon className={styles.linkIcon} />
+                    <span>Professores</span>
+                  </Link>
+                </div>
               )}
-            </Link>
-          </div>
+            </div>
 
-          <div className={styles.navSection}>
-            <h2>
-              <Cog6ToothIcon className={styles.navIcon} />
-              Configurações
-            </h2>
-            <Link 
-              to="/dashboard" 
-              className={isActiveLink('/dashboard') ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <ChartBarIcon className={styles.linkIcon} />
-              Dashboard
-            </Link>
-            <Link 
-              to={ROUTES.SETTINGS} 
-              className={isActiveLink(ROUTES.SETTINGS) ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <Cog6ToothIcon className={styles.linkIcon} />
-              Configurações da Biblioteca
-            </Link>
-            <Link 
-              to={ROUTES.CATALOG}
-              className={isActiveLink(ROUTES.CATALOG) ? styles.activeLink : ''}
-              onClick={handleLinkClick}
-            >
-              <GlobeAltIcon className={styles.linkIcon} />
-              Catálogo Online
-            </Link>
-          </div>
-        </div>
-      </nav>
+            {/* Cadastros */}
+            <div className={styles.sidebarSection}>
+              <button
+                className={`${styles.sectionBtn} ${openSection === 'cadastros' ? styles.sectionBtnActive : ''}`}
+                onClick={() => toggleSection('cadastros')}
+                title={!isSidebarExpanded ? 'Cadastros' : undefined}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.sectionIcon}>
+                  <path d="M20,0H3V3H1V5H3V7H1V9H3v2H1v2H3v2H1v2H3v2H1v2H3v3H20a3,3,0,0,0,3-3V3A3,3,0,0,0,20,0Zm1,21a1,1,0,0,1-1,1H5V2H20a1,1,0,0,1,1,1Zm-8-9a3,3,0,1,0-3-3A3,3,0,0,0,13,12Zm5,4v2H16V16a1,1,0,0,0-1-1H11a1,1,0,0,0-1,1v2H8V16a3,3,0,0,1,3-3h4A3,3,0,0,1,18,16Z"/>
+                </svg>
+                {isSidebarExpanded && (
+                  <>
+                    <span className={styles.sectionLabel}>Cadastros</span>
+                    <ChevronDownIcon className={`${styles.sectionChevron} ${openSection === 'cadastros' ? styles.chevronOpen : ''}`} />
+                  </>
+                )}
+              </button>
+              {isSidebarExpanded && openSection === 'cadastros' && (
+                <div className={styles.sectionLinks}>
+                  <Link to="/students" className={`${styles.sidebarLink} ${isActiveLink('/students') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <AcademicCapIcon className={styles.linkIcon} />
+                    <span>Alunos</span>
+                  </Link>
+                  <Link to="/staff" className={`${styles.sidebarLink} ${isActiveLink('/staff') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <UserGroupIcon className={styles.linkIcon} />
+                    <span>Professores e Funcionários</span>
+                  </Link>
+                  <Link to="/classes" className={`${styles.sidebarLink} ${isActiveLink('/classes') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <AcademicCapIcon className={styles.linkIcon} />
+                    <span>Turmas</span>
+                  </Link>
+                </div>
+              )}
+            </div>
 
-      <main className={styles.main}>
-        <Outlet />
-      </main>
+            {/* Retirar */}
+            <div className={styles.sidebarSection}>
+              <button
+                className={`${styles.sectionBtn} ${openSection === 'retirar' ? styles.sectionBtnActive : ''}`}
+                onClick={() => toggleSection('retirar')}
+                title={!isSidebarExpanded ? 'Retirar' : undefined}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.sectionIcon}>
+                  <path d="M22.293,15.895l-1.293-1.293v8.398c-.006,1.308-1.995,1.307-2,0V14.602l-1.293,1.293c-.391,.391-1.023,.391-1.414,0-.391-.39-.391-1.023,0-1.414l1.613-1.614c1.153-1.153,3.031-1.155,4.187,0l1.614,1.614c.921,.928-.486,2.335-1.414,1.414Z"/>
+                  <path d="M17,0H7C4.239,0,2,2.239,2,5v15c0,2.209,1.791,4,4,4h10c1.308-.006,1.307-1.995,0-2H6c-1.213,0-2.178-1.086-1.972-2.338,.162-.984,1.088-1.662,2.085-1.662h7.888c1.308-.006,1.307-1.995,0-2h-6V2h9c1.657,0,3,1.343,3,3v4c.006,1.308,1.994,1.307,2,0V5c0-2.761-2.239-5-5-5ZM6,16c-.732,0-1.409,.212-2,.556V5c0-1.302,.839-2.402,2-2.816v13.816Z"/>
+                </svg>
+                {isSidebarExpanded && (
+                  <>
+                    <span className={styles.sectionLabel}>Retirar</span>
+                    <ChevronDownIcon className={`${styles.sectionChevron} ${openSection === 'retirar' ? styles.chevronOpen : ''}`} />
+                  </>
+                )}
+              </button>
+              {isSidebarExpanded && openSection === 'retirar' && (
+                <div className={styles.sectionLinks}>
+                  <Link to="/student-withdrawals" className={`${styles.sidebarLink} ${isActiveLink('/student-withdrawals') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <AcademicCapIcon className={styles.linkIcon} />
+                    <span>Alunos</span>
+                  </Link>
+                  <Link to="/staff-withdrawals" className={`${styles.sidebarLink} ${isActiveLink('/staff-withdrawals') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <UserGroupIcon className={styles.linkIcon} />
+                    <span>Professores e Funcionários</span>
+                  </Link>
+                  <Link to="/reservations" className={`${styles.sidebarLink} ${isActiveLink('/reservations') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <CalendarDaysIcon className={styles.linkIcon} />
+                    <span style={{ flex: 1 }}>Reservas</span>
+                    {reservationsCount > 0 && (
+                      <span className={styles.reservationBadge}>{reservationsCount}</span>
+                    )}
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Configurações */}
+            <div className={styles.sidebarSection}>
+              <button
+                className={`${styles.sectionBtn} ${openSection === 'configuracoes' ? styles.sectionBtnActive : ''}`}
+                onClick={() => toggleSection('configuracoes')}
+                title={!isSidebarExpanded ? 'Configurações' : undefined}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.sectionIcon}>
+                  <path d="M12.208,8.328c-.916-.077-1.788,.326-2.67,1.209-1.634,1.635-1.634,3.292,0,4.925,.481,.482,1.239,1.142,2.254,1.21,.966,.064,1.854-.392,2.67-1.21,1.634-1.634,1.633-3.292,0-4.925-.481-.482-1.239-1.132-2.254-1.21Zm.84,4.721s0,0,0,0c-.302,.302-.767,.655-1.102,.629-.262-.02-.596-.232-.993-.629-.787-.787-.897-1.2,0-2.098,.291-.291,.706-.63,1.061-.63,.014,0,.028,0,.041,.001,.262,.02,.596,.232,.993,.629,.787,.787,.897,1.2,0,2.098Z"/>
+                  <path d="M22.994,11.954c.006-1.206-.452-2.662-2.571-3.05-.11-.21-.231-.421-.364-.633,1.068-1.479,.986-2.851-.248-4.085-1.235-1.236-2.607-1.317-4.087-.245-.209-.132-.418-.252-.627-.36-.382-2.112-1.824-2.58-3.027-2.58-1.69,0-2.771,.891-3.086,2.624-.208,.109-.418,.23-.629,.362-1.473-1.064-2.846-.973-4.093,.272-1.243,1.244-1.333,2.618-.272,4.091-.133,.212-.255,.423-.366,.633-1.729,.316-2.609,1.345-2.618,3.063-.006,1.206,.452,2.662,2.571,3.05,.11,.21,.231,.421,.365,.633-1.069,1.479-.987,2.851,.247,4.085,1.235,1.236,2.608,1.317,4.087,.245,.209,.132,.418,.252,.627,.36,.382,2.112,1.824,2.58,3.027,2.58,1.721,0,2.771-.891,3.086-2.624,.208-.109,.418-.23,.629-.362,1.471,1.061,2.84,.968,4.092-.272s1.334-2.618,.273-4.092c.133-.212,.255-.423,.366-.632,1.729-.316,2.609-1.345,2.618-3.063Zm-3.369,1.147c-.364,.031-.682,.259-.829,.593-.201,.456-.483,.934-.839,1.419-.282,.385-.252,.917,.071,1.269,1.073,1.166,.713,1.527,.295,1.945-.435,.436-.78,.78-1.943-.296-.352-.324-.883-.354-1.27-.072-.483,.354-.959,.635-1.416,.834-.335,.147-.563,.465-.595,.831-.118,1.37-.6,1.373-1.157,1.375-.565,0-1.018,.006-1.122-1.326-.029-.371-.261-.695-.603-.841-.454-.195-.927-.472-1.405-.825-.177-.131-.386-.195-.594-.195-.244,0-.487,.089-.678,.265-1.179,1.087-1.532,.732-1.939,.324-.409-.409-.762-.763,.322-1.94,.325-.353,.354-.886,.068-1.272-.356-.481-.635-.955-.83-1.407-.146-.341-.47-.573-.839-.602-1.325-.106-1.323-.555-1.32-1.123,.003-.581,.005-1.04,1.369-1.158,.364-.031,.682-.259,.829-.593,.202-.457,.484-.935,.839-1.42,.282-.385,.252-.917-.071-1.269-1.073-1.165-.712-1.526-.295-1.944,.435-.435,.78-.779,1.943,.295,.352,.325,.883,.354,1.269,.072,.484-.354,.96-.634,1.417-.834,.335-.147,.563-.465,.595-.831,.118-1.37,.6-1.373,1.157-1.375,.573,.004,1.018-.006,1.122,1.326,.029,.371,.261,.695,.603,.841,.454,.195,.927,.472,1.405,.825,.385,.284,.919,.255,1.271-.069,1.179-1.087,1.531-.732,1.939-.324,.409,.409,.763,.763-.322,1.94-.325,.353-.354,.887-.069,1.272,.356,.481,.635,.955,.83,1.407,.146,.341,.47,.573,.839,.602,1.325,.106,1.323,.555,1.32,1.123-.003,.581-.005,1.04-1.369,1.158Z"/>
+                </svg>
+                {isSidebarExpanded && (
+                  <>
+                    <span className={styles.sectionLabel}>Configurações</span>
+                    <ChevronDownIcon className={`${styles.sectionChevron} ${openSection === 'configuracoes' ? styles.chevronOpen : ''}`} />
+                  </>
+                )}
+              </button>
+              {isSidebarExpanded && openSection === 'configuracoes' && (
+                <div className={styles.sectionLinks}>
+                  <Link to="/dashboard" className={`${styles.sidebarLink} ${isActiveLink('/dashboard') ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.linkIcon}>
+                      <path d="M12,24c-1.65,0-3-1.35-3-3V3c0-1.65,1.35-3,3-3s3,1.35,3,3V21c0,1.65-1.35,3-3,3Zm9,0c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3s3,1.35,3,3v12c0,1.65-1.35,3-3,3Zm-18,0c-1.65,0-3-1.35-3-3v-6c0-1.65,1.35-3,3-3s3,1.35,3,3v6c0,1.65-1.35,3-3,3Z"/>
+                    </svg>
+                    <span>Dashboard</span>
+                  </Link>
+                  <Link to={ROUTES.SETTINGS} className={`${styles.sidebarLink} ${isActiveLink(ROUTES.SETTINGS) ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <Cog6ToothIcon className={styles.linkIcon} />
+                    <span>Configurações da Biblioteca</span>
+                  </Link>
+                  <Link to={ROUTES.CATALOG} className={`${styles.sidebarLink} ${isActiveLink(ROUTES.CATALOG) ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
+                    <GlobeAltIcon className={styles.linkIcon} />
+                    <span>Catálogo Online</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </nav>
+        </aside>
+
+        <main className={`${styles.main} ${isSidebarExpanded ? styles.mainExpanded : styles.mainCollapsed}`}>
+          <Outlet />
+        </main>
+      </div>
 
       {/* Modal de Notificação de Atualização */}
       {selectedNotification && selectedNotification.type === 'update' && (

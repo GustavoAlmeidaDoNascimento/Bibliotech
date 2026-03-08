@@ -9,18 +9,31 @@
   background-color: var(--primary-color, #4a90e2);
   color: white;
   width: 100%;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 1001;
+  display: flex;
+  height: 64px;
 }
 
-.headerContent {
+/* Seção do header alinhada com o sidebar — largura fixa */
+.headerSidebar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-  height: 64px;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 64px;
+}
+
+/* Seção principal do header (logo + botões) */
+.headerMain {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
 }
 
 .logoLink {
@@ -38,7 +51,7 @@
 
 
 
-.headerContent h1 {
+.headerMain h1 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
@@ -104,120 +117,241 @@
   transform: rotate(-45deg) translate(4px, -4px);
 }
 
-.nav {
-  background-color: var(--primary-color, #4a90e2);
-  width: 100%;
-  padding: 1rem;
-  position: relative;
-  z-index: 1000;
-}
-
-.navContent {
+/* Body: sidebar + conteúdo principal */
+.body {
   display: flex;
-  justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto;
-  gap: 2rem;
+  flex: 1;
+  position: relative;
+  margin-top: 64px;
 }
 
-.navSection {
-  position: relative;
-  padding: 1rem;
+/* Backdrop para mobile */
+.mobileBackdrop {
+  position: fixed;
+  inset: 0;
+  top: 64px;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 199;
+  backdrop-filter: blur(2px);
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  bottom: 0;
+  background: var(--primary-color, #4a90e2);
+  border-right: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+}
+
+.sidebarExpanded {
+  width: 240px;
+}
+
+.sidebarCollapsed {
+  width: 64px;
+}
+
+/* Botão toggle do sidebar (fica no header) */
+.sidebarToggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
   background: rgba(255, 255, 255, 0.15);
+  border: none;
   border-radius: 8px;
-  min-width: 220px;
-}
-
-.navSection:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: -1rem;
-  top: 10%;
-  height: 80%;
-  width: 1px;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-}
-
-.navSection h2 {
-  font-size: 0.85rem;
-  margin: 0 0 1rem;
-  color: rgba(255, 255, 255, 1);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.25);
-  border-bottom: none;
-}
-
-.navIcon {
-  width: 16px;
-  height: 16px;
-  opacity: 0.9;
-}
-
-.linkIcon {
-  width: 18px;
-  height: 18px;
-  opacity: 0.8;
-  transition: all 0.2s ease;
-}
-
-.navSection a,
-.logoutButton {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  cursor: pointer;
   color: white;
-  text-decoration: none;
-  padding: 0.5rem;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-  opacity: 0.8;
-  border-radius: 6px;
-  margin-bottom: 0.25rem;
+  transition: background 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
 }
 
-.navSection a:hover,
-.logoutButton:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateX(4px);
+.sidebarToggleBtn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: scale(1.05);
 }
 
-/* Estilo para o link da página atual */
-.activeLink {
-  background: rgba(255, 255, 255, 0.2) !important;
-  opacity: 1 !important;
-  transform: translateX(4px);
-  position: relative;
-  font-weight: 500;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+.sidebarToggleBtn:active {
+  transform: scale(0.96);
 }
 
-.activeLink::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 50%;
-  transform: translateY(-50%);
+
+/* Nav interna do sidebar */
+.sidebarNav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.sidebarNav::-webkit-scrollbar {
   width: 4px;
-  height: 70%;
-  background: white;
+}
+
+.sidebarNav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebarNav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 2px;
 }
 
-.activeLink .linkIcon {
+/* Seção do sidebar */
+.sidebarSection {
+  margin-bottom: 2px;
+}
+
+.sectionBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  transition: all 0.2s ease;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sectionBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+.sectionBtnActive {
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Para usar sectionBtn em um <Link> (âncora) */
+.sectionBtnAsLink {
+  text-decoration: none;
+}
+
+.sectionIcon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+  opacity: 0.85;
+}
+
+.sectionBtnActive .sectionIcon,
+.sectionBtn:hover .sectionIcon {
   opacity: 1;
+}
+
+.sectionLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sectionChevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+  opacity: 0.85;
+}
+
+/* Links do accordion */
+.sectionLinks {
+  padding: 0.25rem 0;
+  animation: accordionOpen 0.2s ease;
+}
+
+@keyframes accordionOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sidebarLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem 0.55rem 2.75rem;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  border-left: 3px solid transparent;
+}
+
+.sidebarLink:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.4);
+}
+
+.activeSidebarLink {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  font-weight: 600;
+  border-left-color: white !important;
+}
+
+.linkIcon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.65;
+  transition: opacity 0.2s ease;
+}
+
+.sidebarLink:hover .linkIcon,
+.activeSidebarLink .linkIcon {
+  opacity: 1;
+}
+
+/* Conteúdo principal */
+.main {
+  flex: 1;
+  padding: 2rem;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: calc(100vh - 64px);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.mainExpanded {
+  margin-left: 240px;
+}
+
+.mainCollapsed {
+  margin-left: 64px;
 }
 
 .logoutButton {
@@ -229,14 +363,6 @@
   padding: 0.5rem;
   font-size: 0.95rem;
   color: white;
-}
-
-.main {
-  flex: 1;
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
 }
 
 .notificationButton {
@@ -270,18 +396,17 @@
 
 .reservationBadge {
   background: white;
-  color: #4a90e2;
-  border-radius: 50%;
+  color: var(--primary-color, #4a90e2);
+  border-radius: 10px;
   min-width: 20px;
-  width: 20px;
-  height: 20px;
-  font-size: 0.7rem;
-  font-weight: bold;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 0.65rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   margin-left: auto;
   flex-shrink: 0;
 }
@@ -861,42 +986,22 @@
     display: block;
   }
 
-  .nav {
-    display: none;
-    position: fixed;
-    top: 64px; /* Altura do header */
-    left: 0;
-    right: 0;
-    z-index: 999;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    max-height: calc(100vh - 64px);
-    overflow-y: auto;
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 240px !important;
+    z-index: 200;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
   }
 
-  .nav.open {
-    display: block;
+  .sidebarMobileOpen {
+    transform: translateX(0) !important;
   }
 
-  .navContent {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .navSection {
-    width: 100%;
-    min-width: auto;
-  }
-
-  .navSection:not(:last-child) {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 1rem;
-  }
-
-  .navSection:not(:last-child)::after {
-    display: none;
-  }
-
-  .main {
+  .main,
+  .mainExpanded,
+  .mainCollapsed {
+    margin-left: 0 !important;
     padding: 1rem;
   }
 
