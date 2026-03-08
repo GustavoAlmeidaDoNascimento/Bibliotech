@@ -1108,17 +1108,18 @@
   background: rgba(245, 158, 11, 0.35);
 }
 
-/* Dropup menu */
+/* Portal do dropup (janela independente) */
+.profileDropupPortal {
+  width: 280px;
+}
+
+/* Dropup menu (conteúdo dentro do portal) */
 .profileDropup {
-  position: absolute;
-  bottom: calc(100% + 4px);
-  left: 0.5rem;
-  right: 0.5rem;
+  width: 100%;
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
-  z-index: 300;
   overflow: hidden;
   animation: dropupSlideIn 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
