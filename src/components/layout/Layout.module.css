@@ -994,6 +994,215 @@
   }
 }
 
+/* =====================
+   Sidebar Footer / Profile Card
+   ===================== */
+
+.sidebarFooter {
+  position: relative;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.5rem;
+}
+
+.profileCard {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+  transition: background 0.15s ease;
+  min-height: 48px;
+}
+
+.profileCard:hover,
+.profileCardActive {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.schoolIcon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.schoolName {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.planBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: 1px;
+}
+
+/* Gratuito (nulo / 0) → padrão (cinza translúcido — base acima) */
+
+/* Básico (1) → azul claro */
+.planBadge1 {
+  color: #bfdbfe;
+  background: rgba(59, 130, 246, 0.35);
+}
+
+/* Intermediário (2) → roxo */
+.planBadge2 {
+  color: #e9d5ff;
+  background: rgba(139, 92, 246, 0.35);
+}
+
+/* Avançado (3) → dourado */
+.planBadge3 {
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.35);
+}
+
+/* Dropup menu */
+.profileDropup {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0.5rem;
+  right: 0.5rem;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 300;
+  overflow: hidden;
+  animation: dropupSlideIn 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dropupSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropupEmail {
+  padding: 0.65rem 0.85rem 0.5rem;
+  font-size: 0.72rem;
+  color: #6b7280;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dropupDivider {
+  height: 1px;
+  background: #f3f4f6;
+  margin: 2px 0;
+}
+
+.dropupItem {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #111827;
+  text-decoration: none;
+  transition: background 0.12s ease;
+  text-align: left;
+}
+
+.dropupItem:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.dropupItemIcon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: #6b7280;
+}
+
+.dropupItemDisabled {
+  color: #9ca3af !important;
+  cursor: default !important;
+}
+
+.dropupItemDisabled:hover {
+  background: transparent !important;
+}
+
+.comingSoonBadge {
+  margin-left: auto;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.dropupItemUpgrade {
+  color: var(--primary-color, #4a90e2) !important;
+  font-weight: 600;
+}
+
+.dropupItemUpgrade:hover {
+  background: #eff6ff !important;
+}
+
+.dropupItemUpgrade .dropupItemIcon {
+  color: var(--primary-color, #4a90e2);
+}
+
+.dropupItemLogout {
+  color: #ef4444 !important;
+}
+
+.dropupItemLogout:hover {
+  background: #fef2f2 !important;
+}
+
+.dropupItemLogout .dropupItemIcon {
+  color: #ef4444;
+}
+
 @media (max-width: 768px) {
   .menuButton {
     display: block;

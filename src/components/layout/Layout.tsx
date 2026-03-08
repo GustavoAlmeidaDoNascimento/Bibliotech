@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import schoolIconSrc from '../../assets/school-icon.png';
 import { useAsync } from '../../hooks/useAsync';
 import { settingsService } from '../../services/firebase';
 import { useSettings } from '../../contexts/SettingsContext';
@@ -14,7 +15,6 @@ import {
   BookOpenIcon,
   ClipboardDocumentListIcon,
   ArrowPathIcon,
-  Cog6ToothIcon,
   ChartBarIcon,
   BellIcon,
   CalendarDaysIcon,
@@ -34,13 +34,16 @@ const Layout: React.FC = () => {
   const [reservationsCount, setReservationsCount] = useState<number>(0);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [isDummyGeneratorOpen, setIsDummyGeneratorOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const [planLevel, setPlanLevel] = useState<number | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(() => {
     const stored = localStorage.getItem('sidebarExpanded');
     return stored !== null ? stored === 'true' : true;
   });
   const [openSection, setOpenSection] = useState<string>('');
   
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { settings } = useSettings();
@@ -231,6 +234,53 @@ const Layout: React.FC = () => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, [openDropdownId]);
+
+  useEffect(() => {
+    if (!currentUser) { setPlanLevel(null); return; }
+    const fetchPlan = async () => {
+      try {
+        const subscriptionRef = doc(db, `users/${currentUser.uid}/account/subscription`);
+        const snap = await getDoc(subscriptionRef);
+        if (snap.exists()) {
+          const data = snap.data() as { plan?: number };
+          setPlanLevel(typeof data.plan === 'number' ? data.plan : null);
+        } else {
+          setPlanLevel(null);
+        }
+      } catch {
+        setPlanLevel(null);
+      }
+    };
+    fetchPlan();
+  }, [currentUser]);
+
+  const getPlanLabel = (level: number | null) => {
+    if (level === 1) return 'Básico';
+    if (level === 2) return 'Intermediário';
+    if (level === 3) return 'Avançado';
+    return 'Gratuito';
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    if (isProfileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileMenuOpen]);
 
   const closeNotificationModal = () => {
     setSelectedNotification(null);
@@ -819,38 +869,83 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
               </Link>
             </div>
 
-            {/* Configurações */}
+            {/* Catálogo Online — link direto */}
             <div className={styles.sidebarSection}>
-              <button
-                className={`${styles.sectionBtn} ${openSection === 'configuracoes' ? styles.sectionBtnActive : ''}`}
-                onClick={() => toggleSection('configuracoes')}
-                title={!isSidebarExpanded ? 'Configurações' : undefined}
+              <Link
+                to={ROUTES.CATALOG}
+                className={`${styles.sectionBtn} ${styles.sectionBtnAsLink} ${isActiveLink(ROUTES.CATALOG) ? styles.sectionBtnActive : ''}`}
+                onClick={handleLinkClick}
+                title={!isSidebarExpanded ? 'Catálogo Online' : undefined}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.sectionIcon}>
-                  <path d="M12.208,8.328c-.916-.077-1.788,.326-2.67,1.209-1.634,1.635-1.634,3.292,0,4.925,.481,.482,1.239,1.142,2.254,1.21,.966,.064,1.854-.392,2.67-1.21,1.634-1.634,1.633-3.292,0-4.925-.481-.482-1.239-1.132-2.254-1.21Zm.84,4.721s0,0,0,0c-.302,.302-.767,.655-1.102,.629-.262-.02-.596-.232-.993-.629-.787-.787-.897-1.2,0-2.098,.291-.291,.706-.63,1.061-.63,.014,0,.028,0,.041,.001,.262,.02,.596,.232,.993,.629,.787,.787,.897,1.2,0,2.098Z"/>
-                  <path d="M22.994,11.954c.006-1.206-.452-2.662-2.571-3.05-.11-.21-.231-.421-.364-.633,1.068-1.479,.986-2.851-.248-4.085-1.235-1.236-2.607-1.317-4.087-.245-.209-.132-.418-.252-.627-.36-.382-2.112-1.824-2.58-3.027-2.58-1.69,0-2.771,.891-3.086,2.624-.208,.109-.418,.23-.629,.362-1.473-1.064-2.846-.973-4.093,.272-1.243,1.244-1.333,2.618-.272,4.091-.133,.212-.255,.423-.366,.633-1.729,.316-2.609,1.345-2.618,3.063-.006,1.206,.452,2.662,2.571,3.05,.11,.21,.231,.421,.365,.633-1.069,1.479-.987,2.851,.247,4.085,1.235,1.236,2.608,1.317,4.087,.245,.209,.132,.418,.252,.627,.36,.382,2.112,1.824,2.58,3.027,2.58,1.721,0,2.771-.891,3.086-2.624,.208-.109,.418-.23,.629-.362,1.471,1.061,2.84,.968,4.092-.272s1.334-2.618,.273-4.092c.133-.212,.255-.423,.366-.632,1.729-.316,2.609-1.345,2.618-3.063Zm-3.369,1.147c-.364,.031-.682,.259-.829,.593-.201,.456-.483,.934-.839,1.419-.282,.385-.252,.917,.071,1.269,1.073,1.166,.713,1.527,.295,1.945-.435,.436-.78,.78-1.943-.296-.352-.324-.883-.354-1.27-.072-.483,.354-.959,.635-1.416,.834-.335,.147-.563,.465-.595,.831-.118,1.37-.6,1.373-1.157,1.375-.565,0-1.018,.006-1.122-1.326-.029-.371-.261-.695-.603-.841-.454-.195-.927-.472-1.405-.825-.177-.131-.386-.195-.594-.195-.244,0-.487,.089-.678,.265-1.179,1.087-1.532,.732-1.939,.324-.409-.409-.762-.763,.322-1.94,.325-.353,.354-.886,.068-1.272-.356-.481-.635-.955-.83-1.407-.146-.341-.47-.573-.839-.602-1.325-.106-1.323-.555-1.32-1.123,.003-.581,.005-1.04,1.369-1.158,.364-.031,.682-.259,.829-.593,.202-.457,.484-.935,.839-1.42,.282-.385,.252-.917-.071-1.269-1.073-1.165-.712-1.526-.295-1.944,.435-.435,.78-.779,1.943,.295,.352,.325,.883,.354,1.269,.072,.484-.354,.96-.634,1.417-.834,.335-.147,.563-.465,.595-.831,.118-1.37,.6-1.373,1.157-1.375,.573,.004,1.018-.006,1.122,1.326,.029,.371,.261,.695,.603,.841,.454,.195,.927,.472,1.405,.825,.385,.284,.919,.255,1.271-.069,1.179-1.087,1.531-.732,1.939-.324,.409,.409,.763,.763-.322,1.94-.325,.353-.354,.887-.069,1.272,.356,.481,.635,.955,.83,1.407,.146,.341,.47,.573,.839,.602,1.325,.106,1.323,.555,1.32,1.123-.003,.581-.005,1.04-1.369,1.158Z"/>
-                </svg>
+                <GlobeAltIcon className={styles.sectionIcon} />
                 {isSidebarExpanded && (
-                  <>
-                    <span className={styles.sectionLabel}>Configurações</span>
-                    <ChevronDownIcon className={`${styles.sectionChevron} ${openSection === 'configuracoes' ? styles.chevronOpen : ''}`} />
-                  </>
+                  <span className={styles.sectionLabel}>Catálogo Online</span>
                 )}
-              </button>
-              {isSidebarExpanded && openSection === 'configuracoes' && (
-                <div className={styles.sectionLinks}>
-                  <Link to={ROUTES.SETTINGS} className={`${styles.sidebarLink} ${isActiveLink(ROUTES.SETTINGS) ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
-                    <Cog6ToothIcon className={styles.linkIcon} />
-                    <span>Configurações da Biblioteca</span>
-                  </Link>
-                  <Link to={ROUTES.CATALOG} className={`${styles.sidebarLink} ${isActiveLink(ROUTES.CATALOG) ? styles.activeSidebarLink : ''}`} onClick={handleLinkClick}>
-                    <GlobeAltIcon className={styles.linkIcon} />
-                    <span>Catálogo Online</span>
-                  </Link>
-                </div>
-              )}
+              </Link>
             </div>
           </nav>
+
+          {/* Footer da sidebar: card da escola + dropup */}
+          <div className={styles.sidebarFooter} ref={profileMenuRef}>
+            {isProfileMenuOpen && (
+              <div className={styles.profileDropup}>
+                <div className={styles.dropupEmail}>{currentUser?.email}</div>
+                <div className={styles.dropupDivider} />
+                <Link to={ROUTES.SETTINGS} className={styles.dropupItem} onClick={() => { setIsProfileMenuOpen(false); handleLinkClick(); }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.dropupItemIcon}>
+                    <path d="M12.208,8.328c-.916-.077-1.788,.326-2.67,1.209-1.634,1.635-1.634,3.292,0,4.925,.481,.482,1.239,1.142,2.254,1.21,.966,.064,1.854-.392,2.67-1.21,1.634-1.634,1.633-3.292,0-4.925-.481-.482-1.239-1.132-2.254-1.21Zm.84,4.721s0,0,0,0c-.302,.302-.767,.655-1.102,.629-.262-.02-.596-.232-.993-.629-.787-.787-.897-1.2,0-2.098,.291-.291,.706-.63,1.061-.63,.014,0,.028,0,.041,.001,.262,.02,.596,.232,.993,.629,.787,.787,.897,1.2,0,2.098Z"/>
+                    <path d="M22.994,11.954c.006-1.206-.452-2.662-2.571-3.05-.11-.21-.231-.421-.364-.633,1.068-1.479,.986-2.851-.248-4.085-1.235-1.236-2.607-1.317-4.087-.245-.209-.132-.418-.252-.627-.36-.382-2.112-1.824-2.58-3.027-2.58-1.69,0-2.771,.891-3.086,2.624-.208,.109-.418,.23-.629,.362-1.473-1.064-2.846-.973-4.093,.272-1.243,1.244-1.333,2.618-.272,4.091-.133,.212-.255,.423-.366,.633-1.729,.316-2.609,1.345-2.618,3.063-.006,1.206,.452,2.662,2.571,3.05,.11,.21,.231,.421,.365,.633-1.069,1.479-.987,2.851,.247,4.085,1.235,1.236,2.608,1.317,4.087,.245,.209,.132,.418,.252,.627,.36,.382,2.112,1.824,2.58,3.027,2.58,1.721,0,2.771-.891,3.086-2.624,.208-.109,.418-.23,.629-.362,1.471,1.061,2.84,.968,4.092-.272s1.334-2.618,.273-4.092c.133-.212,.255-.423,.366-.632,1.729-.316,2.609-1.345,2.618-3.063Zm-3.369,1.147c-.364,.031-.682,.259-.829,.593-.201,.456-.483,.934-.839,1.419-.282,.385-.252,.917,.071,1.269,1.073,1.166,.713,1.527,.295,1.945-.435,.436-.78,.78-1.943-.296-.352-.324-.883-.354-1.27-.072-.483,.354-.959,.635-1.416,.834-.335,.147-.563,.465-.595,.831-.118,1.37-.6,1.373-1.157,1.375-.565,0-1.018,.006-1.122-1.326-.029-.371-.261-.695-.603-.841-.454-.195-.927-.472-1.405-.825-.177-.131-.386-.195-.594-.195-.244,0-.487,.089-.678,.265-1.179,1.087-1.532,.732-1.939,.324-.409-.409-.762-.763,.322-1.94,.325-.353,.354-.886,.068-1.272-.356-.481-.635-.955-.83-1.407-.146-.341-.47-.573-.839-.602-1.325-.106-1.323-.555-1.32-1.123,.003-.581,.005-1.04,1.369-1.158,.364-.031,.682-.259,.829-.593,.202-.457,.484-.935,.839-1.42,.282-.385,.252-.917-.071-1.269-1.073-1.165-.712-1.526-.295-1.944,.435-.435,.78-.779,1.943,.295,.352,.325,.883,.354,1.269,.072,.484-.354,.96-.634,1.417-.834,.335-.147,.563-.465,.595-.831,.118-1.37,.6-1.373,1.157-1.375,.573,.004,1.018-.006,1.122,1.326,.029,.371,.261,.695,.603,.841,.454,.195,.927,.472,1.405,.825,.385,.284,.919,.255,1.271-.069,1.179-1.087,1.531-.732,1.939-.324,.409,.409,.763,.763-.322,1.94-.325,.353-.354,.887-.069,1.272,.356,.481,.635,.955,.83,1.407,.146,.341,.47,.573,.839,.602,1.325,.106,1.323,.555,1.32,1.123-.003,.581-.005,1.04-1.369,1.158Z"/>
+                  </svg>
+                  Configurações
+                </Link>
+                <button className={`${styles.dropupItem} ${styles.dropupItemDisabled}`} disabled>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.dropupItemIcon}>
+                    <path d="M12 2.25a9.75 9.75 0 1 0 0 19.5 9.75 9.75 0 0 0 0-19.5ZM12 6a.75.75 0 0 1 .75.75v6a.75.75 0 0 1-1.5 0v-6A.75.75 0 0 1 12 6Zm0 9.75a.75.75 0 1 1 0 1.5.75.75 0 0 1 0-1.5Z"/>
+                  </svg>
+                  Tema
+                  <span className={styles.comingSoonBadge}>em breve</span>
+                </button>
+                <Link to="/plans" className={styles.dropupItem} onClick={() => { setIsProfileMenuOpen(false); handleLinkClick(); }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.dropupItemIcon}>
+                    <path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 0 0-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 0 0 0-1.5H5.378A2.25 2.25 0 0 1 7.5 15h11.218a.75.75 0 0 0 .674-.421 60.358 60.358 0 0 0 2.96-7.228.75.75 0 0 0-.525-.965A60.864 60.864 0 0 0 5.68 4.509l-.232-.867A1.875 1.875 0 0 0 3.636 2.25H2.25ZM3.75 20.25a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM16.5 20.25a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"/>
+                  </svg>
+                  Plano
+                </Link>
+                <div className={styles.dropupDivider} />
+                <button className={`${styles.dropupItem} ${styles.dropupItemUpgrade}`} onClick={() => { setIsProfileMenuOpen(false); navigate('/plans'); }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.dropupItemIcon}>
+                    <path fillRule="evenodd" d="M11.47 2.47a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06l-3.22-3.22V16.5a.75.75 0 0 1-1.5 0V4.81L8.03 8.03a.75.75 0 0 1-1.06-1.06l4.5-4.5ZM3 15.75a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V16.5a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V16.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd"/>
+                  </svg>
+                  Fazer upgrade de plano
+                </button>
+                <div className={styles.dropupDivider} />
+                <button className={`${styles.dropupItem} ${styles.dropupItemLogout}`} onClick={() => { setIsProfileMenuOpen(false); handleLogout(); }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.dropupItemIcon}>
+                    <path fillRule="evenodd" d="M7.5 3.75A1.5 1.5 0 0 0 6 5.25v13.5a1.5 1.5 0 0 0 1.5 1.5h6a1.5 1.5 0 0 0 1.5-1.5V15a.75.75 0 0 1 1.5 0v3.75a3 3 0 0 1-3 3h-6a3 3 0 0 1-3-3V5.25a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3V9A.75.75 0 0 1 15 9V5.25a1.5 1.5 0 0 0-1.5-1.5h-6Zm10.72 4.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1 0 1.06l-3 3a.75.75 0 1 1-1.06-1.06l1.72-1.72H9a.75.75 0 0 1 0-1.5h10.94l-1.72-1.72a.75.75 0 0 1 0-1.06Z" clipRule="evenodd"/>
+                  </svg>
+                  Sair
+                </button>
+              </div>
+            )}
+
+            <button
+              className={`${styles.profileCard} ${isProfileMenuOpen ? styles.profileCardActive : ''}`}
+              onClick={() => setIsProfileMenuOpen(prev => !prev)}
+              title={!isSidebarExpanded ? settings?.schoolName || 'Minha Escola' : undefined}
+            >
+              <img
+                src={schoolIconSrc}
+                alt="Escola"
+                className={styles.schoolIcon}
+              />
+              {isSidebarExpanded && (
+                <div className={styles.profileInfo}>
+                  <span className={styles.schoolName}>{settings?.schoolName || 'Minha Escola'}</span>
+                  <span className={`${styles.planBadge} ${styles[`planBadge${planLevel ?? 0}`]}`}>{getPlanLabel(planLevel)}</span>
+                </div>
+              )}
+            </button>
+          </div>
         </aside>
 
         <main className={`${styles.main} ${isSidebarExpanded ? styles.mainExpanded : styles.mainCollapsed}`}>
