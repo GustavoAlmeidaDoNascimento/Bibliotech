@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import schoolIconSrc from '../../assets/school-icon.png';
+import catalogIconSrc from '../../assets/catalog-icon.png';
 import { useAsync } from '../../hooks/useAsync';
 import { settingsService } from '../../services/firebase';
 import { useSettings } from '../../contexts/SettingsContext';
@@ -18,7 +19,6 @@ import {
   ChartBarIcon,
   BellIcon,
   CalendarDaysIcon,
-  GlobeAltIcon,
   EllipsisVerticalIcon,
   MegaphoneIcon,
   ChevronDownIcon,
@@ -879,7 +879,7 @@ Voce pode acessar suas metricas pelo link: https://bibliotech.tech/student-dashb
                 onClick={handleLinkClick}
                 title={!isSidebarExpanded ? 'Catálogo Online' : undefined}
               >
-                <GlobeAltIcon className={styles.sectionIcon} />
+                <img src={catalogIconSrc} alt="" className={`${styles.sectionIcon} ${styles.catalogIcon}`} />
                 {isSidebarExpanded && (
                   <span className={styles.sectionLabel}>Catálogo Online</span>
                 )}

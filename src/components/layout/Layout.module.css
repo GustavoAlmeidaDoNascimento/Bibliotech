@@ -269,6 +269,11 @@
   opacity: 0.85;
 }
 
+.catalogIcon {
+  filter: brightness(0) invert(1);
+  object-fit: contain;
+}
+
 .sectionBtnActive .sectionIcon,
 .sectionBtn:hover .sectionIcon {
   opacity: 1;
