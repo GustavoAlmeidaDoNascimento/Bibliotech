@@ -117,7 +117,7 @@ const Layout: React.FC = () => {
     if (pathname === '/books') return 'Acervo';
     if (pathname.startsWith('/books/')) return 'Detalhes do Livro';
     if (pathname === '/student-loans') return 'Locações de Alunos';
-    if (pathname === '/staff-loans') return 'Locações de Professores';
+    if (pathname === '/staff-loans') return 'Locações de Professores e Funcionários';
     if (pathname === '/students') return 'Alunos';
     if (pathname.startsWith('/students/')) return 'Perfil do Aluno';
     if (pathname === '/staff') return 'Professores e Funcionários';

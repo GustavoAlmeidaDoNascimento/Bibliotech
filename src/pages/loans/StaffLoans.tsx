@@ -184,10 +184,6 @@ const StaffLoans = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h2>Locações de Professores e Funcionários</h2>
-      </div>
-      
       <div className={styles.searchBar}>
         <div className={styles.searchInputWrapper}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={styles.searchIcon}>
