@@ -8,6 +8,7 @@ import { useBarcodeGenerator } from '../../hooks';
 import { useFirestorePagination } from '../../hooks/useFirestorePagination';
 import { useOptimizedSearch, type Book } from '../../hooks/useOptimizedSearch';
 import { PlusIcon, TrashIcon, FunnelIcon, XMarkIcon, ListBulletIcon, Squares2X2Icon, ArrowsUpDownIcon, ArrowDownTrayIcon, PrinterIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { BookOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import styles from './Books.module.css';
 import { searchCacheService } from '../../services/searchCacheService';
@@ -585,6 +586,15 @@ const Books = () => {
                           className='checkboxInput'
                         />
                       </div>
+                      <div className={styles.gridCoverWrapper}>
+                        {book.coverUrl ? (
+                          <img src={book.coverUrl} alt="" className={styles.bookCoverThumb} />
+                        ) : (
+                          <div className={styles.bookCoverPlaceholder} aria-hidden>
+                            <BookOpen size={24} />
+                          </div>
+                        )}
+                      </div>
                       <h3>{book.title}</h3>
                     </div>
                     <Link
@@ -618,6 +628,7 @@ const Books = () => {
                   <thead>
                     <tr>
                       <th></th>
+                      <th className={styles.coverColumn}>Capa</th>
                       <th>Título</th>
                       <th>Código</th>
                       <th>Autor</th>
@@ -648,6 +659,15 @@ const Books = () => {
                               className={styles.checkboxInput}
                             />
                           </div>
+                        </td>
+                        <td className={styles.coverCell} onClick={() => navigate(`/books/${book.id}`)}>
+                          {book.coverUrl ? (
+                            <img src={book.coverUrl} alt="" className={styles.bookCoverThumb} />
+                          ) : (
+                            <div className={styles.bookCoverPlaceholder} aria-hidden>
+                              <BookOpen size={20} />
+                            </div>
+                          )}
                         </td>
                         <td onClick={() => navigate(`/books/${book.id}`)} style={{ cursor: 'pointer' }}>{book.title || '-'}</td>
                         <td onClick={() => navigate(`/books/${book.id}`)} style={{ cursor: 'pointer' }}>{getDisplayCode(book)}</td>

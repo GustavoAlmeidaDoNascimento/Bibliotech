@@ -18,6 +18,7 @@ export interface Book {
   quantity?: number;
   createdAt?: number;
   description?: string;
+  coverUrl?: string;
 }
 
 export interface SearchFilters {

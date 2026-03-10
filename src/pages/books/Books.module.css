@@ -581,6 +581,50 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+.coverColumn {
+  width: 52px;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+.coverCell {
+  width: 52px;
+  padding: 0.5rem !important;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.bookCoverThumb {
+  width: 40px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  background: var(--bg-primary);
+}
+
+.bookCoverPlaceholder {
+  width: 40px;
+  height: 56px;
+  border-radius: 4px;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.gridCoverWrapper {
+  flex-shrink: 0;
+}
+
+.gridCoverWrapper .bookCoverThumb,
+.gridCoverWrapper .bookCoverPlaceholder {
+  width: 36px;
+  height: 50px;
+}
+
 .booksList td {
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
