@@ -32,6 +32,8 @@ export interface FormattedBookResult {
   thumbnail: string;
   publisher?: string;
   publishedDate?: string;
+  /** Origem do resultado: Google Books ou Open Library */
+  source?: 'google' | 'openlibrary';
 }
 
 /**
@@ -64,6 +66,25 @@ export const searchGoogleBooks = async (query: string): Promise<FormattedBookRes
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => '');
+      // Mensagens amigáveis para erros conhecidos (evita exibir JSON bruto ao usuário)
+      if (response.status === 503 || response.status === 502) {
+        console.error('Google Books API indisponível:', response.status, errorBody);
+        throw new Error(
+          'O serviço do Google Books está temporariamente indisponível. Tente novamente em alguns minutos.'
+        );
+      }
+      if (response.status === 429) {
+        console.error('Google Books API rate limit:', errorBody);
+        throw new Error(
+          'Muitas buscas em pouco tempo. Aguarde alguns minutos e tente novamente.'
+        );
+      }
+      if (response.status >= 500) {
+        console.error('Erro do servidor Google Books:', response.status, errorBody);
+        throw new Error(
+          'Erro temporário no serviço do Google Books. Tente novamente em alguns minutos.'
+        );
+      }
       throw new Error(`Erro ${response.status} na API do Google Books${errorBody ? ': ' + errorBody : ''}`);
     }
 
@@ -116,7 +137,8 @@ const formatBookResult = (item: GoogleBookResult): FormattedBookResult | null =>
       coverUrl: coverUrl,
       thumbnail: thumbnailUrl,
       publisher: volumeInfo.publisher,
-      publishedDate: volumeInfo.publishedDate
+      publishedDate: volumeInfo.publishedDate,
+      source: 'google' as const,
     };
   } catch (error) {
     console.error('Erro ao formatar resultado do livro:', error);

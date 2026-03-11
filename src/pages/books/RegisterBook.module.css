@@ -985,14 +985,44 @@
   min-width: 0;
 }
 
+.bookResultHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
 .bookResultInfo h4 {
-  margin: 0 0 0.5rem 0;
+  margin: 0;
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.sourceTag {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.sourceTag[data-source="google"] {
+  background: #e8f0fe;
+  color: #1967d2;
+}
+
+.sourceTag[data-source="openlibrary"] {
+  background: #fef7e0;
+  color: #b06000;
 }
 
 .bookResultAuthors {

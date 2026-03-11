@@ -8,6 +8,7 @@ import { useDistinctCodes } from '../../hooks/useDistinctCodes';
 import AutocompleteInput from '../../components/AutocompleteInput';
 import TagAutocomplete from '../../components/TagAutocomplete';
 import { searchGoogleBooks, FormattedBookResult } from '../../services/googleBooksService';
+import { searchOpenLibrary } from '../../services/openLibraryService';
 import styles from './RegisterBook.module.css';
 
 interface BookForm {
@@ -206,8 +207,8 @@ const RegisterBook = () => {
     return () => clearTimeout(timeoutId);
   }, [formData.codes, formData.title, currentUser, checkDuplicates]);
 
-  // Função para buscar livros no Google Books
-  const handleGoogleSearch = async (e?: React.FormEvent) => {
+  // Busca em Google Books e Open Library em paralelo; une resultados e exibe tag de origem
+  const handleQuickSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
     if (!googleSearchQuery.trim()) {
@@ -219,16 +220,32 @@ const RegisterBook = () => {
       setGoogleSearchLoading(true);
       setGoogleSearchError('');
       
-      const results = await searchGoogleBooks(googleSearchQuery);
-      
-      setGoogleSearchResults(results);
+      const [googleSettled, openLibrarySettled] = await Promise.allSettled([
+        searchGoogleBooks(googleSearchQuery),
+        searchOpenLibrary(googleSearchQuery),
+      ]);
+
+      const googleResults =
+        googleSettled.status === 'fulfilled' ? googleSettled.value : [];
+      const openLibraryResults =
+        openLibrarySettled.status === 'fulfilled' ? openLibrarySettled.value : [];
+
+      if (googleSettled.status === 'rejected') {
+        console.warn('Erro na busca Google Books:', googleSettled.reason);
+      }
+      if (openLibrarySettled.status === 'rejected') {
+        console.warn('Erro na busca Open Library:', openLibrarySettled.reason);
+      }
+
+      const merged = [...googleResults, ...openLibraryResults];
+      setGoogleSearchResults(merged);
       setShowGoogleResults(true);
-      
-      if (results.length === 0) {
+
+      if (merged.length === 0) {
         setGoogleSearchError('Nenhum resultado encontrado');
       }
     } catch (err) {
-      console.error('Erro na busca do Google Books:', err);
+      console.error('Erro na busca rápida:', err);
       const message = err instanceof Error ? err.message : 'Erro ao buscar livros. Tente novamente.';
       setGoogleSearchError(message);
     } finally {
@@ -393,7 +410,7 @@ const RegisterBook = () => {
       {/* Registro Rápido - Google Books */}
       <div className={styles.quickSearchSection}>
         <label className={styles.quickSearchLabel}>Registro Rápido</label>
-        <form onSubmit={handleGoogleSearch} className={styles.googleSearchForm}>
+        <form onSubmit={handleQuickSearch} className={styles.googleSearchForm}>
           <div className={styles.googleSearchWrapper}>
             <input
               type="text"
@@ -434,7 +451,7 @@ const RegisterBook = () => {
             </p>
             {googleSearchResults.map((book) => (
               <div
-                key={book.id}
+                key={`${book.source || 'google'}-${book.id}`}
                 className={styles.bookResult}
                 onClick={() => handleSelectGoogleBook(book)}
               >
@@ -446,7 +463,16 @@ const RegisterBook = () => {
                   )}
                 </div>
                 <div className={styles.bookResultInfo}>
-                  <h4>{book.title}</h4>
+                  <div className={styles.bookResultHeader}>
+                    <h4>{book.title}</h4>
+                    <span
+                      className={styles.sourceTag}
+                      data-source={book.source || 'google'}
+                      title={book.source === 'openlibrary' ? 'Fonte: Open Library' : 'Fonte: Google Books'}
+                    >
+                      {book.source === 'openlibrary' ? 'Open Library' : 'Google'}
+                    </span>
+                  </div>
                   {book.authors.length > 0 && (
                     <p className={styles.bookResultAuthors}>
                       {book.authors.join(', ')}
