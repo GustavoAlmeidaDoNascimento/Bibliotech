@@ -324,7 +324,26 @@ const Staff = () => {
                           />
                         </div>
                       </td>
-                      <td>{staffMember.name}</td>
+                      <td>
+                        <span
+                          className={styles.nameLink}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/staff/${staffMember.id}`);
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = '#2c5aa0';
+                            e.currentTarget.style.borderBottomStyle = 'solid';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = '#4a90e2';
+                            e.currentTarget.style.borderBottomStyle = 'dotted';
+                          }}
+                          title={`Ir para o perfil de ${staffMember.name}`}
+                        >
+                          {staffMember.name}
+                        </span>
+                      </td>
                       <td>{staffMember.role}</td>
                       <td>{staffMember.contact || '-'}</td>
                       <td>{staffMember.notes || '-'}</td>

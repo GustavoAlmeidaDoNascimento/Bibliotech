@@ -483,7 +483,26 @@ const Students = () => {
                             />
                           </div>
                         </td>
-                        <td>{student.name}</td>
+                        <td>
+                          <span
+                            className={styles.nameLink}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/students/${student.id}`);
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = '#2c5aa0';
+                              e.currentTarget.style.borderBottomStyle = 'solid';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = '#4a90e2';
+                              e.currentTarget.style.borderBottomStyle = 'dotted';
+                            }}
+                            title={`Ir para o perfil de ${student.name}`}
+                          >
+                            {student.name}
+                          </span>
+                        </td>
                         <td>{student.classroom}</td>
                         <td>{student.shift || '-'}</td>
                         <td>{student.contact || '-'}</td>

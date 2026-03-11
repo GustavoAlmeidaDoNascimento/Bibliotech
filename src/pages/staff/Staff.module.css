@@ -242,6 +242,13 @@
   background-color: #f8fafc;
 }
 
+.nameLink {
+  cursor: pointer;
+  color: #4a90e2;
+  border-bottom: 1px dotted #4a90e2;
+  transition: all 0.2s ease;
+}
+
 .selected {
   background-color: #e0e7ff;
 }
