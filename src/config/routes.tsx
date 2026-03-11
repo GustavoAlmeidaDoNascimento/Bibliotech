@@ -18,6 +18,7 @@ import LibrarianStudentDashboard from '../pages/students/StudentDashboard';
 import Staff from '../pages/staff/Staff';
 import RegisterStaff from '../pages/staff/RegisterStaff';
 import EditStaff from '../pages/staff/EditStaff';
+import StaffDashboard from '../pages/staff/StaffDashboard';
 import Books from '../pages/books/Books';
 import RegisterBook from '../pages/books/RegisterBook';
 import EditBook from '../pages/books/EditBook';
@@ -172,7 +173,7 @@ export const protectedRoutes = [
   },
   {
     path: "/staff/:id",
-    element: <EditStaff />,
+    element: <StaffDashboard />,
   },
   {
     path: "/staff/:id/edit",
