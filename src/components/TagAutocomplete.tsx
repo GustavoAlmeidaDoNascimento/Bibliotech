@@ -16,7 +16,7 @@ interface TagAutocompleteProps {
 const TagAutocomplete: React.FC<TagAutocompleteProps> = ({
   id,
   label,
-  placeholder = "Digite para buscar ou criar uma tag...",
+  placeholder = "Clique para ver sugestões ou digite para filtrar/criar...",
   selectedTags,
   onTagSelect,
   onTagRemove,
@@ -31,25 +31,36 @@ const TagAutocomplete: React.FC<TagAutocompleteProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  // Filtrar tags baseado no input e excluir as já selecionadas
-  const filteredTags = tags.filter(tag => 
-    tag.name.toLowerCase().includes(value.toLowerCase()) &&
+  const searchLower = value.trim().toLowerCase();
+
+  // Filtrar tags: pelo texto digitado (contém) e excluir as já selecionadas
+  const filteredTags = tags.filter(tag =>
+    (searchLower === '' || tag.name.toLowerCase().includes(searchLower)) &&
     !selectedTags.includes(tag.id)
   );
 
-  // Opção de criar nova tag se não houver correspondência exata
-  const exactMatch = tags.find(tag => 
-    tag.name.toLowerCase() === value.toLowerCase()
-  );
-  
-  // Simplificar: mostrar opção de criar se há texto e não há match exato
-  const showCreateOption = value.trim() && !exactMatch;
+  // Ordenar: primeiro as que começam com o texto, depois as que contêm (por relevância)
+  const sortedTags = [...filteredTags].sort((a, b) => {
+    if (!searchLower) return a.name.localeCompare(b.name);
+    const aLower = a.name.toLowerCase();
+    const bLower = b.name.toLowerCase();
+    const aStarts = aLower.startsWith(searchLower) ? 1 : 0;
+    const bStarts = bLower.startsWith(searchLower) ? 1 : 0;
+    if (bStarts !== aStarts) return bStarts - aStarts;
+    return aLower.localeCompare(bLower);
+  });
 
-  const suggestions = [...filteredTags];
+  // Opção de criar nova tag se não houver correspondência exata
+  const exactMatch = tags.find(tag =>
+    tag.name.toLowerCase() === searchLower
+  );
+  const showCreateOption = searchLower !== '' && !exactMatch;
+
+  const suggestions = [...sortedTags];
   if (showCreateOption) {
     suggestions.push({
       id: '__create__',
-      name: `Criar "${value}"`,
+      name: `Criar "${value.trim()}"`,
       color: '#6366F1'
     } as Tag);
   }
@@ -69,9 +80,8 @@ const TagAutocomplete: React.FC<TagAutocompleteProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setValue(newValue);
-    // Sempre abrir dropdown quando há texto digitado
-    const shouldOpen = !!newValue.trim();
-    setIsOpen(shouldOpen);
+    // Manter dropdown aberto quando há texto OU quando há tags (sugestões filtradas)
+    setIsOpen(true);
     setHighlightedIndex(0);
   };
 
@@ -171,9 +181,11 @@ const TagAutocomplete: React.FC<TagAutocompleteProps> = ({
   };
 
   const handleFocus = () => {
-    // Abrir dropdown se houver texto digitado ou sugestões disponíveis
-    if (value.trim() || suggestions.length > 0) {
+    // Ao clicar no campo: abrir dropdown com todas as tags salvas (ou filtradas pelo que já digitou)
+    // Assim o usuário vê as sugestões sem precisar digitar; ao digitar, a lista filtra por letra
+    if (tags.length > 0 || value.trim()) {
       setIsOpen(true);
+      setHighlightedIndex(0);
     }
   };
 

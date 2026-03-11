@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTags } from '../contexts/TagsContext';
 import { Tag } from '../types/common';
-import { PencilIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
 import styles from './TagManager.module.css';
 
 interface TagEditorProps {
@@ -125,9 +125,117 @@ const TagEditor: React.FC<TagEditorProps> = ({ tag, onClose, onSave, onDelete })
   );
 };
 
+interface NewTagModalProps {
+  onClose: () => void;
+  onCreate: (name: string, color: string) => Promise<void>;
+}
+
+const DEFAULT_NEW_TAG_COLOR = '#6366F1';
+
+const NewTagModal: React.FC<NewTagModalProps> = ({ onClose, onCreate }) => {
+  const [name, setName] = useState('');
+  const [color, setColor] = useState(DEFAULT_NEW_TAG_COLOR);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError('Digite o nome da tag.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      await onCreate(name.trim(), color);
+      onClose();
+    } catch (err) {
+      console.error('Erro ao criar tag:', err);
+      setError('Não foi possível criar a tag. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h3>Nova Tag</h3>
+          <button type="button" className={styles.closeButton} onClick={onClose}>×</button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className={styles.modalBody}>
+            {error && <p className={styles.errorText}>{error}</p>}
+            <div className={styles.formGroup}>
+              <label htmlFor="newTagName">Nome da Tag</label>
+              <input
+                type="text"
+                id="newTagName"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={styles.input}
+                maxLength={50}
+                disabled={loading}
+                placeholder="Ex: 4° Ano, Romance..."
+                autoFocus
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="newTagColor">Cor da Tag</label>
+              <div className={styles.colorInputGroup}>
+                <input
+                  type="color"
+                  id="newTagColor"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className={styles.colorInput}
+                  disabled={loading}
+                />
+                <div className={styles.colorPreview}>
+                  <span
+                    className={styles.tagPreview}
+                    style={{
+                      backgroundColor: color + '20',
+                      borderColor: color,
+                      color: color
+                    }}
+                  >
+                    {name || 'Preview'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className={styles.modalActions}>
+            <div className={styles.actionGroup} style={{ marginLeft: 'auto' }}>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={onClose}
+                disabled={loading}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className={styles.saveButton}
+                disabled={loading || !name.trim()}
+              >
+                {loading ? 'Criando...' : 'Criar tag'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const TagManager: React.FC = () => {
-  const { tags, loading, updateTag, deleteTag } = useTags();
+  const { tags, loading, updateTag, deleteTag, createTag } = useTags();
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [showNewTag, setShowNewTag] = useState(false);
 
   const handleEditTag = (tag: Tag) => {
     setEditingTag(tag);
@@ -143,9 +251,14 @@ const TagManager: React.FC = () => {
     await deleteTag(editingTag.id);
   };
 
+  const handleCreateTag = async (name: string, color: string) => {
+    const newTag = await createTag(name, color);
+    if (!newTag) throw new Error('Falha ao criar tag');
+  };
+
   const sortedTags = [...tags].sort((a, b) => a.name.localeCompare(b.name));
 
-  if (loading) {
+  if (loading && tags.length === 0) {
     return (
       <div className={styles.container}>
         <div className={styles.loading}>Carregando tags...</div>
@@ -158,14 +271,30 @@ const TagManager: React.FC = () => {
       <div className={styles.header}>
         <h3>Gerenciador de Tags</h3>
         <p className={styles.description}>
-          Clique em qualquer tag para editar seu nome ou cor. As tags são usadas para categorizar seus livros.
+          Todas as tags listadas aqui são salvas e usadas como sugestão ao registrar ou editar livros. Clique em uma tag para editar nome ou cor.
         </p>
+        <button
+          type="button"
+          className={styles.addTagButton}
+          onClick={() => setShowNewTag(true)}
+        >
+          <PlusIcon width={20} height={20} />
+          Nova tag
+        </button>
       </div>
 
       {sortedTags.length === 0 ? (
         <div className={styles.emptyState}>
-          <p>Nenhuma tag criada ainda.</p>
-          <p>As tags serão criadas automaticamente quando você as adicionar aos livros.</p>
+          <p>Nenhuma tag ainda.</p>
+          <p>Crie tags aqui ou ao adicionar livros; elas aparecerão como sugestões nos formulários.</p>
+          <button
+            type="button"
+            className={styles.addTagButtonEmpty}
+            onClick={() => setShowNewTag(true)}
+          >
+            <PlusIcon width={20} height={20} />
+            Criar primeira tag
+          </button>
         </div>
       ) : (
         <div className={styles.tagGrid}>
@@ -205,6 +334,13 @@ const TagManager: React.FC = () => {
           onClose={() => setEditingTag(null)}
           onSave={handleSaveTag}
           onDelete={handleDeleteTag}
+        />
+      )}
+
+      {showNewTag && (
+        <NewTagModal
+          onClose={() => setShowNewTag(false)}
+          onCreate={handleCreateTag}
         />
       )}
     </div>
