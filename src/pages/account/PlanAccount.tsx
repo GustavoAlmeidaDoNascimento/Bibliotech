@@ -2,7 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CircleStackIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
-import { getSubscriptionData, type SubscriptionData } from '../../services/paymentService';
+import {
+  getSubscriptionData,
+  syncSubscriptionFromStripe,
+  type SubscriptionData,
+  type StripeInvoiceItem,
+} from '../../services/paymentService';
+import { subscriptionService } from '../../services/subscriptionService';
 import { ROUTES } from '../../constants';
 import styles from './PlanAccount.module.css';
 
@@ -14,10 +20,39 @@ const PLAN_LABELS: Record<number, { name: string; price: string }> = {
 
 type BillingInterval = 'monthly' | 'annual';
 
-function formatDate(value: Date | { toDate?: () => Date } | undefined): string {
-  if (!value) return '—';
-  const d = value instanceof Date ? value : typeof (value as { toDate?: () => Date }).toDate === 'function' ? (value as { toDate: () => Date }).toDate() : new Date();
+function formatDate(value: Date | { toDate?: () => Date } | number | undefined): string {
+  if (value == null) return '—';
+  let d: Date;
+  if (typeof value === 'number') {
+    d = new Date(value * 1000);
+  } else if (value instanceof Date) {
+    d = value;
+  } else if (typeof (value as { toDate?: () => Date }).toDate === 'function') {
+    d = (value as { toDate: () => Date }).toDate();
+  } else {
+    d = new Date();
+  }
   return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatStripeAmount(cents: number, currency: string): string {
+  const value = cents / 100;
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: currency.toUpperCase() === 'BRL' ? 'BRL' : currency,
+  }).format(value);
+}
+
+function invoiceStatusLabel(status: string | null): string {
+  if (!status) return '—';
+  const map: Record<string, string> = {
+    paid: 'Pago',
+    open: 'Aberto',
+    draft: 'Rascunho',
+    uncollectible: 'Inadimplente',
+    void: 'Cancelado',
+  };
+  return map[status] || status;
 }
 
 const PlanAccount: React.FC = () => {
@@ -26,6 +61,8 @@ const PlanAccount: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
+  const [invoices, setInvoices] = useState<StripeInvoiceItem[]>([]);
+  const [syncLoading, setSyncLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -37,6 +74,24 @@ const PlanAccount: React.FC = () => {
         const subData = await getSubscriptionData(currentUser.uid);
         setSubscription(subData ?? null);
         setBillingInterval('monthly');
+
+        setSyncLoading(true);
+        try {
+          const token = await currentUser.getIdToken();
+          const result = await syncSubscriptionFromStripe(token);
+          if (result.invoices.length > 0) {
+            setInvoices(result.invoices);
+          }
+          if (result.synced) {
+            const updated = await getSubscriptionData(currentUser.uid);
+            setSubscription(updated ?? subData);
+            subscriptionService.invalidateCache(currentUser.uid);
+          }
+        } catch (e) {
+          console.error('Erro ao sincronizar com Stripe:', e);
+        } finally {
+          setSyncLoading(false);
+        }
       } catch (e) {
         console.error('Erro ao carregar assinatura:', e);
       } finally {
@@ -60,9 +115,17 @@ const PlanAccount: React.FC = () => {
     );
   }
 
-  const hasPlan = subscription?.plan != null && subscription?.status === 'active';
+  const statusActive =
+    typeof subscription?.status === 'string' &&
+    subscription.status.toLowerCase() === 'active';
+  const hasPaymentEvidence =
+    statusActive ||
+    subscription?.lastPaymentDate != null ||
+    (subscription?.stripeCustomerId != null && subscription.stripeCustomerId !== '');
+  const hasPlan =
+    subscription?.plan != null && hasPaymentEvidence;
   const isFreeBeta =
-    subscription?.plan != null && !subscription?.lastPaymentDate;
+    subscription?.plan != null && !subscription?.lastPaymentDate && !subscription?.stripeCustomerId;
 
   return (
     <div className={styles.container}>
@@ -121,7 +184,10 @@ const PlanAccount: React.FC = () => {
 
         {/* Seção Faturas */}
         <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Faturas</h3>
+          <h3 className={styles.sectionTitle}>
+            Faturas
+            {syncLoading && <span className={styles.syncHint}> (sincronizando…)</span>}
+          </h3>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
@@ -133,7 +199,33 @@ const PlanAccount: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {hasPlan && lastPayment ? (
+                {invoices.length > 0 ? (
+                  invoices.map((inv) => (
+                    <tr key={inv.id}>
+                      <td>{formatDate(inv.created)}</td>
+                      <td>{formatStripeAmount(inv.amount_paid, inv.currency)}</td>
+                      <td>
+                        <span className={inv.status === 'paid' ? styles.statusPaid : undefined}>
+                          {invoiceStatusLabel(inv.status)}
+                        </span>
+                      </td>
+                      <td>
+                        {(inv.hosted_invoice_url || inv.invoice_pdf) ? (
+                          <a
+                            href={inv.hosted_invoice_url || inv.invoice_pdf || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.linkAction}
+                          >
+                            Ver
+                          </a>
+                        ) : (
+                          <span className={styles.linkAction}>—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : hasPlan && lastPayment ? (
                   <tr>
                     <td>{formatDate(lastPayment)}</td>
                     <td>{planPrice}</td>
@@ -141,9 +233,7 @@ const PlanAccount: React.FC = () => {
                       <span className={styles.statusPaid}>Pago</span>
                     </td>
                     <td>
-                      <button type="button" className={styles.linkAction} disabled>
-                        Ver
-                      </button>
+                      <span className={styles.linkAction}>—</span>
                     </td>
                   </tr>
                 ) : (

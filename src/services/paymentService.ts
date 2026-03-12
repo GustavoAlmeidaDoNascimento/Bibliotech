@@ -66,11 +66,13 @@ const getCloudFunctionUrl = (functionName: string): string => {
     }
   }
   
-  // URLs das Cloud Functions (2ª geração - Cloud Run)
+  // URLs das Cloud Functions (Cloud Run ou Cloud Functions)
   const functionUrls: Record<string, string> = {
     verifyCheckoutSession: 'https://verifycheckoutsession-znybjudnpq-uc.a.run.app',
+    syncSubscriptionFromStripe:
+      'https://us-central1-shoollibsystem.cloudfunctions.net/syncSubscriptionFromStripe',
   };
-  
+
   return functionUrls[functionName] || `https://us-central1-shoollibsystem.cloudfunctions.net/${functionName}`;
 };
 
@@ -117,5 +119,67 @@ export const getSubscriptionData = async (
   } catch (error) {
     console.error('Erro ao obter dados da assinatura:', error);
     throw error;
+  }
+};
+
+/** Fatura retornada pela API de sincronização com o Stripe */
+export interface StripeInvoiceItem {
+  id: string;
+  created: number;
+  amount_paid: number;
+  currency: string;
+  status: string | null;
+  invoice_pdf: string | null;
+  hosted_invoice_url: string | null;
+}
+
+export interface SyncSubscriptionResult {
+  synced: boolean;
+  planId?: number | null;
+  invoices: StripeInvoiceItem[];
+  error?: string;
+}
+
+/**
+ * Sincroniza assinatura e faturas do Stripe com o Firestore.
+ * Usa o e-mail do usuário para localizar o cliente no Stripe.
+ * Requer o Firebase ID token (currentUser.getIdToken()).
+ */
+export const syncSubscriptionFromStripe = async (
+  idToken: string
+): Promise<SyncSubscriptionResult> => {
+  try {
+    const url = getCloudFunctionUrl('syncSubscriptionFromStripe');
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return {
+        synced: false,
+        invoices: data.invoices || [],
+        error: data.error || 'Erro ao sincronizar com o Stripe',
+      };
+    }
+
+    return {
+      synced: data.synced ?? false,
+      planId: data.planId ?? null,
+      invoices: Array.isArray(data.invoices) ? data.invoices : [],
+      error: data.error,
+    };
+  } catch (error) {
+    console.error('Erro ao sincronizar assinatura do Stripe:', error);
+    return {
+      synced: false,
+      invoices: [],
+      error: error instanceof Error ? error.message : 'Erro de conexão',
+    };
   }
 };

@@ -156,6 +156,177 @@ const getPlanPriceId = (planId: number, isAnnual = false): string => {
 };
 
 /**
+ * Retorna o planId (1, 2 ou 3) a partir do Stripe price ID, ou 1 como fallback.
+ * @param {string} priceId - ID do preço no Stripe (ex: price_xxx).
+ * @return {number} 1 (básico), 2 (intermediário) ou 3 (avançado).
+ */
+const getPlanIdFromPriceId = (priceId: string): number => {
+  const normalized =
+    priceId.startsWith("price_") ? priceId : `price_${priceId}`;
+  const config = functionsConfig.value();
+  const basic =
+    stripeBasicPriceId.value() || config?.stripe?.basic_price_id || "";
+  const basicAnnual =
+    stripeBasicAnnualPriceId.value() ||
+    config?.stripe?.basic_annual_price_id || "";
+  const inter =
+    stripeIntermediatePriceId.value() ||
+    config?.stripe?.intermediate_price_id || "";
+  const interAnnual =
+    stripeIntermediateAnnualPriceId.value() ||
+    config?.stripe?.intermediate_annual_price_id || "";
+  const adv =
+    stripeAdvancedPriceId.value() || config?.stripe?.advanced_price_id || "";
+  const advAnnual =
+    stripeAdvancedAnnualPriceId.value() ||
+    config?.stripe?.advanced_annual_price_id || "";
+  const ids = [
+    [basic, basicAnnual],
+    [inter, interAnnual],
+    [adv, advAnnual],
+  ];
+  for (let i = 0; i < ids.length; i++) {
+    if (ids[i].some((id) => id && (id === normalized || id === priceId))) {
+      return i + 1;
+    }
+  }
+  return 1;
+};
+
+/**
+ * Sincroniza assinatura e faturas do Stripe com o Firestore e retorna
+ * as faturas. Requer Authorization: Bearer <Firebase ID Token>.
+ */
+export const syncSubscriptionFromStripe = functions.https.onRequest(
+  {
+    secrets: [functionsConfig],
+  },
+  async (req, res) => {
+    const origin = req.headers.origin || "*";
+    res.set("Access-Control-Allow-Origin", origin);
+    res.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    if (req.method === "OPTIONS") {
+      res.status(204).send("");
+      return;
+    }
+
+    if (req.method !== "POST" && req.method !== "GET") {
+      res.status(405).json({error: "Method not allowed"});
+      return;
+    }
+
+
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        res.status(401).json({error: "Token de autenticação obrigatório"});
+        return;
+      }
+      const idToken = authHeader.slice(7);
+      const decoded = await admin.auth().verifyIdToken(idToken);
+      const uid = decoded.uid;
+      const email = (decoded.email as string) || "";
+
+      if (!email) {
+        res.status(400).json({
+          synced: false,
+          error: "E-mail do usuário não disponível",
+          invoices: [],
+        });
+        return;
+      }
+
+      const stripeInstance = getStripe();
+      const customers = await stripeInstance.customers.list({
+        email,
+        limit: 1,
+      });
+
+      if (!customers.data.length) {
+        res.json({synced: false, invoices: []});
+        return;
+      }
+
+      const customer = customers.data[0];
+      const subs = await stripeInstance.subscriptions.list({
+        customer: customer.id,
+        status: "active",
+        limit: 1,
+      });
+
+      const subscription = subs.data[0] || null;
+      const planIdNum = subscription ?
+        getPlanIdFromPriceId(
+          subscription.items.data[0]?.price?.id || ""
+        ) :
+        null;
+
+      const invoicesRes = await stripeInstance.invoices.list({
+        customer: customer.id,
+        limit: 24,
+      });
+
+      const invoices = (invoicesRes.data || []).map((inv) => ({
+        id: inv.id,
+        created: inv.created,
+        amount_paid: inv.amount_paid,
+        currency: inv.currency,
+        status: inv.status,
+        invoice_pdf: inv.invoice_pdf || null,
+        hosted_invoice_url: inv.hosted_invoice_url || null,
+      }));
+
+      if (subscription && planIdNum) {
+        const subscriptionRef = admin
+          .firestore()
+          .doc(`users/${uid}/account/subscription`);
+        const now = admin.firestore.Timestamp.now();
+        const periodEnd = subscription.current_period_end;
+        const nextPaymentDate = periodEnd ?
+          admin.firestore.Timestamp.fromDate(new Date(periodEnd * 1000)) :
+          null;
+        const lastInvoice = invoices[0];
+        const lastPaymentDate =
+          lastInvoice && typeof lastInvoice.created === "number" ?
+            admin.firestore.Timestamp.fromDate(
+              new Date(lastInvoice.created * 1000)
+            ) :
+            now;
+
+        await subscriptionRef.set(
+          {
+            plan: planIdNum,
+            status: "active",
+            stripeCustomerId: customer.id,
+            stripeSubscriptionId: subscription.id,
+            lastPaymentDate,
+            nextPaymentDate,
+            updatedAt: now,
+          },
+          {merge: true}
+        );
+      }
+
+      res.json({
+        synced: !!subscription,
+        planId: planIdNum,
+        invoices,
+      });
+    } catch (error) {
+      console.error("Erro ao sincronizar assinatura do Stripe:", error);
+      res.status(500).json({
+        synced: false,
+        error:
+          error instanceof Error ? error.message : "Erro ao sincronizar",
+        invoices: [],
+      });
+    }
+  }
+);
+
+/**
  * Cria uma sessão de checkout no Stripe
  */
 export const createCheckoutSession = functions.https.onRequest(
@@ -324,7 +495,10 @@ export const verifyCheckoutSession = functions.https.onRequest(
             {merge: true}
           );
           console.log(
-            `[verifyCheckoutSession] Plano ativado para usuário ${userId}: plano ${planIdNum}`
+            "[verifyCheckoutSession] Plano ativado para usuário",
+            userId,
+            "plano",
+            planIdNum
           );
         }
       }
