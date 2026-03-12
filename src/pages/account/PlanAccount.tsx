@@ -63,6 +63,40 @@ const PlanAccount: React.FC = () => {
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
   const [invoices, setInvoices] = useState<StripeInvoiceItem[]>([]);
   const [syncLoading, setSyncLoading] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+
+  const runSync = React.useCallback(async () => {
+    if (!currentUser) return;
+    setSyncError(null);
+    setSyncLoading(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const result = await syncSubscriptionFromStripe(token);
+      if (result.invoices.length > 0) {
+        setInvoices(result.invoices);
+      }
+      if (result.synced) {
+        const updated = await getSubscriptionData(currentUser.uid);
+        setSubscription(updated ?? null);
+        subscriptionService.invalidateCache(currentUser.uid);
+      }
+      if (result.error) {
+        setSyncError(result.error);
+      } else if (!result.synced && result.invoices.length === 0) {
+        setSyncError(
+          'Nenhum pagamento encontrado no Stripe com o e-mail desta conta. '
+          + 'O pagamento foi feito com o mesmo e-mail que você usa para entrar?'
+        );
+      }
+    } catch (e) {
+      console.error('Erro ao sincronizar com Stripe:', e);
+      setSyncError(
+        e instanceof Error ? e.message : 'Erro ao conectar. Tente de novo.'
+      );
+    } finally {
+      setSyncLoading(false);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     const load = async () => {
@@ -74,24 +108,8 @@ const PlanAccount: React.FC = () => {
         const subData = await getSubscriptionData(currentUser.uid);
         setSubscription(subData ?? null);
         setBillingInterval('monthly');
-
-        setSyncLoading(true);
-        try {
-          const token = await currentUser.getIdToken();
-          const result = await syncSubscriptionFromStripe(token);
-          if (result.invoices.length > 0) {
-            setInvoices(result.invoices);
-          }
-          if (result.synced) {
-            const updated = await getSubscriptionData(currentUser.uid);
-            setSubscription(updated ?? subData);
-            subscriptionService.invalidateCache(currentUser.uid);
-          }
-        } catch (e) {
-          console.error('Erro ao sincronizar com Stripe:', e);
-        } finally {
-          setSyncLoading(false);
-        }
+        setSyncError(null);
+        await runSync();
       } catch (e) {
         console.error('Erro ao carregar assinatura:', e);
       } finally {
@@ -99,7 +117,7 @@ const PlanAccount: React.FC = () => {
       }
     };
     load();
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, runSync]);
 
   const planId = subscription?.plan ?? null;
   const planLabel = planId && PLAN_LABELS[planId] ? PLAN_LABELS[planId].name : planId ? `Plano ${planId}` : 'Nenhum plano';
@@ -182,12 +200,38 @@ const PlanAccount: React.FC = () => {
           </div>
         </section>
 
+        {syncError && (
+          <div className={styles.syncError} role="alert">
+            <p className={styles.syncErrorText}>{syncError}</p>
+            <button
+              type="button"
+              className={styles.btnSync}
+              onClick={runSync}
+              disabled={syncLoading}
+            >
+              {syncLoading ? 'Sincronizando…' : 'Sincronizar com Stripe'}
+            </button>
+          </div>
+        )}
         {/* Seção Faturas */}
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>
             Faturas
             {syncLoading && <span className={styles.syncHint}> (sincronizando…)</span>}
           </h3>
+          {!syncError && invoices.length === 0 && !syncLoading && (hasPlan || isFreeBeta) && (
+            <p className={styles.syncHintBelow}>
+              Não encontrou suas faturas?{' '}
+              <button
+                type="button"
+                className={styles.linkButton}
+                onClick={runSync}
+                disabled={syncLoading}
+              >
+                Sincronizar com Stripe
+              </button>
+            </p>
+          )}
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
