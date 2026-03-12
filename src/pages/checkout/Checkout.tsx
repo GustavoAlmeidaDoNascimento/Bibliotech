@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { createCheckoutSession } from '../../services/stripeService';
 import { verifyPaymentSession } from '../../services/paymentService';
+import { subscriptionService } from '../../services/subscriptionService';
 import { PLAN_MAPPING } from '../../config/stripeConfig';
 import { ROUTES } from '../../constants';
 import styles from './Checkout.module.css';
@@ -137,11 +138,15 @@ const Checkout: React.FC = () => {
       const result = await verifyPaymentSession(sessionId);
       
       if (result.paid) {
-        // Pagamento confirmado, aguardar webhook atualizar plano
-        // Redirecionar para dashboard após um breve delay
+        // Plano já foi ativado no Firestore pela verifyCheckoutSession
+        // Invalidar cache para o dashboard carregar o plano atualizado
+        if (currentUser?.uid) {
+          subscriptionService.invalidateCache(currentUser.uid);
+        }
+        // Pequeno delay para garantir que a próxima leitura veja o plano
         setTimeout(() => {
           navigate(ROUTES.DASHBOARD);
-        }, 2000);
+        }, 500);
       } else {
         setError('Pagamento ainda não foi processado. Aguarde alguns instantes.');
       }

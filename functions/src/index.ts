@@ -128,9 +128,60 @@ export const verifyCheckoutSession = functions.https.onRequest(async (req, res) 
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const paid = session.payment_status === 'paid';
+
+    // Se pagamento confirmado, garantir que o plano está no Firestore
+    // (evita depender só do webhook e garante acesso imediato ao plano)
+    if (paid) {
+      const userId = session.metadata?.userId;
+      const planId = session.metadata?.planId;
+      if (userId && planId) {
+        const planIdNum = parseInt(planId, 10);
+        const customerId = session.customer as string;
+        const subscriptionId = session.subscription as string | null;
+        const subscriptionRef = admin.firestore().doc(`users/${userId}/account/subscription`);
+        const now = admin.firestore.Timestamp.now();
+
+        let isAnnual = false;
+        if (subscriptionId) {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            const interval = subscription.items.data[0]?.price?.recurring?.interval;
+            if (interval === 'year') {
+              isAnnual = true;
+            }
+          } catch (err) {
+            console.error('Erro ao buscar subscription:', err);
+          }
+        }
+
+        const nextPaymentDate = new Date();
+        if (isAnnual) {
+          nextPaymentDate.setDate(nextPaymentDate.getDate() + 365);
+        } else {
+          nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
+        }
+
+        await subscriptionRef.set(
+          {
+            plan: planIdNum,
+            status: 'active',
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: subscriptionId || null,
+            stripeSessionId: session.id,
+            startDate: now,
+            lastPaymentDate: now,
+            nextPaymentDate: admin.firestore.Timestamp.fromDate(nextPaymentDate),
+            updatedAt: now,
+          },
+          { merge: true }
+        );
+        console.log(`[verifyCheckoutSession] Plano ativado para usuário ${userId}: plano ${planIdNum}`);
+      }
+    }
 
     res.json({
-      paid: session.payment_status === 'paid',
+      paid,
       customerId: session.customer as string | null,
       subscriptionId: session.subscription as string | null,
     });
