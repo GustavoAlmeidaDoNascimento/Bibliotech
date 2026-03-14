@@ -8,6 +8,7 @@ import { useDistinctCodes } from '../../hooks/useDistinctCodes';
 import AutocompleteInput from '../../components/AutocompleteInput';
 import TagAutocomplete from '../../components/TagAutocomplete';
 import { searchGoogleBooks, truncateText, FormattedBookResult } from '../../services/googleBooksService';
+import { searchOpenLibrary } from '../../services/openLibraryService';
 
 import styles from './RegisterBook.module.css'; // Reusando os estilos do RegisterBook
 
@@ -82,7 +83,14 @@ const EditBook = () => {
   const [codeToWriteOff, setCodeToWriteOff] = useState<string>('');
   const [writeOffReason, setWriteOffReason] = useState('');
   
-  // Estados para integração com Google Books API
+  // Estados para Registro Rápido (Google Books + Open Library)
+  const [quickSearchQuery, setQuickSearchQuery] = useState('');
+  const [quickSearchResults, setQuickSearchResults] = useState<FormattedBookResult[]>([]);
+  const [showQuickResults, setShowQuickResults] = useState(false);
+  const [quickSearchLoading, setQuickSearchLoading] = useState(false);
+  const [quickSearchError, setQuickSearchError] = useState('');
+
+  // Estados para integração com Google Books API (catálogo de reservas)
   const [googleSearchQuery, setGoogleSearchQuery] = useState('');
   const [googleBooksResults, setGoogleBooksResults] = useState<FormattedBookResult[]>([]);
   const [showGoogleResults, setShowGoogleResults] = useState(false);
@@ -628,29 +636,110 @@ const EditBook = () => {
     }
   };
 
-  // Funções para integração com Google Books API
+  // Registro Rápido: busca paralela em Google Books + Open Library
+  const handleQuickSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    if (!quickSearchQuery.trim()) {
+      setQuickSearchError('Digite um termo de busca');
+      return;
+    }
+
+    try {
+      setQuickSearchLoading(true);
+      setQuickSearchError('');
+
+      const [googleSettled, openLibrarySettled] = await Promise.allSettled([
+        searchGoogleBooks(quickSearchQuery),
+        searchOpenLibrary(quickSearchQuery),
+      ]);
+
+      const googleResults = googleSettled.status === 'fulfilled' ? googleSettled.value : [];
+      const openLibraryResults = openLibrarySettled.status === 'fulfilled' ? openLibrarySettled.value : [];
+
+      if (googleSettled.status === 'rejected') {
+        console.warn('Erro na busca Google Books:', googleSettled.reason);
+      }
+      if (openLibrarySettled.status === 'rejected') {
+        console.warn('Erro na busca Open Library:', openLibrarySettled.reason);
+      }
+
+      const merged = [...googleResults, ...openLibraryResults];
+      setQuickSearchResults(merged);
+      setShowQuickResults(true);
+
+      if (merged.length === 0) {
+        setQuickSearchError('Nenhum resultado encontrado');
+      }
+    } catch (err) {
+      console.error('Erro no Registro Rápido:', err);
+      const message = err instanceof Error ? err.message : 'Erro ao buscar livros. Tente novamente.';
+      setQuickSearchError(message);
+    } finally {
+      setQuickSearchLoading(false);
+    }
+  };
+
+  const handleSelectQuickBook = (book: FormattedBookResult) => {
+    setFormData(prev => ({
+      ...prev,
+      title: book.title,
+      authors: book.authors.join(', '),
+      synopsis: book.synopsis,
+      coverUrl: book.coverUrl,
+      publisher: book.publisher || prev.publisher,
+    }));
+    setQuickSearchResults([]);
+    setShowQuickResults(false);
+    setQuickSearchQuery('');
+    clearMessages();
+  };
+
+  const handleClearQuickSearch = () => {
+    setQuickSearchQuery('');
+    setQuickSearchResults([]);
+    setShowQuickResults(false);
+    setQuickSearchError('');
+  };
+
+  // Funções para integração com APIs de catálogo (Google Books + Open Library)
   const handleGoogleBooksSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!googleSearchQuery.trim()) {
       setGoogleSearchError('Digite um termo de busca');
       return;
     }
-    
+
     setIsSearchingGoogle(true);
     setGoogleSearchError('');
     setShowGoogleResults(false);
-    
+
     try {
-      const results = await searchGoogleBooks(googleSearchQuery);
-      setGoogleBooksResults(results);
+      const [googleSettled, openLibrarySettled] = await Promise.allSettled([
+        searchGoogleBooks(googleSearchQuery),
+        searchOpenLibrary(googleSearchQuery),
+      ]);
+
+      const googleResults = googleSettled.status === 'fulfilled' ? googleSettled.value : [];
+      const openLibraryResults = openLibrarySettled.status === 'fulfilled' ? openLibrarySettled.value : [];
+
+      if (googleSettled.status === 'rejected') {
+        console.warn('Erro na busca Google Books:', googleSettled.reason);
+      }
+      if (openLibrarySettled.status === 'rejected') {
+        console.warn('Erro na busca Open Library:', openLibrarySettled.reason);
+      }
+
+      const merged = [...googleResults, ...openLibraryResults];
+      setGoogleBooksResults(merged);
       setShowGoogleResults(true);
-      
-      if (results.length === 0) {
+
+      if (merged.length === 0) {
         setGoogleSearchError('Nenhum livro encontrado. Tente outro termo de busca.');
       }
     } catch (err) {
-      console.error('Erro ao buscar no Google Books:', err);
+      console.error('Erro ao buscar no catálogo:', err);
       setGoogleSearchError('Erro ao buscar livros. Verifique sua conexão e tente novamente.');
     } finally {
       setIsSearchingGoogle(false);
@@ -734,6 +823,87 @@ const EditBook = () => {
         >
           Cancelar
         </button>
+      </div>
+
+      {/* Registro Rápido - Google Books + Open Library */}
+      <div className={styles.quickSearchSection}>
+        <label className={styles.quickSearchLabel}>Registro Rápido</label>
+        <form onSubmit={handleQuickSearch} className={styles.googleSearchForm}>
+          <div className={styles.googleSearchWrapper}>
+            <input
+              type="text"
+              value={quickSearchQuery}
+              onChange={(e) => setQuickSearchQuery(e.target.value)}
+              placeholder="Pesquise o título ou ISBN do livro para preencher os campos automaticamente"
+              className={styles.googleSearchInput}
+            />
+            <button
+              type="submit"
+              className={styles.googleSearchButton}
+              disabled={quickSearchLoading}
+            >
+              {quickSearchLoading ? 'Buscando...' : 'Buscar'}
+            </button>
+            {quickSearchQuery && (
+              <button
+                type="button"
+                onClick={handleClearQuickSearch}
+                className={styles.clearSearchButton}
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+        </form>
+
+        {quickSearchError && (
+          <div className={styles.googleSearchError}>
+            {quickSearchError}
+          </div>
+        )}
+
+        {showQuickResults && quickSearchResults.length > 0 && (
+          <div className={styles.resultsDropdown}>
+            <p className={styles.resultsCount}>
+              {quickSearchResults.length} resultado(s) — clique para preencher os campos automaticamente
+            </p>
+            {quickSearchResults.map((book) => (
+              <div
+                key={`${book.source || 'google'}-${book.id}`}
+                className={styles.bookResult}
+                onClick={() => handleSelectQuickBook(book)}
+              >
+                <div className={styles.bookResultThumbnail}>
+                  {book.thumbnail ? (
+                    <img src={book.thumbnail} alt={book.title} />
+                  ) : (
+                    <div className={styles.noThumbnail}>📚</div>
+                  )}
+                </div>
+                <div className={styles.bookResultInfo}>
+                  <div className={styles.bookResultHeader}>
+                    <h4>{book.title}</h4>
+                    <span
+                      className={styles.sourceTag}
+                      data-source={book.source || 'google'}
+                      title={book.source === 'openlibrary' ? 'Fonte: Open Library' : 'Fonte: Google Books'}
+                    >
+                      {book.source === 'openlibrary' ? 'Open Library' : 'Google'}
+                    </span>
+                  </div>
+                  {book.authors.length > 0 && (
+                    <p className={styles.bookResultAuthors}>
+                      {book.authors.join(', ')}
+                    </p>
+                  )}
+                  <p className={styles.bookResultDescription}>
+                    {book.synopsis}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
@@ -1050,7 +1220,7 @@ const EditBook = () => {
         <h3>Catálogo de Reservas</h3>
         <p className={styles.catalogDescription}>
           Adicione uma capa e sinopse ao livro para que os alunos possam visualizá-los no catálogo.
-          Busque o livro na base do Google Books para preencher automaticamente.
+          Busque o livro no Google Books ou Open Library para preencher automaticamente.
         </p>
         
         {/* Busca do Google Books */}
@@ -1068,7 +1238,7 @@ const EditBook = () => {
               className={styles.googleSearchButton}
               disabled={isSearchingGoogle}
             >
-              {isSearchingGoogle ? 'Buscando...' : 'Buscar no Google Books'}
+              {isSearchingGoogle ? 'Buscando...' : 'Buscar'}
             </button>
             {googleSearchQuery && (
               <button
@@ -1093,11 +1263,11 @@ const EditBook = () => {
         {showGoogleResults && googleBooksResults.length > 0 && (
           <div className={styles.resultsDropdown}>
             <p className={styles.resultsCount}>
-              {googleBooksResults.length} resultado(s) encontrado(s)
+              {googleBooksResults.length} resultado(s) — clique para preencher capa e sinopse automaticamente
             </p>
             {googleBooksResults.map((book) => (
               <div
-                key={book.id}
+                key={`${book.source || 'google'}-${book.id}`}
                 className={styles.bookResult}
                 onClick={() => handleSelectGoogleBook(book)}
               >
@@ -1109,7 +1279,16 @@ const EditBook = () => {
                   )}
                 </div>
                 <div className={styles.bookResultInfo}>
-                  <h4>{book.title}</h4>
+                  <div className={styles.bookResultHeader}>
+                    <h4>{book.title}</h4>
+                    <span
+                      className={styles.sourceTag}
+                      data-source={book.source || 'google'}
+                      title={book.source === 'openlibrary' ? 'Fonte: Open Library' : 'Fonte: Google Books'}
+                    >
+                      {book.source === 'openlibrary' ? 'Open Library' : 'Google'}
+                    </span>
+                  </div>
                   {book.authors.length > 0 && (
                     <p className={styles.bookResultAuthors}>
                       {book.authors.join(', ')}
