@@ -395,6 +395,30 @@ const RegisterBook = () => {
     }));
   };
 
+  // Enter não submete o formulário; move o foco para o próximo campo (exceto no campo Códigos).
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key !== 'Enter') return;
+    const target = e.target as HTMLElement;
+    // No campo de códigos, Enter adiciona código e permanece no mesmo campo (já tratado no input).
+    if (target.id === 'codes') {
+      e.preventDefault();
+      return;
+    }
+    // Em qualquer outro campo, Enter vai para o próximo (e nunca submete).
+    if (target.matches('input, textarea')) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const focusable = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        'input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea'
+      );
+      const list = Array.from(focusable);
+      const idx = list.indexOf(target as HTMLInputElement | HTMLTextAreaElement);
+      if (idx !== -1 && idx + 1 < list.length) {
+        list[idx + 1].focus();
+      }
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -488,7 +512,7 @@ const RegisterBook = () => {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+      <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className={styles.form}>
         {error && <div className={styles.error}>{error}</div>}
         
         <div className={styles.formGrid}>
