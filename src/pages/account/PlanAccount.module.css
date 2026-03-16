@@ -1,8 +1,7 @@
 .container {
   min-height: calc(100vh - 64px - 2rem);
-  background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: #fff;
   padding: 2rem 1rem;
-  color: #e2e8f0;
 }
 
 .loading {
