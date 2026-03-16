@@ -282,6 +282,85 @@
   font-size: 0.9rem;
 }
 
+/* Livros atualmente com a turma */
+.booksSection {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 1.5rem;
+}
+
+.booksSection h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.noBooks {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 1.5rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.booksTableWrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.booksTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.booksTable th,
+.booksTable td {
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.booksTable th {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.booksTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.studentLink {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--primary-color);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.studentLink:hover {
+  color: var(--primary-dark);
+}
+
+.statusOnTime {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.statusOverdue {
+  color: #ef4444;
+  font-weight: 500;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .container {

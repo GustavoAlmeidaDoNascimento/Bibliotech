@@ -69,6 +69,7 @@ const EditClass: React.FC = () => {
 
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
   const [classStats, setClassStats] = useState<ClassStats | null>(null);
+  const [activeClassLoans, setActiveClassLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingStats, setLoadingStats] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -167,6 +168,29 @@ const EditClass: React.FC = () => {
     fetchClassData();
   }, [fetchClassData]);
 
+  // Buscar livros atualmente com a turma (empréstimos ativos) — sempre carrega, independente do plano
+  const fetchActiveClassLoans = useCallback(async () => {
+    if (!currentUser || !classInfo) return;
+    try {
+      const studentIds = classInfo.students.map(s => s.id);
+      const loansRef = collection(db, `users/${currentUser.uid}/loans`);
+      const loansSnapshot = await getDocs(loansRef);
+      const allLoans = loansSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Loan[];
+      const classLoans = allLoans.filter(loan => studentIds.includes(loan.studentId));
+      setActiveClassLoans(classLoans.filter(loan => !loan.returnDate));
+    } catch (err) {
+      console.error('Erro ao buscar livros da turma:', err);
+      setActiveClassLoans([]);
+    }
+  }, [currentUser, classInfo]);
+
+  useEffect(() => {
+    if (classInfo) fetchActiveClassLoans();
+  }, [classInfo, fetchActiveClassLoans]);
+
   // Função para buscar estatísticas da turma
   const fetchClassStats = useCallback(async () => {
     if (!currentUser || !classInfo) return;
@@ -186,7 +210,8 @@ const EditClass: React.FC = () => {
 
       // Filtrar empréstimos dos alunos da turma
       const classLoans = allLoans.filter(loan => studentIds.includes(loan.studentId));
-      
+      setActiveClassLoans(classLoans.filter(loan => !loan.returnDate));
+
       // Buscar anos letivos registrados
       try {
         const academicYears = await academicYearService.getAllYears(currentUser.uid);
@@ -583,6 +608,56 @@ const EditClass: React.FC = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Livros atualmente com a turma */}
+        <div className={styles.booksSection}>
+          <h3>
+            <BookOpenIcon className={styles.sectionIcon} />
+            Livros atualmente com a turma ({activeClassLoans.length})
+          </h3>
+          {activeClassLoans.length === 0 ? (
+            <p className={styles.noBooks}>Nenhum livro retirado no momento por alunos desta turma.</p>
+          ) : (
+            <div className={styles.booksTableWrap}>
+              <table className={styles.booksTable}>
+                <thead>
+                  <tr>
+                    <th>Livro</th>
+                    <th>Aluno</th>
+                    <th>Devolução prevista</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeClassLoans.map((loan) => {
+                    const dueDate = loan.dueDate?.toDate ? loan.dueDate.toDate() : new Date(loan.dueDate);
+                    const isOverdue = dueDate < new Date();
+                    return (
+                      <tr key={loan.id}>
+                        <td>{loan.bookTitle}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className={styles.studentLink}
+                            onClick={() => handleStudentClick(loan.studentId)}
+                          >
+                            {loan.studentName}
+                          </button>
+                        </td>
+                        <td>{dueDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td>
+                          <span className={isOverdue ? styles.statusOverdue : styles.statusOnTime}>
+                            {isOverdue ? 'Atrasado' : 'Em dia'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Dashboard da Turma */}
