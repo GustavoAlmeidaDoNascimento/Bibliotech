@@ -402,6 +402,50 @@
   color: #0f172a;
 }
 
+.previewStudentButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #7c3aed;
+  border: 1px solid rgba(124, 58, 237, 0.4);
+  padding: 0.85rem 1.75rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.previewStudentButton:hover:not(:disabled) {
+  background: rgba(124, 58, 237, 0.08);
+  border-color: #7c3aed;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.15);
+}
+
+.previewStudentButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.warningMessage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #b45309;
+  font-weight: 500;
+  font-size: 0.9rem;
+  animation: slideDown 0.3s ease;
+}
+
 /* Preview Section */
 .previewSection {
   margin-top: 2rem;
@@ -650,7 +694,8 @@
   }
 
   .primaryButton,
-  .secondaryButton {
+  .secondaryButton,
+  .previewStudentButton {
     width: 100%;
     justify-content: center;
   }

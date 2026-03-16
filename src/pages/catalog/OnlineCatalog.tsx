@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, CheckIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { EyeIcon } from '@heroicons/react/24/outline';
+import { collection, getDocs, query, limit } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { catalogShowcaseService, ShowcaseConfig } from '../../services/catalogShowcaseService';
 import { bookRecommendationService, BookWithStats } from '../../services/bookRecommendationService';
@@ -18,6 +21,8 @@ const OnlineCatalog: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [savedMessage, setSavedMessage] = useState('');
   const [previewBook, setPreviewBook] = useState<BookWithStats | null>(null);
+  const [loadingStudentPreview, setLoadingStudentPreview] = useState(false);
+  const [noStudentsMessage, setNoStudentsMessage] = useState('');
 
   // Selecionar livro aleatório para preview
   const selectRandomBook = () => {
@@ -91,6 +96,27 @@ const OnlineCatalog: React.FC = () => {
 
     loadData();
   }, [currentUser]);
+
+  const handleViewAsStudent = async () => {
+    if (!currentUser) return;
+    try {
+      setLoadingStudentPreview(true);
+      setNoStudentsMessage('');
+      const studentsRef = collection(db, `users/${currentUser.uid}/students`);
+      const snapshot = await getDocs(query(studentsRef, limit(1)));
+      if (snapshot.empty) {
+        setNoStudentsMessage('Nenhum aluno cadastrado ainda. Cadastre um aluno primeiro para visualizar o catálogo.');
+        setTimeout(() => setNoStudentsMessage(''), 5000);
+        return;
+      }
+      const studentId = snapshot.docs[0].id;
+      window.open(`/student-dashboard/${studentId}/home`, '_blank');
+    } catch (error) {
+      console.error('Erro ao buscar aluno de exemplo:', error);
+    } finally {
+      setLoadingStudentPreview(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!currentUser) return;
@@ -357,6 +383,12 @@ const OnlineCatalog: React.FC = () => {
             </div>
           )}
 
+          {noStudentsMessage && (
+            <div className={styles.warningMessage}>
+              {noStudentsMessage}
+            </div>
+          )}
+
           <div className={styles.actions}>
             <button
               type="button"
@@ -365,6 +397,24 @@ const OnlineCatalog: React.FC = () => {
             >
               <ArrowLeftIcon width={20} height={20} />
               Voltar
+            </button>
+            <button
+              type="button"
+              className={styles.previewStudentButton}
+              onClick={handleViewAsStudent}
+              disabled={loadingStudentPreview}
+            >
+              {loadingStudentPreview ? (
+                <>
+                  <div className={styles.buttonSpinner}></div>
+                  Carregando...
+                </>
+              ) : (
+                <>
+                  <EyeIcon width={20} height={20} />
+                  Ver como Aluno
+                </>
+              )}
             </button>
             <button
               type="button"
