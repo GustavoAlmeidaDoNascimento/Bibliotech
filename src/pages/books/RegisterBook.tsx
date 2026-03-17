@@ -164,8 +164,8 @@ const RegisterBook = () => {
           });
         }
         
-        // Verificar título duplicado (case-insensitive)
-        if (title.trim() && bookTitle.toLowerCase() === title.trim().toLowerCase()) {
+        // Verificar título duplicado (case-insensitive, ignorando espaços)
+        if (title.trim() && bookTitle.trim().toLowerCase() === title.trim().toLowerCase()) {
           if (!foundDuplicates.find(dup => dup.id === doc.id)) {
             foundDuplicates.push({
               id: doc.id,
@@ -185,7 +185,7 @@ const RegisterBook = () => {
             )
           )
         ),
-        title: foundDuplicates.some(book => book.title.toLowerCase() === title.trim().toLowerCase())
+        title: foundDuplicates.some(book => book.title.trim().toLowerCase() === title.trim().toLowerCase())
       });
     } catch (error) {
       console.error('Erro ao verificar duplicatas:', error);
@@ -585,8 +585,24 @@ const RegisterBook = () => {
                 />
                 {checkingDuplicates && <div className={styles.checkingIndicator}>Verificando...</div>}
                 {duplicates.title && !checkingDuplicates && (
-                  <div className={styles.duplicateWarning}>
-                    ⚠️ Este título já existe no sistema
+                  <div className={styles.duplicateWarningRow}>
+                    <span className={styles.duplicateWarning}>
+                      ⚠️ Este título já existe no sistema
+                    </span>
+                    {(() => {
+                      const existingByTitle = duplicateBooks.find(
+                        b => b.title.trim().toLowerCase() === formData.title.trim().toLowerCase()
+                      );
+                      return existingByTitle ? (
+                        <button
+                          type="button"
+                          className={styles.editExistingBookButton}
+                          onClick={() => navigate(`/books/${existingByTitle.id}`)}
+                        >
+                          Editar o livro “{existingByTitle.title.trim()}”
+                        </button>
+                      ) : null;
+                    })()}
                   </div>
                 )}
               </div>

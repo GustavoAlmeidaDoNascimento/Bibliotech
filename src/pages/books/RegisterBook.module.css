@@ -119,17 +119,46 @@
   pointer-events: none;
 }
 
-.duplicateWarning {
+.duplicateWarningRow {
   margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.duplicateWarning {
   padding: 0.5rem;
   background-color: #fef3c7;
   color: #92400e;
   border: 1px solid #f59e0b;
   border-radius: 6px;
   font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+}
+
+.editExistingBookButton {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--primary-color, #4a90e2);
+  background: transparent;
+  border: 1px solid var(--primary-color, #4a90e2);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.editExistingBookButton:hover {
+  background: var(--primary-color, #4a90e2);
+  color: white;
+}
+
+@media (max-width: 480px) {
+  .duplicateWarningRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .error {
