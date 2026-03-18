@@ -7,7 +7,7 @@ import { useTags } from '../../contexts/TagsContext';
 import { useBarcodeGenerator } from '../../hooks';
 import { useFirestorePagination } from '../../hooks/useFirestorePagination';
 import { useOptimizedSearch, type Book } from '../../hooks/useOptimizedSearch';
-import { PlusIcon, TrashIcon, FunnelIcon, XMarkIcon, ListBulletIcon, Squares2X2Icon, ArrowsUpDownIcon, ArrowDownTrayIcon, PrinterIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, FunnelIcon, XMarkIcon, ListBulletIcon, Squares2X2Icon, ArrowsUpDownIcon, ArrowDownTrayIcon, PrinterIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { BookOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import styles from './Books.module.css';
@@ -15,12 +15,19 @@ import { searchCacheService } from '../../services/searchCacheService';
 
 type SortOption = 'alphabetical' | 'dateAdded';
 
+type TableSortColumn = 'title' | 'code' | 'author';
+
 const Books = () => {
   const [selectedBooks, setSelectedBooks] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [sortBy, setSortBy] = useState<SortOption>('dateAdded');
+  /** Ordenação por clique no cabeçalho da tabela (lista); null = usa o select Ordem de Registro / Alfabética */
+  const [tableColumnSort, setTableColumnSort] = useState<{
+    column: TableSortColumn;
+    direction: 'asc' | 'desc';
+  } | null>(null);
   
   const { currentUser } = useAuth();
   const { getTagsByIds, tags } = useTags();
@@ -143,6 +150,29 @@ const Books = () => {
     return book.code ? [book.code] : [];
   };
 
+  const getAuthorSortString = (book: Book): string => {
+    if (!book.authors) return '';
+    return Array.isArray(book.authors) ? book.authors.join(', ') : String(book.authors);
+  };
+
+  /** Menor código do livro (ordem numérica/alfabética mista) para ordenar por “Código” */
+  const getCodeSortKey = (book: Book): string => {
+    const codes = getAllCodes(book);
+    if (codes.length === 0) return '\uffff';
+    return [...codes].sort((x, y) =>
+      x.localeCompare(y, 'pt-BR', { numeric: true, sensitivity: 'base' })
+    )[0];
+  };
+
+  const handleTableColumnSort = (column: TableSortColumn) => {
+    setTableColumnSort(prev => {
+      if (prev?.column === column) {
+        return { column, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { column, direction: 'asc' };
+    });
+  };
+
   // Função para renderizar tags
   const renderTags = (book: Book) => {
     if (!book.tags || book.tags.length === 0) return '-';
@@ -170,22 +200,48 @@ const Books = () => {
   };
 
   // Ordenação dos livros filtrados
-  const sortBooks = useCallback((booksToSort: Book[]) => {
-    const booksCopy = [...booksToSort];
+  const sortBooks = useCallback(
+    (booksToSort: Book[]) => {
+      const booksCopy = [...booksToSort];
 
-    if (sortBy === 'alphabetical') {
-      return booksCopy.sort((a, b) => a.title.localeCompare(b.title));
-    } else {
-      // Sort by date added (createdAt timestamp) or by ID if createdAt is not available
+      if (tableColumnSort) {
+        const { column, direction } = tableColumnSort;
+        const mult = direction === 'asc' ? 1 : -1;
+        return booksCopy.sort((a, b) => {
+          if (column === 'title') {
+            return (
+              mult *
+              (a.title || '').localeCompare(b.title || '', 'pt-BR', { sensitivity: 'base' })
+            );
+          }
+          if (column === 'author') {
+            return (
+              mult *
+              getAuthorSortString(a).localeCompare(getAuthorSortString(b), 'pt-BR', {
+                sensitivity: 'base',
+              })
+            );
+          }
+          const ka = getCodeSortKey(a);
+          const kb = getCodeSortKey(b);
+          return mult * ka.localeCompare(kb, 'pt-BR', { numeric: true, sensitivity: 'base' });
+        });
+      }
+
+      if (sortBy === 'alphabetical') {
+        return booksCopy.sort((a, b) =>
+          (a.title || '').localeCompare(b.title || '', 'pt-BR', { sensitivity: 'base' })
+        );
+      }
       return booksCopy.sort((a, b) => {
         if (a.createdAt && b.createdAt) {
-          return b.createdAt - a.createdAt; // newest first
-        } else {
-          return a.id.localeCompare(b.id); // fallback to id
+          return b.createdAt - a.createdAt;
         }
+        return a.id.localeCompare(b.id);
       });
-    }
-  }, [sortBy]);
+    },
+    [sortBy, tableColumnSort]
+  );
 
   // Livros a serem exibidos (filtrados e ordenados)
   const displayedBooks = useMemo(() => sortBooks(filteredBooks), [filteredBooks, sortBooks]);
@@ -392,8 +448,12 @@ const Books = () => {
               <div className={styles.sortOptions}>
                 <select 
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  onChange={(e) => {
+                    setSortBy(e.target.value as SortOption);
+                    setTableColumnSort(null);
+                  }}
                   className={styles.sortSelect}
+                  title="Na visualização em lista, clique nos cabeçalhos Título, Código ou Autor para ordenar"
                 >
                   <option value="dateAdded">Ordem de Registro</option>
                   <option value="alphabetical">Ordem Alfabética (A-Z)</option>
@@ -629,9 +689,63 @@ const Books = () => {
                     <tr>
                       <th></th>
                       <th className={styles.coverColumn}>Capa</th>
-                      <th>Título</th>
-                      <th>Código</th>
-                      <th>Autor</th>
+                      <th
+                        scope="col"
+                        className={styles.sortableThCell}
+                        aria-sort={tableColumnSort?.column === 'title' ? (tableColumnSort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                      >
+                        <button
+                          type="button"
+                          className={styles.sortableThFull}
+                          onClick={() => handleTableColumnSort('title')}
+                        >
+                          <span className={styles.sortableThLabel}>Título</span>
+                          {tableColumnSort?.column === 'title' &&
+                            (tableColumnSort.direction === 'asc' ? (
+                              <ChevronUpIcon className={styles.sortThIcon} aria-hidden />
+                            ) : (
+                              <ChevronDownIcon className={styles.sortThIcon} aria-hidden />
+                            ))}
+                        </button>
+                      </th>
+                      <th
+                        scope="col"
+                        className={styles.sortableThCell}
+                        aria-sort={tableColumnSort?.column === 'code' ? (tableColumnSort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                      >
+                        <button
+                          type="button"
+                          className={styles.sortableThFull}
+                          onClick={() => handleTableColumnSort('code')}
+                        >
+                          <span className={styles.sortableThLabel}>Código</span>
+                          {tableColumnSort?.column === 'code' &&
+                            (tableColumnSort.direction === 'asc' ? (
+                              <ChevronUpIcon className={styles.sortThIcon} aria-hidden />
+                            ) : (
+                              <ChevronDownIcon className={styles.sortThIcon} aria-hidden />
+                            ))}
+                        </button>
+                      </th>
+                      <th
+                        scope="col"
+                        className={styles.sortableThCell}
+                        aria-sort={tableColumnSort?.column === 'author' ? (tableColumnSort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                      >
+                        <button
+                          type="button"
+                          className={styles.sortableThFull}
+                          onClick={() => handleTableColumnSort('author')}
+                        >
+                          <span className={styles.sortableThLabel}>Autor</span>
+                          {tableColumnSort?.column === 'author' &&
+                            (tableColumnSort.direction === 'asc' ? (
+                              <ChevronUpIcon className={styles.sortThIcon} aria-hidden />
+                            ) : (
+                              <ChevronDownIcon className={styles.sortThIcon} aria-hidden />
+                            ))}
+                        </button>
+                      </th>
                       <th>Gêneros</th>
                       <th>Tags</th>
                     </tr>
