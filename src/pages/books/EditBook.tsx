@@ -7,6 +7,7 @@ import { useTags } from '../../contexts/TagsContext';
 import { useDistinctCodes } from '../../hooks/useDistinctCodes';
 import AutocompleteInput from '../../components/AutocompleteInput';
 import TagAutocomplete from '../../components/TagAutocomplete';
+import PublisherAutocomplete from '../../components/PublisherAutocomplete';
 import { searchGoogleBooks, truncateText, FormattedBookResult } from '../../services/googleBooksService';
 import { searchOpenLibrary } from '../../services/openLibraryService';
 
@@ -1164,12 +1165,9 @@ const EditBook = () => {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="publisher">Editora</label>
-              <input
-                type="text"
-                id="publisher"
+              <PublisherAutocomplete
                 value={formData.publisher}
-                onChange={e => setFormData(prev => ({ ...prev, publisher: e.target.value }))}
+                onChange={publisher => setFormData(prev => ({ ...prev, publisher }))}
               />
             </div>
 
