@@ -7,6 +7,7 @@
  */
 
 import type { FormattedBookResult } from './googleBooksService';
+import { isValidIsbn, normalizeIsbnInput, pickIsbnFromOpenLibraryList } from '../utils/isbn';
 
 const OPEN_LIBRARY_SEARCH_URL = 'https://openlibrary.org/search.json';
 const OPEN_LIBRARY_COVER_BASE = 'https://covers.openlibrary.org/b/id';
@@ -34,11 +35,6 @@ export interface OpenLibrarySearchResponse {
   start: number;
   docs: OpenLibraryDoc[];
 }
-
-const isISBN = (query: string): boolean => {
-  const cleaned = query.replace(/-/g, '').trim();
-  return /^\d{10}$/.test(cleaned) || /^\d{13}$/.test(cleaned);
-};
 
 /**
  * Monta a URL da capa usando cover_i (ID numérico) da Open Library.
@@ -86,10 +82,9 @@ export async function searchOpenLibrary(
     throw new Error('O termo de busca não pode estar vazio');
   }
 
-  const isbnSearch = isISBN(trimmed);
-  const searchQuery = isbnSearch
-    ? `isbn:${trimmed.replace(/-/g, '')}`
-    : trimmed;
+  const normalizedQuery = normalizeIsbnInput(trimmed);
+  const isbnSearch = isValidIsbn(normalizedQuery);
+  const searchQuery = isbnSearch ? `isbn:${normalizedQuery}` : trimmed;
   const params = new URLSearchParams({
     q: searchQuery,
     limit: '10',
@@ -123,6 +118,10 @@ export async function searchOpenLibrary(
       const publishedDate = doc.first_publish_year
         ? String(doc.first_publish_year)
         : undefined;
+      const isbn = pickIsbnFromOpenLibraryList(
+        doc.isbn,
+        isbnSearch ? normalizedQuery : undefined
+      );
       return {
         id: getStableId(doc),
         title: doc.title!,
@@ -132,6 +131,7 @@ export async function searchOpenLibrary(
         thumbnail,
         publisher,
         publishedDate,
+        isbn,
         source: 'openlibrary' as const,
       };
     });

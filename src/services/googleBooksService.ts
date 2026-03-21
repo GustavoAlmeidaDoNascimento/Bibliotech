@@ -3,6 +3,12 @@
  * Documentação: https://developers.google.com/books/docs/v1/using
  */
 
+import {
+  isValidIsbn,
+  normalizeIsbnInput,
+  pickIsbnFromIndustryIdentifiers,
+} from '../utils/isbn';
+
 export interface GoogleBookResult {
   id: string;
   volumeInfo: {
@@ -15,6 +21,7 @@ export interface GoogleBookResult {
     };
     publishedDate?: string;
     publisher?: string;
+    industryIdentifiers?: { type?: string; identifier?: string }[];
   };
 }
 
@@ -32,6 +39,8 @@ export interface FormattedBookResult {
   thumbnail: string;
   publisher?: string;
   publishedDate?: string;
+  /** ISBN-10 ou ISBN-13 quando informado pela API */
+  isbn?: string;
   /** Origem do resultado: Google Books ou Open Library */
   source?: 'google' | 'openlibrary';
 }
@@ -41,11 +50,6 @@ export interface FormattedBookResult {
  * @param query - Termo de busca (título do livro)
  * @returns Promise com array de resultados formatados
  */
-const isISBN = (query: string): boolean => {
-  const cleaned = query.replace(/-/g, '');
-  return /^\d{10}$/.test(cleaned) || /^\d{13}$/.test(cleaned);
-};
-
 export const searchGoogleBooks = async (query: string): Promise<FormattedBookResult[]> => {
   if (!query.trim()) {
     throw new Error('O termo de busca não pode estar vazio');
@@ -53,8 +57,9 @@ export const searchGoogleBooks = async (query: string): Promise<FormattedBookRes
 
   try {
     const cleanQuery = query.trim();
-    const isbn = isISBN(cleanQuery);
-    const searchQuery = isbn ? `isbn:${cleanQuery.replace(/-/g, '')}` : cleanQuery;
+    const normalizedIsbn = normalizeIsbnInput(cleanQuery);
+    const isbn = isValidIsbn(normalizedIsbn);
+    const searchQuery = isbn ? `isbn:${normalizedIsbn}` : cleanQuery;
     const encodedQuery = encodeURIComponent(searchQuery);
 
     const apiKey = process.env.REACT_APP_GOOGLE_BOOKS_API_KEY;
@@ -129,6 +134,8 @@ const formatBookResult = (item: GoogleBookResult): FormattedBookResult | null =>
       ? thumbnail.replace('http://', 'https://')
       : '';
     
+    const isbnId = pickIsbnFromIndustryIdentifiers(volumeInfo.industryIdentifiers);
+
     return {
       id: item.id,
       title: volumeInfo.title,
@@ -138,6 +145,7 @@ const formatBookResult = (item: GoogleBookResult): FormattedBookResult | null =>
       thumbnail: thumbnailUrl,
       publisher: volumeInfo.publisher,
       publishedDate: volumeInfo.publishedDate,
+      isbn: isbnId,
       source: 'google' as const,
     };
   } catch (error) {
