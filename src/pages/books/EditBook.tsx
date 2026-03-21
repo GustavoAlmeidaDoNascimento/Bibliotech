@@ -10,6 +10,7 @@ import TagAutocomplete from '../../components/TagAutocomplete';
 import PublisherAutocomplete from '../../components/PublisherAutocomplete';
 import { searchGoogleBooks, truncateText, FormattedBookResult } from '../../services/googleBooksService';
 import { searchOpenLibrary } from '../../services/openLibraryService';
+import { isValidIsbn, normalizeIsbnInput, resolveIsbnForForm } from '../../utils/isbn';
 
 import styles from './RegisterBook.module.css'; // Reusando os estilos do RegisterBook
 
@@ -23,6 +24,7 @@ interface BookForm {
   codes: string[];
   writtenOffCodes?: WriteOffInfo[]; // Códigos que foram baixados com motivo
   title: string;
+  isbn: string;
   genres: string[];
   tags: string[]; // Array de IDs das tags
   authors: string;
@@ -56,6 +58,7 @@ const EditBook = () => {
     codes: [],
     writtenOffCodes: [],
     title: '',
+    isbn: '',
     genres: [],
     tags: [],
     authors: '',
@@ -297,7 +300,8 @@ const EditBook = () => {
             description: bookData.description || '',
             // Garante que synopsis e coverUrl sejam strings
             synopsis: bookData.synopsis || '',
-            coverUrl: bookData.coverUrl || ''
+            coverUrl: bookData.coverUrl || '',
+            isbn: typeof bookData.isbn === 'string' ? bookData.isbn : '',
           } as BookForm;
           
           setFormData(formattedData);
@@ -669,6 +673,21 @@ const EditBook = () => {
       setQuickSearchResults(merged);
       setShowQuickResults(true);
 
+      const qNorm = normalizeIsbnInput(quickSearchQuery);
+      if (isValidIsbn(qNorm) && merged.length > 0) {
+        const matching = merged.filter(
+          (b) => !b.isbn || normalizeIsbnInput(b.isbn) === qNorm
+        );
+        const shouldAuto =
+          merged.length === 1 ||
+          (matching.length > 0 && matching.length === merged.length);
+        if (shouldAuto) {
+          const toApply = matching[0] ?? merged[0];
+          handleSelectQuickBook(toApply, quickSearchQuery);
+          return;
+        }
+      }
+
       if (merged.length === 0) {
         setQuickSearchError('Nenhum resultado encontrado');
       }
@@ -681,7 +700,8 @@ const EditBook = () => {
     }
   };
 
-  const handleSelectQuickBook = (book: FormattedBookResult) => {
+  const handleSelectQuickBook = (book: FormattedBookResult, searchOverride?: string) => {
+    const rawSearch = searchOverride ?? quickSearchQuery;
     setFormData(prev => ({
       ...prev,
       title: book.title,
@@ -689,6 +709,7 @@ const EditBook = () => {
       synopsis: book.synopsis,
       coverUrl: book.coverUrl,
       publisher: book.publisher || prev.publisher,
+      isbn: resolveIsbnForForm(book, rawSearch),
     }));
     setQuickSearchResults([]);
     setShowQuickResults(false);
@@ -752,7 +773,8 @@ const EditBook = () => {
     setFormData(prev => ({
       ...prev,
       coverUrl: book.coverUrl,
-      synopsis: book.synopsis
+      synopsis: book.synopsis,
+      isbn: resolveIsbnForForm(book, googleSearchQuery) || prev.isbn,
     }));
     
     // Fechar dropdown
@@ -1066,6 +1088,24 @@ const EditBook = () => {
                 }}
                 required
               />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="isbn">ISBN</label>
+              <input
+                type="text"
+                id="isbn"
+                autoComplete="off"
+                value={formData.isbn}
+                onChange={e => {
+                  setFormData(prev => ({ ...prev, isbn: e.target.value }));
+                  clearMessages();
+                }}
+                placeholder="Opcional — preenchido ao buscar por ISBN no Registro Rápido"
+              />
+              <p className={styles.helpText}>
+                ISBN-10 ou ISBN-13 (hífens opcionais). Não é obrigatório.
+              </p>
             </div>
 
             <div className={styles.formRow}>

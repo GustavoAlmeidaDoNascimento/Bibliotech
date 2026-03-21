@@ -10,11 +10,13 @@ import TagAutocomplete from '../../components/TagAutocomplete';
 import PublisherAutocomplete from '../../components/PublisherAutocomplete';
 import { searchGoogleBooks, FormattedBookResult } from '../../services/googleBooksService';
 import { searchOpenLibrary } from '../../services/openLibraryService';
+import { isValidIsbn, normalizeIsbnInput, resolveIsbnForForm } from '../../utils/isbn';
 import styles from './RegisterBook.module.css';
 
 interface BookForm {
   codes: string[];
   title: string;
+  isbn: string;
   genres: string[];
   tags: string[]; // Array de IDs das tags
   authors: string;
@@ -76,6 +78,7 @@ const RegisterBook = () => {
   const [formData, setFormData] = useState<BookForm>({
     codes: [],
     title: '',
+    isbn: '',
     genres: [],
     tags: [],
     authors: '',
@@ -242,6 +245,21 @@ const RegisterBook = () => {
       setGoogleSearchResults(merged);
       setShowGoogleResults(true);
 
+      const qNorm = normalizeIsbnInput(googleSearchQuery);
+      if (isValidIsbn(qNorm) && merged.length > 0) {
+        const matching = merged.filter(
+          (b) => !b.isbn || normalizeIsbnInput(b.isbn) === qNorm
+        );
+        const shouldAuto =
+          merged.length === 1 ||
+          (matching.length > 0 && matching.length === merged.length);
+        if (shouldAuto) {
+          const toApply = matching[0] ?? merged[0];
+          handleSelectGoogleBook(toApply, googleSearchQuery);
+          return;
+        }
+      }
+
       if (merged.length === 0) {
         setGoogleSearchError('Nenhum resultado encontrado');
       }
@@ -254,15 +272,17 @@ const RegisterBook = () => {
     }
   };
 
-  // Função para selecionar um livro dos resultados do Google Books
-  const handleSelectGoogleBook = (book: FormattedBookResult) => {
+  // Função para selecionar um livro dos resultados do Google Books / Open Library
+  const handleSelectGoogleBook = (book: FormattedBookResult, searchOverride?: string) => {
+    const rawSearch = searchOverride ?? googleSearchQuery;
     setFormData(prev => ({
       ...prev,
       title: book.title,
       authors: book.authors.join(', '),
       description: book.synopsis,
       coverUrl: book.coverUrl,
-      publisher: book.publisher || prev.publisher
+      publisher: book.publisher || prev.publisher,
+      isbn: resolveIsbnForForm(book, rawSearch),
     }));
     
     // Limpar busca
@@ -607,6 +627,21 @@ const RegisterBook = () => {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="isbn">ISBN</label>
+              <input
+                type="text"
+                id="isbn"
+                autoComplete="off"
+                value={formData.isbn}
+                onChange={e => setFormData(prev => ({ ...prev, isbn: e.target.value }))}
+                placeholder="Opcional — preenchido ao buscar por ISBN no Registro Rápido"
+              />
+              <p className={styles.helpText}>
+                ISBN-10 ou ISBN-13 (hífens opcionais). Não é obrigatório.
+              </p>
             </div>
 
             <div className={styles.formRow}>

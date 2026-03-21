@@ -15,10 +15,6 @@ export function isValidIsbn(normalized: string): boolean {
   return false;
 }
 
-export function isValidIsbnRaw(raw: string): boolean {
-  return isValidIsbn(normalizeIsbnInput(raw));
-}
-
 /**
  * Extrai o melhor identificador a partir da lista industryIdentifiers do Google Books.
  */
@@ -36,6 +32,22 @@ export function pickIsbnFromIndustryIdentifiers(
 /**
  * Escolhe um ISBN da lista da Open Library, priorizando o que bate com a busca e depois ISBN-13.
  */
+/**
+ * Define o ISBN do formulário a partir do resultado da API ou do termo de busca (quando for ISBN válido).
+ */
+export function resolveIsbnForForm(
+  book: { isbn?: string },
+  rawSearchForFallback: string
+): string {
+  if (book.isbn) {
+    const n = normalizeIsbnInput(book.isbn);
+    if (isValidIsbn(n)) return n;
+    return book.isbn.replace(/[-\s]/g, '');
+  }
+  const q = normalizeIsbnInput(rawSearchForFallback);
+  return isValidIsbn(q) ? q : '';
+}
+
 export function pickIsbnFromOpenLibraryList(
   list: string[] | undefined,
   normalizedQuery?: string
