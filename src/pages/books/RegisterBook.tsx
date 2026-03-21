@@ -673,6 +673,21 @@ const RegisterBook = () => {
                 />
               </div>
             </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="isbn">ISBN</label>
+              <input
+                type="text"
+                id="isbn"
+                autoComplete="off"
+                value={formData.isbn}
+                onChange={e => setFormData(prev => ({ ...prev, isbn: e.target.value }))}
+                placeholder="Opcional — preenchido ao buscar por ISBN no Registro Rápido"
+              />
+              <p className={styles.helpText}>
+                ISBN-10 ou ISBN-13 (hífens opcionais). Não é obrigatório.
+              </p>
+            </div>
           </div>
 
           <div className={styles.sideSection}>
@@ -748,21 +763,6 @@ const RegisterBook = () => {
               </div>
             )}
           </div>
-        </div>
-
-        <div className={`${styles.formGroup} ${styles.isbnFieldAtEnd}`}>
-          <label htmlFor="isbn">ISBN</label>
-          <input
-            type="text"
-            id="isbn"
-            autoComplete="off"
-            value={formData.isbn}
-            onChange={e => setFormData(prev => ({ ...prev, isbn: e.target.value }))}
-            placeholder="Opcional — preenchido ao buscar por ISBN no Registro Rápido"
-          />
-          <p className={styles.helpText}>
-            ISBN-10 ou ISBN-13 (hífens opcionais). Não é obrigatório.
-          </p>
         </div>
 
         <div className={styles.formActions}>

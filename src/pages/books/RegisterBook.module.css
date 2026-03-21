@@ -51,13 +51,6 @@
   grid-column: 1 / -1;
 }
 
-/* ISBN no fim do formulário (largura total, acima das ações) */
-.isbnFieldAtEnd {
-  margin-top: 0.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border-color);
-}
-
 .formGroup label {
   display: block;
   margin-bottom: 0.5rem;
