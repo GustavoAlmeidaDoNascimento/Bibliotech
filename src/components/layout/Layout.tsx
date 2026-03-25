@@ -8,9 +8,8 @@ import { useAsync } from '../../hooks/useAsync';
 import { settingsService } from '../../services/firebase';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useNotifications, Notification } from '../../contexts/NotificationsContext';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { reservationService } from '../../services/reservationService';
 import {
   UserGroupIcon,
   AcademicCapIcon,
@@ -76,31 +75,32 @@ const Layout: React.FC = () => {
     };
   }, []);
 
-  // Buscar contador de reservas
+  // Listener em tempo real para o contador de reservas ativas
   useEffect(() => {
-    const fetchReservationsCount = async () => {
-      if (!currentUser?.uid) return;
-      
-      try {
-        const reservations = await reservationService.getReservations(currentUser.uid);
-        // Contar apenas reservas ativas (pending, ready)
-        const activeReservations = reservations.filter(
-          r => r.status === 'pending' || r.status === 'ready'
-        );
-        setReservationsCount(activeReservations.length);
-      } catch (error) {
-        console.error('Erro ao buscar contador de reservas:', error);
+    if (!currentUser?.uid) {
+      setReservationsCount(0);
+      return;
+    }
+
+    const reservationsRef = collection(db, `users/${currentUser.uid}/reservations`);
+    const activeQuery = query(
+      reservationsRef,
+      where('status', 'in', ['pending', 'ready'])
+    );
+
+    const unsubscribe = onSnapshot(
+      activeQuery,
+      (snapshot) => {
+        setReservationsCount(snapshot.size);
+      },
+      (error) => {
+        console.error('Erro no listener de reservas:', error);
         setReservationsCount(0);
       }
-    };
+    );
 
-    fetchReservationsCount();
-    
-    // Atualizar contador quando a rota mudar para /reservations (após criar/deletar reservas)
-    const interval = setInterval(fetchReservationsCount, 30000); // Atualizar a cada 30 segundos
-    
-    return () => clearInterval(interval);
-  }, [currentUser?.uid, location.pathname]);
+    return () => unsubscribe();
+  }, [currentUser?.uid]);
 
   // verifica se o link atual corresponde à página atual
   const isActiveLink = (path: string) => {

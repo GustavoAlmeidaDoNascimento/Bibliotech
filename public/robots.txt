@@ -6,20 +6,37 @@
 
 User-agent: *
 Allow: /
+Crawl-delay: 10
 
 # Bloquear áreas privadas
 Disallow: /login
 Disallow: /dashboard
 Disallow: /admin
 
+# Bloquear paths inexistentes que scanners de vulnerabilidade costumam sondar
+Disallow: /wp-admin
+Disallow: /wp-login.php
+Disallow: /xmlrpc.php
+Disallow: /phpinfo.php
+Disallow: /.env
+Disallow: /api/
+Disallow: /.git/
+
+# Bloquear crawlers de IA que não respeitam dados proprietários
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
 # Sitemap
 Sitemap: https://bibliotech.tech/sitemap.xml
-
-# Informações para crawlers de IA
-# Sistema completo para gestão de biblioteca escolar
-# Software de gerenciamento de livros, empréstimos e devoluções
-# Ideal para escolas, bibliotecários e gestores educacionais
-# Palavras-chave: sistema biblioteca escolar, software biblioteca, gestão bibliotecária, biblioteca digital escolar
-
-# Crawl-delay para ser respeitoso com os servidores
-Crawl-delay: 1
