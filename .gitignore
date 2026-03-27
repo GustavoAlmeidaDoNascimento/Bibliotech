@@ -53,3 +53,8 @@ src/config/firebase.config.ts
 
 firestore-rules.txt
 .cursorrules
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
