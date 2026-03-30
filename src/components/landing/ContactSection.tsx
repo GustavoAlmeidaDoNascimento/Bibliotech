@@ -17,7 +17,7 @@ const ContactSection = () => {
 
   const handleSubmit = () => {
     const text = `Olá! Meu nome é ${name}. Interesse: ${interest}. ${message}`;
-    window.open(`https://wa.me/5551996468758?text=${encodeURIComponent(text)}`, "_blank");
+    window.open(`https://wa.me/5551997188572?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   return (
