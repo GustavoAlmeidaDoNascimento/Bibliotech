@@ -31,7 +31,6 @@ import {
   UserCircleIcon,
   CalendarDaysIcon
 } from '@heroicons/react/24/outline';
-import NewBadge from '../../components/NewBadge/NewBadge';
 import styles from './Settings.module.css';
 
 type TabDefinition = {
@@ -696,7 +695,6 @@ const Settings = () => {
               <Icon className={styles.tabIcon} />
               <span className={styles.tabLabel}>
                 {tab.label}
-                {tab.id === 'year-turnover' && <NewBadge />}
               </span>
             </button>
           );
