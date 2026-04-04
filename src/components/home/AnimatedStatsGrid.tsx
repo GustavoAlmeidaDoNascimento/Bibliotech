@@ -114,7 +114,7 @@ const AnimatedStatsGrid: React.FC = () => {
       <AnimatedStatCard
         icon={<SchoolBuilding />}
         targetValue={3}
-        label="Escolas Clientes"
+        label="Escolas Beneficiadas"
         numberSuffix=""
         delay={1200}
       />

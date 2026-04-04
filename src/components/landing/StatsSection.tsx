@@ -5,7 +5,7 @@ import { BookOpen, Users, School } from "lucide-react";
 const stats = [
   { icon: BookOpen, value: 5300, suffix: "+", label: "Livros Registrados" },
   { icon: Users, value: 637, suffix: "+", label: "Leitores Registrados" },
-  { icon: School, value: 3, suffix: "", label: "Escolas Clientes" },
+  { icon: School, value: 3, suffix: "", label: "Escolas Beneficiadas" },
 ];
 
 const AnimatedNumber = ({ target, suffix }: { target: number; suffix: string }) => {
