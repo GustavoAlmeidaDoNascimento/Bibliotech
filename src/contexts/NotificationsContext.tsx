@@ -632,8 +632,8 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     );
     
-    // Configurar intervalo de atualização periódica (5 minutos) para outras notificações
-    const interval = setInterval(refreshNotifications, 5 * 60 * 1000);
+    // Atualização periódica a cada 30 min para notificações que não passam pelo onSnapshot
+    const interval = setInterval(refreshNotifications, 30 * 60 * 1000);
     
     return () => {
       unsubscribe();

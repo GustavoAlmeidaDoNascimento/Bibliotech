@@ -477,7 +477,7 @@ Este projeto está sob a licença MIT. Consulte o arquivo LICENSE no repositóri
 ### Empresa
 **Proton Software** - Desenvolvedora do Bibliotech
 - 📧 Email: proton.hello.world@gmail.com
-- 📞 WhatsApp: (51) 99646-8758
+- 📞 WhatsApp: (51) 99718-8572
 - 🌐 Website: [protonsoftware.tech](https://protonsoftware.tech)
 - 💼 LinkedIn: [Proton Software](https://www.linkedin.com/company/107289200/)
 

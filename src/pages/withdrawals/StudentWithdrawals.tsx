@@ -5,7 +5,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { BookOpenIcon, MagnifyingGlassIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
-import NewBadge from '../../components/NewBadge';
 import styles from './Withdrawals.module.css';
 
 interface Student {
@@ -358,7 +357,6 @@ const StudentWithdrawals = () => {
         <div className={styles.header}>
           <h2>
             Retirada Rápida
-            <NewBadge />
           </h2>
         </div>
 

@@ -21,7 +21,7 @@ const CtaSection = () => {
               Junte-se às escolas que já estão revolucionando a gestão de suas bibliotecas.
             </p>
             <a
-              href="https://wa.me/5551996468758?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20uma%20reuni%C3%A3o%20sobre%20o%20Bibliotech."
+              href="https://wa.me/5551997188572?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20uma%20reuni%C3%A3o%20sobre%20o%20Bibliotech."
               className="group inline-flex items-center gap-2 bg-background/10 backdrop-blur-sm border border-primary-foreground/20 text-primary-foreground rounded-xl px-7 py-3.5 text-sm font-medium hover:bg-background/20 transition-all duration-200"
             >
               Solicitar reunião
