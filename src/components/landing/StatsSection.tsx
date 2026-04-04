@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { BookOpen, Users, TrendingUp } from "lucide-react";
+import { BookOpen, Users, School } from "lucide-react";
 
 const stats = [
-  { icon: BookOpen, value: 4015, suffix: "+", label: "Livros no Acervo" },
+  { icon: BookOpen, value: 5300, suffix: "+", label: "Livros Registrados" },
   { icon: Users, value: 637, suffix: "+", label: "Leitores Registrados" },
-  { icon: TrendingUp, value: 247, suffix: "+", label: "Leitores Ativos" },
+  { icon: School, value: 3, suffix: "", label: "Escolas Clientes" },
 ];
 
 const AnimatedNumber = ({ target, suffix }: { target: number; suffix: string }) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
-import { BookOpenIcon as Book, UsersIcon as Users, ArrowTrendingUpIcon as TrendingUp } from '@heroicons/react/24/outline';
+import { BookOpenIcon as Book, UsersIcon as Users, BuildingOffice2Icon as SchoolBuilding } from '@heroicons/react/24/outline';
 import { useCounterAnimation } from '../../hooks/useCounterAnimation';
 
 const StatsGrid = styled(motion.div)`
@@ -64,13 +64,16 @@ interface AnimatedStatCardProps {
   targetValue: number;
   label: string;
   delay?: number;
+  /** Sufixo após o número (ex.: "+" para aproximado; vazio para contagem exata). */
+  numberSuffix?: string;
 }
 
 const AnimatedStatCard: React.FC<AnimatedStatCardProps> = ({ 
   icon, 
   targetValue, 
   label, 
-  delay = 0 
+  delay = 0,
+  numberSuffix = '+',
 }) => {
   const { currentValue } = useCounterAnimation(targetValue, {
     duration: 2000,
@@ -81,7 +84,7 @@ const AnimatedStatCard: React.FC<AnimatedStatCardProps> = ({
   return (
     <StatCard whileHover={{ scale: 1.05 }}>
       {icon}
-      <StatNumber>{currentValue.toLocaleString()}+</StatNumber>
+      <StatNumber>{currentValue.toLocaleString()}{numberSuffix}</StatNumber>
       <StatLabel>{label}</StatLabel>
     </StatCard>
   );
@@ -96,8 +99,8 @@ const AnimatedStatsGrid: React.FC = () => {
     >
       <AnimatedStatCard
         icon={<Book />}
-        targetValue={4015}
-        label="Livros no Acervo"
+        targetValue={5300}
+        label="Livros Registrados"
         delay={800}
       />
       
@@ -109,9 +112,10 @@ const AnimatedStatsGrid: React.FC = () => {
       />
       
       <AnimatedStatCard
-        icon={<TrendingUp />}
-        targetValue={248}
-        label="Leitores Ativos"
+        icon={<SchoolBuilding />}
+        targetValue={3}
+        label="Escolas Clientes"
+        numberSuffix=""
         delay={1200}
       />
     </StatsGrid>
