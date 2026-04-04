@@ -55,6 +55,17 @@ function formatBookTitleInput(value: string): string {
     .join('');
 }
 
+/** Cada autor separado por vírgula recebe a mesma capitalização do título; delimitadores são preservados. */
+function formatAuthorsInput(value: string): string {
+  return value
+    .split(/(\s*,\s*)/)
+    .map((segment) => {
+      if (/^\s*,\s*$/.test(segment)) return segment;
+      return formatBookTitleInput(segment);
+    })
+    .join('');
+}
+
 // Lista de gêneros/classes sugeridos
 const SUGGESTED_GENRES = [
   'Romance',
@@ -92,6 +103,8 @@ const SUGGESTED_GENRES = [
 const RegisterBook = () => {
   const titleInputRef = useRef<HTMLInputElement>(null);
   const titleSelectionRef = useRef<{ start: number; end: number } | null>(null);
+  const authorsInputRef = useRef<HTMLInputElement>(null);
+  const authorsSelectionRef = useRef<{ start: number; end: number } | null>(null);
 
   const [formData, setFormData] = useState<BookForm>({
     codes: [],
@@ -296,7 +309,7 @@ const RegisterBook = () => {
     setFormData(prev => ({
       ...prev,
       title: formatBookTitleInput(book.title),
-      authors: book.authors.join(', '),
+      authors: formatAuthorsInput(book.authors.join(', ')),
       description: book.synopsis,
       coverUrl: book.coverUrl,
       publisher: book.publisher || prev.publisher,
@@ -334,6 +347,24 @@ const RegisterBook = () => {
     input.setSelectionRange(Math.min(sel.start, max), Math.min(sel.end, max));
     titleSelectionRef.current = null;
   }, [formData.title]);
+
+  const handleAuthorsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const el = e.target;
+    authorsSelectionRef.current = {
+      start: el.selectionStart ?? 0,
+      end: el.selectionEnd ?? 0,
+    };
+    setFormData((prev) => ({ ...prev, authors: formatAuthorsInput(el.value) }));
+  };
+
+  useLayoutEffect(() => {
+    const input = authorsInputRef.current;
+    const sel = authorsSelectionRef.current;
+    if (!input || sel === null) return;
+    const max = input.value.length;
+    input.setSelectionRange(Math.min(sel.start, max), Math.min(sel.end, max));
+    authorsSelectionRef.current = null;
+  }, [formData.authors]);
 
   // Função para remover a capa
   const handleRemoveCover = () => {
@@ -691,10 +722,11 @@ const RegisterBook = () => {
               <div className={styles.formGroup}>
                 <label htmlFor="authors">Autores</label>
                 <input
+                  ref={authorsInputRef}
                   type="text"
                   id="authors"
                   value={formData.authors}
-                  onChange={e => setFormData(prev => ({ ...prev, authors: e.target.value }))}
+                  onChange={handleAuthorsChange}
                   placeholder="Ex: João Silva, Maria Santos"
                 />
               </div>
