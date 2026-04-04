@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp, query, getDocs } from 'firebase/firestore';
 import { db } from '../../config/firebase';
@@ -40,6 +40,21 @@ interface DuplicateBook {
   id: string;
 }
 
+/** Primeira letra de cada palavra em maiúscula (demais em minúsculas, locale pt-BR). Preserva espaços. */
+function formatBookTitleInput(value: string): string {
+  return value
+    .split(/(\s+)/)
+    .map((segment) => {
+      if (/^\s+$/.test(segment)) return segment;
+      if (!segment) return segment;
+      return (
+        segment.charAt(0).toLocaleUpperCase('pt-BR') +
+        segment.slice(1).toLocaleLowerCase('pt-BR')
+      );
+    })
+    .join('');
+}
+
 // Lista de gêneros/classes sugeridos
 const SUGGESTED_GENRES = [
   'Romance',
@@ -75,6 +90,9 @@ const SUGGESTED_GENRES = [
 ];
 
 const RegisterBook = () => {
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const titleSelectionRef = useRef<{ start: number; end: number } | null>(null);
+
   const [formData, setFormData] = useState<BookForm>({
     codes: [],
     title: '',
@@ -277,7 +295,7 @@ const RegisterBook = () => {
     const rawSearch = searchOverride ?? googleSearchQuery;
     setFormData(prev => ({
       ...prev,
-      title: book.title,
+      title: formatBookTitleInput(book.title),
       authors: book.authors.join(', '),
       description: book.synopsis,
       coverUrl: book.coverUrl,
@@ -298,6 +316,24 @@ const RegisterBook = () => {
     setShowGoogleResults(false);
     setGoogleSearchError('');
   };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const el = e.target;
+    titleSelectionRef.current = {
+      start: el.selectionStart ?? 0,
+      end: el.selectionEnd ?? 0,
+    };
+    setFormData((prev) => ({ ...prev, title: formatBookTitleInput(el.value) }));
+  };
+
+  useLayoutEffect(() => {
+    const input = titleInputRef.current;
+    const sel = titleSelectionRef.current;
+    if (!input || sel === null) return;
+    const max = input.value.length;
+    input.setSelectionRange(Math.min(sel.start, max), Math.min(sel.end, max));
+    titleSelectionRef.current = null;
+  }, [formData.title]);
 
   // Função para remover a capa
   const handleRemoveCover = () => {
@@ -618,10 +654,11 @@ const RegisterBook = () => {
               <label htmlFor="title">Título do Livro *</label>
               <div className={styles.inputWrapper}>
                 <input
+                  ref={titleInputRef}
                   type="text"
                   id="title"
                   value={formData.title}
-                  onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={handleTitleChange}
                   className={duplicates.title ? styles.inputError : ''}
                   required
                 />
