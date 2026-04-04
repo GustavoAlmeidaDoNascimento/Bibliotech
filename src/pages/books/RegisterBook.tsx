@@ -567,8 +567,29 @@ const RegisterBook = () => {
                   {checkingDuplicates && <div className={styles.checkingIndicator}>Verificando...</div>}
                 </div>
                 {duplicates.codes && !checkingDuplicates && (
-                  <div className={styles.duplicateWarning}>
-                    ⚠️ Algum destes códigos já existe no sistema
+                  <div className={styles.duplicateWarningRow}>
+                    <span className={styles.duplicateWarning}>
+                      ⚠️ Algum destes códigos já existe no sistema
+                    </span>
+                    {(() => {
+                      const existingByCode = duplicateBooks.find(book =>
+                        formData.codes.some(code =>
+                          book.codes.some(
+                            (bookCode: string) =>
+                              bookCode.toLowerCase() === code.toLowerCase()
+                          )
+                        )
+                      );
+                      return existingByCode ? (
+                        <button
+                          type="button"
+                          className={styles.editExistingBookButton}
+                          onClick={() => navigate(`/books/${existingByCode.id}`)}
+                        >
+                          Editar o livro “{existingByCode.title.trim() || 'sem título'}”
+                        </button>
+                      ) : null;
+                    })()}
                   </div>
                 )}
               </div>
