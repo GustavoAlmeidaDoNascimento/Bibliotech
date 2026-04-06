@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:UsersgualmOneDriveDocumentoscodeBibliotechsrccomponentslanding -type f -name *.tsx -o -name *.ts -o -name *.css)",
+      "Bash(ls -la /c/Users/gualm/OneDrive/Documentos/code/Bibliotech/.env*)",
+      "Bash(npx tsc:*)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(npx react-scripts:*)",
+      "WebFetch(domain:openrouter.ai)"
+    ]
+  }
+}
