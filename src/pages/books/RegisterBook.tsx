@@ -105,6 +105,7 @@ const RegisterBook = () => {
   const titleSelectionRef = useRef<{ start: number; end: number } | null>(null);
   const authorsInputRef = useRef<HTMLInputElement>(null);
   const authorsSelectionRef = useRef<{ start: number; end: number } | null>(null);
+  const authorsCapsLockRef = useRef<boolean>(false);
 
   const [formData, setFormData] = useState<BookForm>({
     codes: [],
@@ -348,13 +349,18 @@ const RegisterBook = () => {
     titleSelectionRef.current = null;
   }, [formData.title]);
 
+  const handleAuthorsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    authorsCapsLockRef.current = e.getModifierState('CapsLock');
+  };
+
   const handleAuthorsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const el = e.target;
     authorsSelectionRef.current = {
       start: el.selectionStart ?? 0,
       end: el.selectionEnd ?? 0,
     };
-    setFormData((prev) => ({ ...prev, authors: formatAuthorsInput(el.value) }));
+    const value = authorsCapsLockRef.current ? el.value : formatAuthorsInput(el.value);
+    setFormData((prev) => ({ ...prev, authors: value }));
   };
 
   useLayoutEffect(() => {
@@ -727,6 +733,7 @@ const RegisterBook = () => {
                   id="authors"
                   value={formData.authors}
                   onChange={handleAuthorsChange}
+                  onKeyDown={handleAuthorsKeyDown}
                   placeholder="Ex: João Silva, Maria Santos"
                 />
               </div>

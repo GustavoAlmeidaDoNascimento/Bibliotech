@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, BarChart3, User } from 'lucide-react';
+import { Home, BarChart3, User, Bot } from 'lucide-react';
 import styles from './BottomNavigation.module.css';
 
 interface BottomNavigationProps {
   studentId: string;
-  activePage: 'home' | 'stats' | 'profile';
+  activePage: 'home' | 'stats' | 'profile' | 'chat';
 }
 
 const BottomNavigation: React.FC<BottomNavigationProps> = ({ studentId, activePage }) => {
@@ -23,6 +23,12 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ studentId, activePa
       label: 'Estatísticas',
       icon: BarChart3,
       path: `/student-dashboard/${studentId}/stats`,
+    },
+    {
+      id: 'chat',
+      label: 'BiblioIA',
+      icon: Bot,
+      path: `/student-dashboard/${studentId}/chat`,
     },
     {
       id: 'profile',
