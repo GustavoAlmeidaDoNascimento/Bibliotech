@@ -80,6 +80,20 @@ const PublisherAutocomplete: React.FC<PublisherAutocompleteProps> = ({
     setIsOpen(false);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+
+    const firstSuggestion = filteredSuggestions[0];
+    if (isOpen && firstSuggestion) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleSelect(firstSuggestion);
+      return;
+    }
+
+    saveSuggestion(value);
+  };
+
   return (
     <div className={styles.wrapper} ref={wrapperRef}>
       <label htmlFor={id} className={styles.label}>{label}</label>
@@ -88,6 +102,7 @@ const PublisherAutocomplete: React.FC<PublisherAutocompleteProps> = ({
         id={id}
         value={value}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         onBlur={handleBlur}
         className={styles.input}
