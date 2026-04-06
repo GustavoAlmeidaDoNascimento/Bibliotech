@@ -40,19 +40,16 @@ interface DuplicateBook {
   id: string;
 }
 
-/** Primeira letra de cada palavra em maiúscula (demais em minúsculas, locale pt-BR). Preserva espaços. */
+/** Apenas a primeira letra da primeira palavra em maiúscula. Preserva o restante como digitado. */
 function formatBookTitleInput(value: string): string {
-  return value
-    .split(/(\s+)/)
-    .map((segment) => {
-      if (/^\s+$/.test(segment)) return segment;
-      if (!segment) return segment;
-      return (
-        segment.charAt(0).toLocaleUpperCase('pt-BR') +
-        segment.slice(1).toLocaleLowerCase('pt-BR')
-      );
-    })
-    .join('');
+  const firstLetterIndex = value.search(/\S/);
+  if (firstLetterIndex === -1) return value;
+
+  return (
+    value.slice(0, firstLetterIndex) +
+    value.charAt(firstLetterIndex).toLocaleUpperCase('pt-BR') +
+    value.slice(firstLetterIndex + 1)
+  );
 }
 
 /** Cada autor separado por vírgula recebe a mesma capitalização do título; delimitadores são preservados. */
