@@ -852,18 +852,18 @@ const RegisterBook = () => {
                 </p>
               </div>
             )}
-          </div>
-        </div>
 
-        <div className={styles.formActions}>
-          <button
-            type="submit"
-            className={styles.submitButton}
-            disabled={loading}
-            onClick={() => setIsSubmittingForm(true)}
-          >
-            {loading ? 'Registrando...' : 'Registrar Livro'}
-          </button>
+            <div className={styles.sideSectionActions}>
+              <button
+                type="submit"
+                className={styles.submitButton}
+                disabled={loading}
+                onClick={() => setIsSubmittingForm(true)}
+              >
+                {loading ? 'Registrando...' : 'Registrar Livro'}
+              </button>
+            </div>
+          </div>
         </div>
       </form>
 
