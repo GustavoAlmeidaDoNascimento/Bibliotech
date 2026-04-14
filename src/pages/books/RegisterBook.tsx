@@ -52,6 +52,18 @@ function formatBookTitleInput(value: string): string {
   );
 }
 
+/** Apenas a primeira letra do campo em maiúscula; restante em minúsculo. */
+function formatSingleLeadingUppercase(value: string): string {
+  const firstLetterIndex = value.search(/\S/);
+  if (firstLetterIndex === -1) return value;
+
+  return (
+    value.slice(0, firstLetterIndex) +
+    value.charAt(firstLetterIndex).toLocaleUpperCase('pt-BR') +
+    value.slice(firstLetterIndex + 1).toLocaleLowerCase('pt-BR')
+  );
+}
+
 /** Cada autor separado por vírgula recebe a mesma capitalização do título; delimitadores são preservados. */
 function formatAuthorsInput(value: string): string {
   return value
@@ -306,7 +318,7 @@ const RegisterBook = () => {
     const rawSearch = searchOverride ?? googleSearchQuery;
     setFormData(prev => ({
       ...prev,
-      title: formatBookTitleInput(book.title),
+      title: formatSingleLeadingUppercase(book.title),
       authors: formatAuthorsInput(book.authors.join(', ')),
       description: book.synopsis,
       coverUrl: book.coverUrl,
@@ -334,7 +346,7 @@ const RegisterBook = () => {
       start: el.selectionStart ?? 0,
       end: el.selectionEnd ?? 0,
     };
-    setFormData((prev) => ({ ...prev, title: formatBookTitleInput(el.value) }));
+    setFormData((prev) => ({ ...prev, title: formatSingleLeadingUppercase(el.value) }));
   };
 
   useLayoutEffect(() => {
