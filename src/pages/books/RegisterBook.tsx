@@ -741,7 +741,12 @@ const RegisterBook = () => {
                   type="text"
                   id="collection"
                   value={formData.collection}
-                  onChange={e => setFormData(prev => ({ ...prev, collection: e.target.value }))}
+                  onChange={e =>
+                    setFormData(prev => ({
+                      ...prev,
+                      collection: formatBookTitleInput(e.target.value),
+                    }))
+                  }
                 />
               </div>
             </div>
