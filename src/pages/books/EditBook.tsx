@@ -11,6 +11,7 @@ import PublisherAutocomplete from '../../components/PublisherAutocomplete';
 import { searchGoogleBooks, truncateText, FormattedBookResult } from '../../services/googleBooksService';
 import { searchOpenLibrary } from '../../services/openLibraryService';
 import { isValidIsbn, normalizeIsbnInput, resolveIsbnForForm } from '../../utils/isbn';
+import { formatAuthorsInput } from '../../utils/textFormat';
 
 import styles from './RegisterBook.module.css'; // Reusando os estilos do RegisterBook
 
@@ -1097,7 +1098,9 @@ const EditBook = () => {
                   type="text"
                   id="authors"
                   value={formData.authors}
-                  onChange={e => setFormData(prev => ({ ...prev, authors: e.target.value }))}
+                  onChange={e =>
+                    setFormData(prev => ({ ...prev, authors: formatAuthorsInput(e.target.value) }))
+                  }
                   placeholder="Ex: João Silva, Maria Santos"
                 />
               </div>

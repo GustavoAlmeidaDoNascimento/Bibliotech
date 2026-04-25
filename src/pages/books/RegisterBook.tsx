@@ -11,6 +11,7 @@ import PublisherAutocomplete from '../../components/PublisherAutocomplete';
 import { searchGoogleBooks, FormattedBookResult } from '../../services/googleBooksService';
 import { searchOpenLibrary } from '../../services/openLibraryService';
 import { isValidIsbn, normalizeIsbnInput, resolveIsbnForForm } from '../../utils/isbn';
+import { formatAuthorsInput } from '../../utils/textFormat';
 import styles from './RegisterBook.module.css';
 
 interface BookForm {
@@ -62,17 +63,6 @@ function formatSingleLeadingUppercase(value: string): string {
     value.charAt(firstLetterIndex).toLocaleUpperCase('pt-BR') +
     value.slice(firstLetterIndex + 1).toLocaleLowerCase('pt-BR')
   );
-}
-
-/** Cada autor separado por vírgula recebe a mesma capitalização do título; delimitadores são preservados. */
-function formatAuthorsInput(value: string): string {
-  return value
-    .split(/(\s*,\s*)/)
-    .map((segment) => {
-      if (/^\s*,\s*$/.test(segment)) return segment;
-      return formatBookTitleInput(segment);
-    })
-    .join('');
 }
 
 // Lista de gêneros/classes sugeridos
