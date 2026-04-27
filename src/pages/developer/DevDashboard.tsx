@@ -1,15 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { useAsync } from '../../hooks/useAsync';
 import { feedbackService, Feedback, FeedbackStats } from '../../services/feedbackService';
 import { feedbackCampaignService } from '../../services/feedbackCampaignService';
+import {
+  devPlatformStatsService,
+  DevSchoolStat,
+} from '../../services/devPlatformStatsService';
 import { formatPlanDisplayName, inferTierFromPlanValue } from '../../services/subscriptionService';
 import FeedbackDetailModal from '../../components/feedback/FeedbackDetailModal';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Star, MessageSquare, TrendingUp, LogOut, Filter, Bell } from 'lucide-react';
+import {
+  Star,
+  MessageSquare,
+  TrendingUp,
+  LogOut,
+  Filter,
+  Bell,
+  School,
+  BookOpen,
+  Users,
+} from 'lucide-react';
 import styles from './DevDashboard.module.css';
 
 type TabType = 'feedbacks' | 'notifications' | 'campaigns';
@@ -39,6 +53,67 @@ const DevDashboard: React.FC = () => {
   // Estados para campanhas de feedback
   const [isResettingCampaign, setIsResettingCampaign] = useState(false);
   const [campaignMessage, setCampaignMessage] = useState<{ text: string; isError: boolean } | null>(null);
+
+  const [schoolStats, setSchoolStats] = useState<DevSchoolStat[]>([]);
+  const [platformStatsLoading, setPlatformStatsLoading] = useState(true);
+  const [platformStatsError, setPlatformStatsError] = useState<string | null>(null);
+  const [selectedSchoolId, setSelectedSchoolId] = useState<'all' | string>('all');
+
+  const platformDisplay = useMemo(() => {
+    if (schoolStats.length === 0) {
+      return { schoolCount: 0, bookCount: 0, studentCount: 0, filterLabel: null as string | null };
+    }
+    if (selectedSchoolId === 'all') {
+      return {
+        schoolCount: schoolStats.length,
+        bookCount: schoolStats.reduce((acc, s) => acc + s.bookCount, 0),
+        studentCount: schoolStats.reduce((acc, s) => acc + s.studentCount, 0),
+        filterLabel: null,
+      };
+    }
+    const one = schoolStats.find((s) => s.id === selectedSchoolId);
+    if (!one) {
+      return { schoolCount: 0, bookCount: 0, studentCount: 0, filterLabel: null };
+    }
+    return {
+      schoolCount: 1,
+      bookCount: one.bookCount,
+      studentCount: one.studentCount,
+      filterLabel: one.name,
+    };
+  }, [schoolStats, selectedSchoolId]);
+
+  useEffect(() => {
+    if (authState.status === 'loading' || currentUser?.email !== 'dev@bibliotech.tech') {
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        setPlatformStatsLoading(true);
+        setPlatformStatsError(null);
+        const rows = await devPlatformStatsService.getAllSchoolStats();
+        if (!cancelled) {
+          setSchoolStats(rows);
+        }
+      } catch (e) {
+        console.error('Erro ao carregar estatísticas da plataforma:', e);
+        if (!cancelled) {
+          setPlatformStatsError(
+            'Não foi possível carregar as contagens. Verifique permissões do Firestore para o usuário dev.'
+          );
+          setSchoolStats([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setPlatformStatsLoading(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser?.email, authState.status]);
 
   useEffect(() => {
     // Aguardar carregamento da autenticação
@@ -272,6 +347,87 @@ const DevDashboard: React.FC = () => {
           </button>
         </div>
       </header>
+
+      <section className={styles.platformSection} aria-label="Estatísticas da plataforma">
+        <div className={styles.platformHeader}>
+          <h2 className={styles.platformTitle}>Estatísticas da plataforma</h2>
+          <p className={styles.platformSubtitle}>
+            Contagens de escolas, livros e alunos em todas as bibliotecas (dados do Firestore).
+          </p>
+        </div>
+
+        <div className={styles.platformFilterRow}>
+          <label htmlFor="dev-school-filter" className={styles.platformFilterLabel}>
+            Filtrar por escola
+          </label>
+          <select
+            id="dev-school-filter"
+            className={styles.platformSelect}
+            value={selectedSchoolId}
+            onChange={(e) =>
+              setSelectedSchoolId(e.target.value === 'all' ? 'all' : e.target.value)
+            }
+            disabled={platformStatsLoading || schoolStats.length === 0}
+          >
+            <option value="all">Todas as escolas</option>
+            {schoolStats.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {platformStatsError && (
+          <div className={styles.errorMessage} role="alert">
+            {platformStatsError}
+          </div>
+        )}
+
+        {platformDisplay.filterLabel && (
+          <p className={styles.platformFilterHint}>
+            Mostrando apenas: <strong>{platformDisplay.filterLabel}</strong>
+          </p>
+        )}
+
+        {platformStatsLoading ? (
+          <div className={styles.platformLoading}>
+            <p>Carregando contagens…</p>
+          </div>
+        ) : (
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>
+                <School size={24} />
+              </div>
+              <div className={styles.statContent}>
+                <p className={styles.statLabel}>
+                  {selectedSchoolId === 'all' ? 'Escolas registradas' : 'Escola (filtro)'}
+                </p>
+                <p className={styles.statValue}>{platformDisplay.schoolCount}</p>
+              </div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>
+                <BookOpen size={24} />
+              </div>
+              <div className={styles.statContent}>
+                <p className={styles.statLabel}>Livros (total)</p>
+                <p className={styles.statValue}>{platformDisplay.bookCount}</p>
+              </div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>
+                <Users size={24} />
+              </div>
+              <div className={styles.statContent}>
+                <p className={styles.statLabel}>Alunos (total)</p>
+                <p className={styles.statValue}>{platformDisplay.studentCount}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Tabs */}
       <div className={styles.tabsContainer}>
