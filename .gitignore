@@ -52,4 +52,4 @@ src/config/firebase.config.ts
 .prompts/
 
 firestore-rules.txt
-.cursorrules
+.cursorrules"
