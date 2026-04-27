@@ -96,11 +96,12 @@ const DevDashboard: React.FC = () => {
         if (!cancelled) {
           setSchoolStats(rows);
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Erro ao carregar estatísticas da plataforma:', e);
+        const detail = e?.message || e?.code || String(e);
         if (!cancelled) {
           setPlatformStatsError(
-            'Não foi possível carregar as contagens. Verifique permissões do Firestore para o usuário dev.'
+            `Erro ao carregar contagens: ${detail}`
           );
           setSchoolStats([]);
         }
