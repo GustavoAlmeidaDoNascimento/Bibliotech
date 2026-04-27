@@ -57,10 +57,10 @@ export const devPlatformStatsService = {
       getDocs(query(collectionGroup(db, 'students'), limit(DISCOVERY_LIMIT))),
     ]);
 
-    const schoolIdSet = new Set<string>([
-      ...extractSchoolIds(booksGroupSnap.docs),
-      ...extractSchoolIds(studentsGroupSnap.docs),
-    ]);
+    const booksIds = extractSchoolIds(booksGroupSnap.docs);
+    const studentsIds = extractSchoolIds(studentsGroupSnap.docs);
+    studentsIds.forEach((id) => booksIds.add(id));
+    const schoolIdSet = booksIds;
 
     const schoolIds = Array.from(schoolIdSet);
 
