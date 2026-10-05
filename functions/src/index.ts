@@ -268,3 +268,157 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
     res.status(500).send('Erro ao processar webhook');
   }
 });
+
+interface BookInfo {
+  title: string;
+  authors?: string[];
+  genres?: string[];
+  available?: boolean;
+  synopsis?: string;
+  description?: string;
+}
+
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+const FREE_MODELS = [
+  'qwen/qwen3.6-plus:free',
+  'mistralai/mistral-7b-instruct:free',
+  'google/gemma-3-12b-it:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
+  'minimax/minimax-m2.5:free',
+  'arcee-ai/trinity-large-preview:free',
+];
+
+const getOpenRouterApiKey = (): string => {
+  if (process.env.OPENROUTER_API_KEY) {
+    return process.env.OPENROUTER_API_KEY;
+  }
+  try {
+    const cfg = functions.config();
+    if (cfg.openrouter?.api_key) return cfg.openrouter.api_key;
+    if (cfg.openrouter?.key) return cfg.openrouter.key;
+  } catch (error) {
+    // Configurações antigas não disponíveis
+  }
+  return '';
+};
+
+const buildSystemPrompt = (books: BookInfo[] = [], studentName?: string): string => {
+  const bookList = books
+    .map(book => {
+      const authors = book.authors?.join(', ') || 'Autor desconhecido';
+      const genres = book.genres?.join(', ') || 'Sem categoria';
+      const available = book.available ? 'Disponível' : 'Indisponível';
+      const synopsis = book.synopsis || book.description || '';
+      return `- "${book.title}" por ${authors} | Gêneros: ${genres} | ${available}${synopsis ? ` | Sinopse: ${synopsis.substring(0, 150)}` : ''}`;
+    })
+    .join('\n');
+
+  const greeting = studentName ? `O aluno se chama ${studentName}.` : '';
+
+  return `Você é a BiblioIA, uma assistente inteligente da biblioteca escolar Bibliotech. ${greeting}
+Sua função é ajudar os alunos a descobrir e escolher livros do acervo da biblioteca.
+
+ACERVO DA BIBLIOTECA:
+${bookList || 'Nenhum livro cadastrado ainda.'}
+
+INSTRUÇÕES:
+- Responda SEMPRE em português brasileiro, de forma amigável, animada e acessível para estudantes.
+- Use emojis ocasionalmente para tornar a conversa mais divertida 📚.
+- Ao recomendar livros, priorize os disponíveis no acervo acima.
+- Se o aluno perguntar sobre um livro que não está no acervo, informe gentilmente e sugira alternativas disponíveis.
+- Você pode ajudar com: recomendações por gênero/tema, sinopses, autores, listas de leitura e dicas gerais.
+- Seja conciso mas útil — respostas entre 2 e 5 parágrafos são ideais.
+- Se não tiver livros suficientes no acervo para uma recomendação, diga isso com simpatia.`;
+};
+
+/**
+ * Endpoint para chat com a BiblioIA utilizando OpenRouter de forma segura no servidor
+ */
+export const bookChat = functions.https.onRequest(async (req, res) => {
+  const origin = req.headers.origin || '*';
+  res.set('Access-Control-Allow-Origin', origin);
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  const apiKey = getOpenRouterApiKey();
+  if (!apiKey) {
+    console.error('[bookChat] OPENROUTER_API_KEY não configurada no servidor');
+    res.status(500).json({ error: 'Chave da API do assistente não configurada no servidor.' });
+    return;
+  }
+
+  try {
+    const { messages, books, studentName } = req.body || {};
+
+    if (!Array.isArray(messages) || messages.length === 0) {
+      res.status(400).json({ error: 'messages array é obrigatório' });
+      return;
+    }
+
+    const finalMessages = [...messages];
+    const hasSystemMessage = finalMessages.some(m => m.role === 'system');
+    if (!hasSystemMessage) {
+      finalMessages.unshift({
+        role: 'system',
+        content: buildSystemPrompt(books || [], studentName),
+      });
+    }
+
+    for (const model of FREE_MODELS) {
+      try {
+        const response = await fetch(OPENROUTER_API_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://bibliotech.tech',
+            'X-Title': 'Bibliotech - BiblioIA',
+          },
+          body: JSON.stringify({
+            model,
+            messages: finalMessages,
+            max_tokens: 800,
+            temperature: 0.7,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => '');
+          console.warn(`[bookChat] Modelo ${model} falhou com status ${response.status}: ${errorText}`);
+          continue;
+        }
+
+        const data = await response.json() as any;
+        const raw: string = data.choices?.[0]?.message?.content ?? '';
+        const clean = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+        if (clean) {
+          res.json({ reply: clean, modelUsed: model });
+          return;
+        }
+      } catch (modelError) {
+        console.warn(`[bookChat] Erro ao tentar modelo ${model}:`, modelError);
+      }
+    }
+
+    res.status(502).json({ error: 'Todos os modelos gratuitos estão indisponíveis no momento.' });
+  } catch (error) {
+    console.error('[bookChat] Erro ao processar requisição:', error);
+    res.status(500).json({
+      error: 'Erro interno ao processar chat',
+      message: error instanceof Error ? error.message : 'Erro desconhecido',
+    });
+  }
+});
