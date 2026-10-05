@@ -33,8 +33,17 @@ functions/functions/.env.*
 
 
 
-# Cursor rules (configurações locais do editor)
+# AI and editor configs
 .cursor/
+.cursorrules
+.claude/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Runtime config
+.runtimeconfig.json
+functions/.runtimeconfig.json
 
 npm-debug.log*
 yarn-debug.log*
@@ -52,4 +61,3 @@ src/config/firebase.config.ts
 .prompts/
 
 firestore-rules.txt
-.cursorrules"

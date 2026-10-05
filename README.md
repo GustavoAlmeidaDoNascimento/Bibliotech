@@ -4,6 +4,7 @@
 
 **Sistema moderno e completo para gestão de bibliotecas escolares**
 
+[![Website](https://img.shields.io/badge/Website-bibliotech.tech-blue)](https://bibliotech.tech)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)]()
 [![React](https://img.shields.io/badge/React-18+-61DAFB)]()
 [![Firebase](https://img.shields.io/badge/Firebase-v10+-orange)]()
@@ -16,6 +17,8 @@
 ## 🎯 Sobre o Projeto
 
 **Bibliotech** é um produto da **Proton Software** - um sistema completo de gestão para bibliotecas escolares, desenvolvido com foco em criar uma experiência moderna e engajante tanto para gestores quanto para alunos. A plataforma oferece controle total sobre o acervo, gerenciamento de empréstimos, análises detalhadas e uma interface intuitiva para os estudantes descobrirem novos livros.
+
+🌐 **Acesse a aplicação:** [https://bibliotech.tech](https://bibliotech.tech)
 
 ### 💡 O Problema que Resolvemos
 
@@ -31,16 +34,20 @@ Bibliotecas escolares tradicionalmente enfrentam desafios como:
 
 ## 🖼️ Interface do Sistema
 
-> 💡 **Nota**: As imagens abaixo são referências. Para visualizar a interface completa, acesse a aplicação em produção ou execute localmente.
+> 💡 **Nota**: As imagens abaixo são capturas reais da interface do sistema.
 
 ### Página Inicial
 A landing page apresenta o sistema e suas funcionalidades de forma clara e atrativa, com design moderno e responsivo.
+
+![Página Inicial](docs/screenshots/home-page.png)
 
 ### Seleção de Tipo de Usuário
 Sistema com dois tipos de acesso: alunos (via ID estudantil) e gestores (via login):
 
 ### Dashboard Administrativo
 Dashboard completo com métricas em tempo real, gráficos interativos e análises de desempenho:
+
+![Dashboard Administrativo](docs/screenshots/dashboard.png)
 
 **Métricas disponíveis:**
 - Total de livros emprestados atualmente
@@ -56,6 +63,8 @@ Dashboard completo com métricas em tempo real, gráficos interativos e análise
 
 ### Catálogo de Livros
 Gestão completa do acervo com busca avançada, filtros e visualização detalhada:
+
+![Catálogo de Livros](docs/screenshots/books-catalog.png)
 
 **Funcionalidades do catálogo:**
 - Busca por título, autor, ISBN ou categoria
@@ -90,6 +99,8 @@ Gestão eficiente de todas as locações ativas e devolvidas:
 
 ### Área do Aluno
 Interface moderna e intuitiva para os estudantes explorarem o acervo:
+
+![Área do Aluno](docs/screenshots/student-dashboard.png)
 
 **Funcionalidades para alunos:**
 - Recomendações personalizadas de livros
