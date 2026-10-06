@@ -1,0 +1,14 @@
+node_modules
+build
+.git
+.github
+.env
+.env.*
+!.env.example
+docs
+functions
+YEAR_TURNOVER_IMPLEMENTATION.md
+*.md
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
