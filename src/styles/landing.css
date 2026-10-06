@@ -58,17 +58,17 @@
   box-sizing: border-box;
 }
 
-.landing-page-root h1,
-.landing-page-root h2,
-.landing-page-root h3,
-.landing-page-root h4,
-.landing-page-root h5,
-.landing-page-root h6 {
+:where(.landing-page-root) h1,
+:where(.landing-page-root) h2,
+:where(.landing-page-root) h3,
+:where(.landing-page-root) h4,
+:where(.landing-page-root) h5,
+:where(.landing-page-root) h6 {
   font-family: var(--font-display);
   margin: 0;
 }
 
-.landing-page-root p {
+:where(.landing-page-root) p {
   margin: 0;
 }
 
