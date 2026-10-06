@@ -1,0 +1,40 @@
+name: Deploy Frontend to VPS (Coolify)
+
+on:
+  push:
+    branches:
+      - main
+      - fix/remove-openrouter-key-history
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Trigger Coolify Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Deploy via Coolify API
+        env:
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
+        run: |
+          if [ -z "$COOLIFY_API_TOKEN" ] || [ -z "$COOLIFY_APP_UUID" ]; then
+            echo "::error::Secrets COOLIFY_API_TOKEN ou COOLIFY_APP_UUID nao estao configurados no GitHub."
+            exit 1
+          fi
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "http://187.127.53.77:8000/api/v1/deploy?uuid=${COOLIFY_APP_UUID}&force=true" \
+            -H "Authorization: Bearer ${COOLIFY_API_TOKEN}" \
+            -H "Accept: application/json")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "Status HTTP: $HTTP_CODE"
+          echo "Resposta: $BODY"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Deploy disparado com sucesso no Coolify!"
+          else
+            echo "::error::Falha ao disparar deploy no Coolify. HTTP $HTTP_CODE"
+            exit 1
+          fi
