@@ -10,14 +10,14 @@ const CtaSection = () => {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative rounded-3xl bg-gradient-cta p-12 sm:p-16 text-center overflow-hidden"
+          className="relative rounded-3xl bg-gradient-cta p-12 sm:p-16 text-center overflow-hidden flex flex-col items-center justify-center"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]" />
-          <div className="relative z-10">
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)] pointer-events-none" />
+          <div className="relative z-10 flex flex-col items-center justify-center text-center max-w-2xl mx-auto w-full">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-primary-foreground mb-4 text-center">
               Pronto para transformar sua biblioteca?
             </h2>
-            <p className="text-primary-foreground/80 max-w-lg mx-auto mb-8">
+            <p className="text-primary-foreground/90 max-w-lg mx-auto mb-8 text-center text-base sm:text-lg">
               Junte-se às escolas que já estão revolucionando a gestão de suas bibliotecas.
             </p>
             <a
