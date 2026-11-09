@@ -25,6 +25,73 @@ const stripe = new Stripe(config.secret_key, {
   apiVersion: '2023-10-16',
 });
 
+// ---------------------------------------------------------------------------
+// Segurança: CORS restrito e autenticação
+// ---------------------------------------------------------------------------
+
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://bibliotech.gustavoalmeida.tech',
+  'https://bibliotech.tech',
+  'https://www.bibliotech.tech',
+  'https://app.bibliotech.tech',
+  'http://localhost:3000',
+];
+
+// Origens extras podem ser liberadas via env ALLOWED_ORIGINS (separadas por vírgula).
+const ALLOWED_ORIGINS = new Set(
+  [...DEFAULT_ALLOWED_ORIGINS, ...(process.env.ALLOWED_ORIGINS || '').split(',')]
+    .map(o => o.trim())
+    .filter(Boolean)
+);
+
+/**
+ * Aplica CORS apenas para origens conhecidas.
+ * Retorna false quando a origem não é permitida (a requisição deve ser recusada).
+ */
+const applyCors = (
+  req: functions.https.Request,
+  res: functions.Response,
+  methods: string
+): boolean => {
+  const origin = req.headers.origin;
+  if (origin && !ALLOWED_ORIGINS.has(origin)) {
+    return false;
+  }
+  if (origin) {
+    res.set('Access-Control-Allow-Origin', origin);
+    res.set('Vary', 'Origin');
+  }
+  res.set('Access-Control-Allow-Methods', methods);
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  return true;
+};
+
+/** Valida o Firebase ID token (Authorization: Bearer <token>) e devolve o uid. */
+const getAuthenticatedUid = async (req: functions.https.Request): Promise<string | null> => {
+  const header = req.headers.authorization || '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if (!match) return null;
+  try {
+    const decoded = await admin.auth().verifyIdToken(match[1].trim());
+    return decoded.uid;
+  } catch {
+    return null;
+  }
+};
+
+// Rate limit simples por IP (por instância) para o chat público dos alunos.
+const CHAT_WINDOW_MS = 60_000;
+const CHAT_MAX_REQUESTS = 15;
+const chatHits = new Map<string, number[]>();
+const isRateLimited = (key: string): boolean => {
+  const now = Date.now();
+  const hits = (chatHits.get(key) || []).filter(t => now - t < CHAT_WINDOW_MS);
+  hits.push(now);
+  chatHits.set(key, hits);
+  if (chatHits.size > 5000) chatHits.clear();
+  return hits.length > CHAT_MAX_REQUESTS;
+};
+
 // Mapeamento de planos
 const PLAN_MAPPING: Record<number, string> = {
   1: config.basic_price_id || '',
@@ -35,12 +102,10 @@ const PLAN_MAPPING: Record<number, string> = {
  * Cria uma sessão de checkout no Stripe
  */
 export const createCheckoutSession = functions.https.onRequest(async (req, res) => {
-  // Habilitar CORS para todas as origens (incluindo localhost)
-  const origin = req.headers.origin || '*';
-  res.set('Access-Control-Allow-Origin', origin);
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.set('Access-Control-Allow-Credentials', 'true');
+  if (!applyCors(req, res, 'POST, OPTIONS')) {
+    res.status(403).json({ error: 'Origem não permitida' });
+    return;
+  }
 
   if (req.method === 'OPTIONS') {
     res.status(200).send('');
@@ -53,10 +118,17 @@ export const createCheckoutSession = functions.https.onRequest(async (req, res) 
   }
 
   try {
-    const { planId, userId } = req.body;
+    // O usuário vem do ID token, nunca do body.
+    const userId = await getAuthenticatedUid(req);
+    if (!userId) {
+      res.status(401).json({ error: 'Não autenticado' });
+      return;
+    }
 
-    if (!planId || !userId) {
-      res.status(400).json({ error: 'planId e userId são obrigatórios' });
+    const { planId } = req.body || {};
+
+    if (!planId) {
+      res.status(400).json({ error: 'planId é obrigatório' });
       return;
     }
 
@@ -102,12 +174,10 @@ export const createCheckoutSession = functions.https.onRequest(async (req, res) 
  * Verifica o status de uma sessão de checkout
  */
 export const verifyCheckoutSession = functions.https.onRequest(async (req, res) => {
-  // Habilitar CORS para todas as origens (incluindo localhost)
-  const origin = req.headers.origin || '*';
-  res.set('Access-Control-Allow-Origin', origin);
-  res.set('Access-Control-Allow-Methods', 'GET, OPTIONS, POST');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.set('Access-Control-Allow-Credentials', 'true');
+  if (!applyCors(req, res, 'GET, OPTIONS')) {
+    res.status(403).json({ error: 'Origem não permitida' });
+    return;
+  }
 
   if (req.method === 'OPTIONS') {
     res.status(200).send('');
@@ -336,11 +406,13 @@ INSTRUÇÕES:
  * Endpoint para chat com a BiblioIA utilizando OpenRouter de forma segura no servidor
  */
 export const bookChat = functions.https.onRequest(async (req, res) => {
-  const origin = req.headers.origin || '*';
-  res.set('Access-Control-Allow-Origin', origin);
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.set('Access-Control-Allow-Credentials', 'true');
+  // Os alunos entram só com o ID estudantil (sem Firebase Auth), então aqui não
+  // dá para exigir ID token: o chat é protegido por CORS restrito, rate limit e
+  // validação do payload. O prompt de sistema é sempre montado no servidor.
+  if (!applyCors(req, res, 'POST, OPTIONS')) {
+    res.status(403).json({ error: 'Origem não permitida' });
+    return;
+  }
 
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
@@ -367,14 +439,33 @@ export const bookChat = functions.https.onRequest(async (req, res) => {
       return;
     }
 
-    const finalMessages = [...messages];
-    const hasSystemMessage = finalMessages.some(m => m.role === 'system');
-    if (!hasSystemMessage) {
-      finalMessages.unshift({
-        role: 'system',
-        content: buildSystemPrompt(books || [], studentName),
-      });
+    const ip = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip || 'unknown';
+    if (isRateLimited(ip)) {
+      res.status(429).json({ error: 'Muitas mensagens em pouco tempo. Tente de novo em um minuto.' });
+      return;
     }
+
+    // Só aceitamos mensagens de usuário/assistente, com tamanho limitado.
+    // Mensagens "system" vindas do cliente são descartadas.
+    const MAX_MESSAGES = 20;
+    const MAX_CHARS = 2000;
+    const safeMessages = messages
+      .filter((m: any) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+      .slice(-MAX_MESSAGES)
+      .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, MAX_CHARS) }));
+
+    if (safeMessages.length === 0) {
+      res.status(400).json({ error: 'Nenhuma mensagem válida' });
+      return;
+    }
+
+    const safeBooks: BookInfo[] = Array.isArray(books) ? books.slice(0, 300) : [];
+    const safeStudentName = typeof studentName === 'string' ? studentName.slice(0, 80) : undefined;
+
+    const finalMessages = [
+      { role: 'system', content: buildSystemPrompt(safeBooks, safeStudentName) },
+      ...safeMessages,
+    ];
 
     for (const model of FREE_MODELS) {
       try {

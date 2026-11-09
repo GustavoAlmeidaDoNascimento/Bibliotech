@@ -1,5 +1,6 @@
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { getStripeConfig } from '../config/stripeConfig';
+import { auth } from './firebase';
 
 let stripePromise: Promise<Stripe | null> | null = null;
 
@@ -52,11 +53,21 @@ export const createCheckoutSession = async (
     const url = getCloudFunctionUrl('createCheckoutSession');
     
     // Chamar Cloud Function para criar sessão de checkout
+    // A Cloud Function identifica o usuário pelo ID token, não pelo userId do body.
+    const currentUser = auth.currentUser;
+    if (!currentUser || currentUser.uid !== userId) {
+      throw new Error('Faça login novamente para continuar o pagamento.');
+    }
+    const idToken = await currentUser.getIdToken();
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
       },
+      // userId continua no body só por compatibilidade com a versão antiga da
+      // função; a versão atual ignora esse campo e usa o uid do token.
       body: JSON.stringify({
         planId,
         userId,
